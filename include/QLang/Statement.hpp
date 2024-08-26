@@ -1,0 +1,103 @@
+#pragma once
+
+#include <QLang/QLang.hpp>
+#include <QLang/SourceLocation.hpp>
+#include <vector>
+
+namespace QLang
+{
+	struct Statement
+	{
+		explicit Statement(const SourceLocation &);
+		virtual ~Statement();
+
+		virtual void Print(std::ostream &) const = 0;
+
+		SourceLocation Where;
+	};
+
+	struct CompoundStatement : Statement
+	{
+		CompoundStatement(
+			const SourceLocation &, std::vector<StatementPtr> &list);
+
+		void Print(std::ostream &) const override;
+
+		std::vector<StatementPtr> List;
+	};
+
+	enum FnMode
+	{
+		FnMode_Func,
+		FnMode_Ctor,
+		FnMode_Dtor,
+	};
+
+	struct Param
+	{
+		TypePtr Type;
+		std::string Name;
+	};
+
+	struct DefFnStatement : Statement
+	{
+		DefFnStatement(
+			const SourceLocation &, FnMode mode, const TypePtr &result, const TypePtr &self,
+			const std::string &name, const std::vector<Param> &params,
+			bool vararg, StatementPtr body);
+
+		void Print(std::ostream &) const override;
+
+		FnMode Mode;
+		TypePtr Result;
+		TypePtr Self;
+		std::string Name;
+		std::vector<Param> Params;
+		bool VarArg;
+		StatementPtr Body;
+	};
+
+	struct DefVarStatement : Statement
+	{
+		DefVarStatement(const SourceLocation &, const TypePtr &type,
+						const std::string &name, ExpressionPtr init);
+
+		void Print(std::ostream &) const override;
+
+		TypePtr Type;
+		std::string Name;
+		ExpressionPtr Init;
+	};
+
+	struct IfStatement : Statement
+	{
+		IfStatement(const SourceLocation &, ExpressionPtr if_,
+					StatementPtr then, StatementPtr else_);
+
+		void Print(std::ostream &) const override;
+
+		ExpressionPtr If;
+		StatementPtr Then;
+		StatementPtr Else;
+	};
+
+	struct ReturnStatement : Statement
+	{
+		ReturnStatement(const SourceLocation &, ExpressionPtr value);
+
+		void Print(std::ostream &) const override;
+
+		ExpressionPtr Value;
+	};
+
+	struct WhileStatement : Statement
+	{
+		WhileStatement(
+			const SourceLocation &, ExpressionPtr condition, StatementPtr loop);
+
+		void Print(std::ostream &) const override;
+
+		ExpressionPtr Condition;
+		StatementPtr Loop;
+	};
+}
