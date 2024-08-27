@@ -11,7 +11,7 @@ namespace QLang
 	class Parser
 	{
 	public:
-		Parser(std::istream &, const std::string &filename);
+		Parser(Context &, std::istream &, const std::string &filename);
 
 		bool AtEof() const;
 		StatementPtr Parse();
@@ -56,6 +56,6 @@ namespace QLang
 		SourceLocation m_Where;
 		int m_C = -1;
 		Token m_Token;
-		Context m_Context;
+		Context &m_Context;
 	};
 }

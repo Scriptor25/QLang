@@ -8,10 +8,12 @@ QLang::WhileStatement::WhileStatement(
 {
 }
 
-void QLang::WhileStatement::Print(std::ostream &stream) const
+std::ostream &QLang::WhileStatement::Print(std::ostream &stream) const
 {
-	stream << "while ";
-	Condition->Print(stream);
-	stream << ' ';
-	Loop->Print(stream);
+	return stream << "while " << Condition << ' ' << Loop;
+}
+
+void QLang::WhileStatement::GenIRVoid(Builder &builder) const
+{
+	std::cerr << "TODO: QLang::WhileStatement::GenIRVoid" << std::endl;
 }

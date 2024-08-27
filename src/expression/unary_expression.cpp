@@ -1,4 +1,5 @@
 #include <QLang/Expression.hpp>
+#include <iostream>
 
 QLang::UnaryExpression::UnaryExpression(
 	const SourceLocation &where, const std::string &operator_,
@@ -8,9 +9,14 @@ QLang::UnaryExpression::UnaryExpression(
 {
 }
 
-void QLang::UnaryExpression::Print(std::ostream &stream) const
+std::ostream &QLang::UnaryExpression::Print(std::ostream &stream) const
 {
-	if (Left) stream << Operator;
-	Operand->Print(stream);
-	if (!Left) stream << Operator;
+	return stream << (Left ? Operator : "") << Operand
+				  << (Left ? "" : Operator);
+}
+
+QLang::ValuePtr QLang::UnaryExpression::GenIR(Builder &builder) const
+{
+	std::cerr << "TODO: QLang::UnaryExpression::GenIR" << std::endl;
+	return {};
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QLang/QLang.hpp>
+#include <llvm/IR/Type.h>
 #include <string>
 #include <vector>
 
@@ -12,8 +13,10 @@ namespace QLang
 		static TypePtr Get(Context &, const std::string &);
 
 	public:
-		Type(Context &, const std::string &name, size_t size);
 		virtual ~Type();
+		virtual llvm::Type *GenIR(Builder &) const;
+
+		Type(Context &, const std::string &name, size_t size);
 
 		Context &GetCtx() const;
 		const std::string &GetName() const;
@@ -32,6 +35,20 @@ namespace QLang
 
 	public:
 		PointerType(Context &, const std::string &name, const TypePtr &base);
+
+		TypePtr GetBase() const;
+
+	private:
+		TypePtr m_Base;
+	};
+
+	class ReferenceType : public Type
+	{
+	public:
+		static ReferenceTypePtr Get(const TypePtr &base);
+
+	public:
+		ReferenceType(Context &, const std::string &name, const TypePtr &base);
 
 		TypePtr GetBase() const;
 

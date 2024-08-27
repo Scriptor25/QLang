@@ -1,3 +1,5 @@
+#include <QLang/Builder.hpp>
+#include <QLang/Context.hpp>
 #include <QLang/Parser.hpp>
 #include <QLang/Statement.hpp>
 #include <fstream>
@@ -34,13 +36,18 @@ int main(int argc, const char **argv)
 		std::ifstream stream(filename);
 		if (!stream) continue;
 
-		QLang::Parser parser(stream, filename);
+		QLang::Context context;
+		QLang::Parser parser(context, stream, filename);
+		QLang::Builder builder(context);
+
 		while (!parser.AtEof())
 		{
 			auto ptr = parser.Parse();
 			if (!ptr) continue;
-			ptr->Print(std::cout);
-			std::cout << std::endl;
+
+			std::cout << ptr << std::endl;
+
+			ptr->GenIRVoid(builder);
 		}
 
 		stream.close();

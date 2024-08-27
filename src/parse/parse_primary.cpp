@@ -1,7 +1,7 @@
 #include <QLang/Expression.hpp>
 #include <QLang/Parser.hpp>
+#include <iostream>
 #include <memory>
-#include <stdexcept>
 #include <string>
 
 QLang::ExpressionPtr QLang::Parser::ParsePrimary()
@@ -52,11 +52,18 @@ QLang::ExpressionPtr QLang::Parser::ParsePrimary()
 		return std::make_unique<ConstIntExpression>(Where, value);
 	}
 
+	if (At(TokenType_Char))
+	{
+		auto [Where, Type, Value] = Skip();
+		return std::make_unique<ConstCharExpression>(Where, Value[0]);
+	}
+
 	if (At(TokenType_String))
 	{
 		auto [Where, Type, Value] = Skip();
 		return std::make_unique<ConstStringExpression>(Where, Value);
 	}
 
-	throw std::runtime_error("unhandled token");
+	std::cerr << "unhandled token" << std::endl;
+	return {};
 }

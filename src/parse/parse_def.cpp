@@ -17,12 +17,14 @@ QLang::StatementPtr QLang::Parser::ParseDef()
 	if (NextIfAt("+"))
 	{
 		mode = FnMode_Ctor;
-		name = Expect(TokenType_Name).Value;
+		type = Type::Get(m_Context, "void");
+		name = Type::Get(m_Context, Expect(TokenType_Name).Value)->GetName();
 	}
 	else if (NextIfAt("-"))
 	{
 		mode = FnMode_Dtor;
-		name = Expect(TokenType_Name).Value;
+		type = Type::Get(m_Context, "void");
+		name = Type::Get(m_Context, Expect(TokenType_Name).Value)->GetName();
 	}
 	else
 	{
@@ -35,6 +37,10 @@ QLang::StatementPtr QLang::Parser::ParseDef()
 			self = Type::Get(m_Context, name);
 			name = Expect(TokenType_Name).Value;
 		}
+
+		if (name == "operator") do
+				name += Skip().Value;
+			while (!At("("));
 	}
 
 	if (NextIfAt("("))
@@ -55,8 +61,6 @@ QLang::StatementPtr QLang::Parser::ParseDef()
 			if (At(TokenType_Name)) param.Name = Skip().Value;
 			if (!At(")")) Expect(",");
 		}
-
-		if (!type) type = Type::Get(m_Context, "void");
 
 		StatementPtr body;
 		if (At("{")) body = ParseCompound();

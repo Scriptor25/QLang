@@ -10,14 +10,13 @@ QLang::DefVarStatement::DefVarStatement(
 {
 }
 
-void QLang::DefVarStatement::Print(std::ostream &stream) const
+std::ostream &QLang::DefVarStatement::Print(std::ostream &stream) const
 {
-	stream << "def ";
-	if (Type) stream << Type->GetName() << ' ';
-	stream << Name;
-	if (Init)
-	{
-		stream << " = ";
-		Init->Print(stream);
-	}
+	if (!Init) return stream << "def " << Type << ' ' << Name;
+	return stream << "def " << Type << ' ' << Name << " = " << Init;
+}
+
+void QLang::DefVarStatement::GenIRVoid(Builder &builder) const
+{
+	std::cerr << "TODO: QLang::DefVarStatement::GenIRVoid" << std::endl;
 }

@@ -1,15 +1,15 @@
+#include <QLang/Builder.hpp>
 #include <QLang/Statement.hpp>
 #include <functional>
 #include <iostream>
 
 QLang::CompoundStatement::CompoundStatement(
 	const SourceLocation &where, std::vector<StatementPtr> &list)
-	: Statement(where)
+	: Statement(where), List(std::move(list))
 {
-	for (auto &ptr : list) List.push_back(std::move(ptr));
 }
 
-void QLang::CompoundStatement::Print(std::ostream &stream) const
+std::ostream &QLang::CompoundStatement::Print(std::ostream &stream) const
 {
 	static size_t depth = 0;
 	static std::function<std::string()> indent = []()
@@ -21,11 +21,14 @@ void QLang::CompoundStatement::Print(std::ostream &stream) const
 
 	stream << '{';
 	depth += 4;
-	for (const auto &ptr : List)
-	{
-		stream << std::endl << indent();
-		ptr->Print(stream);
-	}
+	for (const auto &ptr : List) stream << std::endl << indent() << ptr;
 	depth -= 4;
-	stream << std::endl << indent() << '}';
+	return stream << std::endl << indent() << '}';
+}
+
+void QLang::CompoundStatement::GenIRVoid(Builder &builder) const
+{
+	builder.Push();
+	for (const auto &ptr : List) ptr->GenIRVoid(builder);
+	builder.Pop();
 }

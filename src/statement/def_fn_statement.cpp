@@ -11,13 +11,13 @@ QLang::DefFnStatement::DefFnStatement(
 {
 }
 
-void QLang::DefFnStatement::Print(std::ostream &stream) const
+std::ostream &QLang::DefFnStatement::Print(std::ostream &stream) const
 {
 	stream << "def ";
 	if (Mode == FnMode_Func)
 	{
-		stream << Result->GetName() << ' ';
-		if (Self) stream << Self->GetName() << ':';
+		stream << Result << ' ';
+		if (Self) stream << Self << ':';
 	}
 	else if (Mode == FnMode_Ctor) { stream << '+'; }
 	else if (Mode == FnMode_Dtor) { stream << '-'; }
@@ -25,7 +25,7 @@ void QLang::DefFnStatement::Print(std::ostream &stream) const
 	for (size_t i = 0; i < Params.size(); ++i)
 	{
 		if (i > 0) stream << ", ";
-		stream << Params[i].Type->GetName();
+		stream << Params[i].Type;
 		if (!Params[i].Name.empty()) stream << ' ' << Params[i].Name;
 	}
 	if (VarArg)
@@ -34,9 +34,11 @@ void QLang::DefFnStatement::Print(std::ostream &stream) const
 		stream << '?';
 	}
 	stream << ')';
-	if (Body)
-	{
-		stream << ' ';
-		Body->Print(stream);
-	}
+	if (!Body) return stream;
+	return stream << ' ' << Body;
+}
+
+void QLang::DefFnStatement::GenIRVoid(Builder &builder) const
+{
+	std::cerr << "TODO: QLang::DefFnStatement::GenIRVoid" << std::endl;
 }

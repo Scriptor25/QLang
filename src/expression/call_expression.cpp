@@ -8,14 +8,19 @@ QLang::CallExpression::CallExpression(
 {
 }
 
-void QLang::CallExpression::Print(std::ostream &stream) const
+std::ostream &QLang::CallExpression::Print(std::ostream &stream) const
 {
-	Callee->Print(stream);
-	stream << '(';
+	stream << Callee << '(';
 	for (size_t i = 0; i < Args.size(); ++i)
 	{
 		if (i > 0) stream << ", ";
-		Args[i]->Print(stream);
+		stream << Args[i];
 	}
-	stream << ')';
+	return stream << ')';
+}
+
+QLang::ValuePtr QLang::CallExpression::GenIR(Builder &builder) const
+{
+	std::cerr << "TODO: QLang::CallExpression::GenIR" << std::endl;
+	return {};
 }

@@ -10,15 +10,13 @@ QLang::IfStatement::IfStatement(
 {
 }
 
-void QLang::IfStatement::Print(std::ostream &stream) const
+std::ostream &QLang::IfStatement::Print(std::ostream &stream) const
 {
-	stream << "if ";
-	If->Print(stream);
-	stream << ' ';
-	Then->Print(stream);
-	if (Else)
-	{
-		stream << " else ";
-		Else->Print(stream);
-	}
+	if (!Else) return stream << "if " << If << ' ' << Then;
+	return stream << "if " << If << ' ' << Then << " else " << Else;
+}
+
+void QLang::IfStatement::GenIRVoid(Builder &builder) const
+{
+	std::cerr << "TODO: QLang::IfStatement::GenIRVoid" << std::endl;
 }

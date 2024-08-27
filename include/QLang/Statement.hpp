@@ -11,7 +11,8 @@ namespace QLang
 		explicit Statement(const SourceLocation &);
 		virtual ~Statement();
 
-		virtual void Print(std::ostream &) const = 0;
+		virtual std::ostream &Print(std::ostream &) const = 0;
+		virtual void GenIRVoid(Builder &) const = 0;
 
 		SourceLocation Where;
 	};
@@ -21,7 +22,8 @@ namespace QLang
 		CompoundStatement(
 			const SourceLocation &, std::vector<StatementPtr> &list);
 
-		void Print(std::ostream &) const override;
+		std::ostream &Print(std::ostream &) const override;
+		void GenIRVoid(Builder &) const override;
 
 		std::vector<StatementPtr> List;
 	};
@@ -42,11 +44,12 @@ namespace QLang
 	struct DefFnStatement : Statement
 	{
 		DefFnStatement(
-			const SourceLocation &, FnMode mode, const TypePtr &result, const TypePtr &self,
-			const std::string &name, const std::vector<Param> &params,
-			bool vararg, StatementPtr body);
+			const SourceLocation &, FnMode mode, const TypePtr &result,
+			const TypePtr &self, const std::string &name,
+			const std::vector<Param> &params, bool vararg, StatementPtr body);
 
-		void Print(std::ostream &) const override;
+		std::ostream &Print(std::ostream &) const override;
+		void GenIRVoid(Builder &) const override;
 
 		FnMode Mode;
 		TypePtr Result;
@@ -62,7 +65,8 @@ namespace QLang
 		DefVarStatement(const SourceLocation &, const TypePtr &type,
 						const std::string &name, ExpressionPtr init);
 
-		void Print(std::ostream &) const override;
+		std::ostream &Print(std::ostream &) const override;
+		void GenIRVoid(Builder &) const override;
 
 		TypePtr Type;
 		std::string Name;
@@ -74,7 +78,8 @@ namespace QLang
 		IfStatement(const SourceLocation &, ExpressionPtr if_,
 					StatementPtr then, StatementPtr else_);
 
-		void Print(std::ostream &) const override;
+		std::ostream &Print(std::ostream &) const override;
+		void GenIRVoid(Builder &) const override;
 
 		ExpressionPtr If;
 		StatementPtr Then;
@@ -85,7 +90,8 @@ namespace QLang
 	{
 		ReturnStatement(const SourceLocation &, ExpressionPtr value);
 
-		void Print(std::ostream &) const override;
+		std::ostream &Print(std::ostream &) const override;
+		void GenIRVoid(Builder &) const override;
 
 		ExpressionPtr Value;
 	};
@@ -95,7 +101,8 @@ namespace QLang
 		WhileStatement(
 			const SourceLocation &, ExpressionPtr condition, StatementPtr loop);
 
-		void Print(std::ostream &) const override;
+		std::ostream &Print(std::ostream &) const override;
+		void GenIRVoid(Builder &) const override;
 
 		ExpressionPtr Condition;
 		StatementPtr Loop;

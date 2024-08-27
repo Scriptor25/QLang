@@ -36,6 +36,12 @@ QLang::TypePtr QLang::Parser::ParseType()
 			continue;
 		}
 
+		if (NextIfAt("&"))
+		{
+			base = ReferenceType::Get(base);
+			continue;
+		}
+
 		if (NextIfAt("["))
 		{
 			auto length_expr

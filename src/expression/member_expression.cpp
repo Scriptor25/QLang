@@ -9,8 +9,13 @@ QLang::MemberExpression::MemberExpression(
 {
 }
 
-void QLang::MemberExpression::Print(std::ostream &stream) const
+std::ostream &QLang::MemberExpression::Print(std::ostream &stream) const
 {
-	Object->Print(stream);
-	stream << (Dereference ? '!' : '.') << Member;
+	return stream << Object << (Dereference ? '!' : '.') << Member;
+}
+
+QLang::ValuePtr QLang::MemberExpression::GenIR(Builder &builder) const
+{
+	std::cerr << "TODO: QLang::MemberExpression::GenIR" << std::endl;
+	return {};
 }

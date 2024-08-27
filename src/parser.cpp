@@ -1,9 +1,10 @@
 #include <QLang/Expression.hpp>
 #include <QLang/Parser.hpp>
-#include <stdexcept>
+#include <iostream>
 
-QLang::Parser::Parser(std::istream &stream, const std::string &filename)
-	: m_Stream(stream), m_Where({ .Filename = filename })
+QLang::Parser::Parser(
+	Context &context, std::istream &stream, const std::string &filename)
+	: m_Context(context), m_Stream(stream), m_Where({ .Filename = filename })
 {
 	Next();
 }
@@ -49,11 +50,13 @@ QLang::Token QLang::Parser::Skip()
 QLang::Token QLang::Parser::Expect(TokenType type)
 {
 	if (At(type)) return Skip();
-	throw std::runtime_error("unexpected token");
+	std::cerr << "unexpected token" << std::endl;
+	return {};
 }
 
 QLang::Token QLang::Parser::Expect(const std::string &value)
 {
 	if (At(value)) return Skip();
-	throw std::runtime_error("unexpected token");
+	std::cerr << "unexpected token" << std::endl;
+	return {};
 }

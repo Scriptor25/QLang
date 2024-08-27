@@ -9,9 +9,13 @@ QLang::BinaryExpression::BinaryExpression(
 {
 }
 
-void QLang::BinaryExpression::Print(std::ostream &stream) const
+std::ostream &QLang::BinaryExpression::Print(std::ostream &stream) const
 {
-	LHS->Print(stream);
-	stream << ' ' << Operator << ' ';
-	RHS->Print(stream);
+	return stream << LHS << ' ' << Operator << ' ' << RHS;
+}
+
+QLang::ValuePtr QLang::BinaryExpression::GenIR(Builder &builder) const
+{
+	std::cerr << "TODO: QLang::BinaryExpression::GenIR" << std::endl;
+	return {};
 }

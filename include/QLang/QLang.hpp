@@ -15,12 +15,21 @@ namespace QLang
 	typedef std::shared_ptr<Type> TypePtr;
 	class PointerType;
 	typedef std::shared_ptr<PointerType> PointerTypePtr;
+	class ReferenceType;
+	typedef std::shared_ptr<ReferenceType> ReferenceTypePtr;
 	class ArrayType;
 	typedef std::shared_ptr<ArrayType> ArrayTypePtr;
 	class StructType;
 	typedef std::shared_ptr<StructType> StructTypePtr;
 	class FunctionType;
 	typedef std::shared_ptr<FunctionType> FunctionTypePtr;
+
+	class Value;
+	typedef std::unique_ptr<Value> ValuePtr;
+	class RValue;
+	typedef std::unique_ptr<RValue> RValuePtr;
+	class LValue;
+	typedef std::unique_ptr<LValue> LValuePtr;
 
 	struct Statement;
 	typedef std::unique_ptr<Statement> StatementPtr;
@@ -37,4 +46,8 @@ namespace QLang
 		}
 		return {};
 	}
+
+	std::ostream &operator<<(std::ostream &, const TypePtr &);
+	std::ostream &operator<<(std::ostream &, const StatementPtr &);
+	std::ostream &operator<<(std::ostream &, const ExpressionPtr &);
 }

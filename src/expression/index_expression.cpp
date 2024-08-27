@@ -7,10 +7,13 @@ QLang::IndexExpression::IndexExpression(
 {
 }
 
-void QLang::IndexExpression::Print(std::ostream &stream) const
+std::ostream &QLang::IndexExpression::Print(std::ostream &stream) const
 {
-	Array->Print(stream);
-	stream << '[';
-	Index->Print(stream);
-	stream << ']';
+	return stream << Array << '[' << Index << ']';
+}
+
+QLang::ValuePtr QLang::IndexExpression::GenIR(Builder &builder) const
+{
+	std::cerr << "TODO: QLang::IndexExpression::GenIR" << std::endl;
+	return {};
 }
