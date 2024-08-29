@@ -24,7 +24,7 @@ namespace QLang
 	{
 	public:
 		static TypePtr Get(Context &, const std::string &);
-		static size_t TypeDiff(Builder&, TypePtr, TypePtr);
+		static size_t TypeDiff(Builder &, TypePtr, TypePtr);
 		static TypePtr HigherOrder(const TypePtr &, const TypePtr &);
 
 	public:
@@ -46,6 +46,8 @@ namespace QLang
 		bool IsArray() const;
 		bool IsStruct() const;
 		bool IsFunction() const;
+
+		bool IsFunctionPointer() const;
 
 	private:
 		Context &m_Ctx;

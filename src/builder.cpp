@@ -1,7 +1,15 @@
 #include <QLang/Builder.hpp>
 #include <QLang/Type.hpp>
+#include <llvm/IR/PassInstrumentation.h>
 #include <llvm/IR/Value.h>
+#include <llvm/Passes/PassBuilder.h>
 #include <llvm/Support/raw_ostream.h>
+#include <llvm/Transforms/AggressiveInstCombine/AggressiveInstCombine.h>
+#include <llvm/Transforms/InstCombine/InstCombine.h>
+#include <llvm/Transforms/Scalar/GVN.h>
+#include <llvm/Transforms/Scalar/Reassociate.h>
+#include <llvm/Transforms/Scalar/SimplifyCFG.h>
+#include <llvm/Transforms/Utils/Mem2Reg.h>
 #include <memory>
 
 QLang::Builder::Builder(Context &context) : m_Context(context)
@@ -9,6 +17,28 @@ QLang::Builder::Builder(Context &context) : m_Context(context)
 	m_IRContext = std::make_unique<llvm::LLVMContext>();
 	m_IRBuilder = std::make_unique<llvm::IRBuilder<>>(*m_IRContext);
 	m_IRModule = std::make_unique<llvm::Module>("module", *m_IRContext);
+
+	m_FPM = std::make_unique<llvm::FunctionPassManager>();
+	m_LAM = std::make_unique<llvm::LoopAnalysisManager>();
+	m_FAM = std::make_unique<llvm::FunctionAnalysisManager>();
+	m_CGAM = std::make_unique<llvm::CGSCCAnalysisManager>();
+	m_MAM = std::make_unique<llvm::ModuleAnalysisManager>();
+	m_PIC = std::make_unique<llvm::PassInstrumentationCallbacks>();
+	m_SI = std::make_unique<llvm::StandardInstrumentations>(*m_IRContext, true);
+
+	m_SI->registerCallbacks(*m_PIC, m_MAM.get());
+
+	// m_FPM->addPass(llvm::InstCombinePass());
+	m_FPM->addPass(llvm::AggressiveInstCombinePass());
+	m_FPM->addPass(llvm::ReassociatePass());
+	m_FPM->addPass(llvm::GVNPass());
+	m_FPM->addPass(llvm::SimplifyCFGPass());
+	m_FPM->addPass(llvm::PromotePass());
+
+	llvm::PassBuilder pb;
+	pb.registerModuleAnalyses(*m_MAM);
+	pb.registerFunctionAnalyses(*m_FAM);
+	pb.crossRegisterProxies(*m_LAM, *m_FAM, *m_CGAM, *m_MAM);
 }
 
 llvm::LLVMContext &QLang::Builder::IRContext() const { return *m_IRContext; }
@@ -16,6 +46,8 @@ llvm::LLVMContext &QLang::Builder::IRContext() const { return *m_IRContext; }
 llvm::IRBuilder<> &QLang::Builder::IRBuilder() const { return *m_IRBuilder; }
 
 llvm::Module &QLang::Builder::IRModule() const { return *m_IRModule; }
+
+void QLang::Builder::Optimize(llvm::Function *fn) { m_FPM->run(*fn, *m_FAM); }
 
 QLang::Context &QLang::Builder::GetContext() const { return m_Context; }
 

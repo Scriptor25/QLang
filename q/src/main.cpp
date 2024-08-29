@@ -45,8 +45,6 @@ int main(int argc, const char **argv)
 			auto ptr = parser.Parse();
 			if (!ptr) continue;
 
-			std::cout << ptr << std::endl;
-
 			ptr->GenIRVoid(builder);
 		}
 

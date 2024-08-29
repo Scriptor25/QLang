@@ -5,6 +5,6 @@
 std::ostream &QLang::operator<<(
 	std::ostream &stream, const SourceLocation &where)
 {
-	return stream << where.Filename << '(' << where.Row << ';' << where.Column
+	return stream << where.Filename << ":(" << where.Row << ',' << where.Column
 				  << ')';
 }

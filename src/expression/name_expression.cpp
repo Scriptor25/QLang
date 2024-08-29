@@ -23,56 +23,52 @@ QLang::ValuePtr QLang::NameExpression::GenIR(Builder &builder) const
 		if (Name == "self")
 		{
 			auto self = builder["self"]->GetType();
-			auto ctor = builder.FindConstructor(self, builder.GetArgs());
-			if (ctor)
-				return RValue::Create(
-					builder, PointerType::Get(ctor->Type), ctor->IR);
+			if (auto func = builder.FindConstructor(self, builder.GetArgs()))
+				return func->AsValue(builder);
 
-			std::cerr << "no constructor for " << self << " with args"
-					  << std::endl;
+			std::cerr << "at " << Where << ": no constructor for type " << self
+					  << " with args" << std::endl;
 			for (const auto &arg : builder.GetArgs())
 				std::cerr << "    " << arg << std::endl;
 
 			return {};
 		}
 
-		auto sym = builder[Name];
-		if (sym)
+		if (auto &sym = builder[Name])
 		{
-			if (sym->GetType()->IsPointer())
+			if (sym->GetType()->IsFunctionPointer())
 			{
 				auto type = FunctionType::FromPtr(sym->GetType());
-				if (type)
+				if (type->GetParamCount() == builder.GetArgCount()
+					|| (type->IsVarArg()
+						&& type->GetParamCount() < builder.GetArgCount()))
 				{
-					if (type->GetParamCount() == builder.GetArgCount()
-						|| (type->IsVarArg()
-							&& type->GetParamCount() < builder.GetArgCount()))
-					{
-						size_t i = 0;
-						for (; i < type->GetParamCount(); ++i)
-							if (type->GetParam(i) != builder.GetArg(i)) break;
-						if (i == type->GetParamCount()) return sym;
-					}
+					size_t i = 0;
+					for (; i < type->GetParamCount(); ++i)
+						if (type->GetParam(i) != builder.GetArg(i)) break;
+					if (i == type->GetParamCount()) return sym;
 				}
 			}
 		}
 
+		if (auto self = Type::Get(builder.GetContext(), Name))
+			if (auto func = builder.FindConstructor(self, builder.GetArgs()))
+				return func->AsValue(builder);
+
 		if (auto func = builder.FindFunction(Name, {}, builder.GetArgs()))
-			return RValue::Create(
-				builder, PointerType::Get(func->Type), func->IR);
+			return func->AsValue(builder);
 
-		if (auto func = builder.FindConstructor(
-				Type::Get(builder.GetContext(), Name), builder.GetArgs()))
-			return RValue::Create(
-				builder, PointerType::Get(func->Type), func->IR);
-
-		std::cerr << "no function with name '" << Name << "' and args"
-				  << std::endl;
+		std::cerr << "at " << Where << ": no function with name '" << Name
+				  << "' and args" << std::endl;
 		for (const auto &arg : builder.GetArgs())
 			std::cerr << "    " << arg << std::endl;
 
 		return {};
 	}
 
-	return builder[Name];
+	if (auto &sym = builder[Name]) return sym;
+
+	std::cerr << "at " << Where << ": no symbol with name '" << Name << "'"
+			  << std::endl;
+	return {};
 }

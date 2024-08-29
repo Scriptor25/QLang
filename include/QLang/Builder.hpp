@@ -3,10 +3,15 @@
 #include <QLang/Function.hpp>
 #include <QLang/QLang.hpp>
 #include <QLang/Value.hpp>
+#include <llvm/Analysis/CGSCCPassManager.h>
+#include <llvm/Analysis/LoopAnalysisManager.h>
 #include <llvm/IR/IRBuilder.h>
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Module.h>
+#include <llvm/IR/PassManager.h>
+#include <llvm/Passes/StandardInstrumentations.h>
 #include <map>
+#include <memory>
 #include <string>
 
 namespace QLang
@@ -19,6 +24,8 @@ namespace QLang
 		llvm::LLVMContext &IRContext() const;
 		llvm::IRBuilder<> &IRBuilder() const;
 		llvm::Module &IRModule() const;
+
+		void Optimize(llvm::Function *);
 
 		Context &GetContext() const;
 
@@ -68,6 +75,14 @@ namespace QLang
 		std::unique_ptr<llvm::LLVMContext> m_IRContext;
 		std::unique_ptr<llvm::IRBuilder<>> m_IRBuilder;
 		std::unique_ptr<llvm::Module> m_IRModule;
+
+		std::unique_ptr<llvm::FunctionPassManager> m_FPM;
+		std::unique_ptr<llvm::LoopAnalysisManager> m_LAM;
+		std::unique_ptr<llvm::FunctionAnalysisManager> m_FAM;
+		std::unique_ptr<llvm::CGSCCAnalysisManager> m_CGAM;
+		std::unique_ptr<llvm::ModuleAnalysisManager> m_MAM;
+		std::unique_ptr<llvm::PassInstrumentationCallbacks> m_PIC;
+		std::unique_ptr<llvm::StandardInstrumentations> m_SI;
 
 		Context &m_Context;
 

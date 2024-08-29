@@ -1,6 +1,6 @@
-#include "QLang/Operator.hpp"
 #include <QLang/Builder.hpp>
 #include <QLang/Function.hpp>
+#include <QLang/Operator.hpp>
 #include <QLang/Statement.hpp>
 #include <QLang/Type.hpp>
 #include <QLang/Value.hpp>
@@ -93,7 +93,8 @@ void QLang::DefFnStatement::GenIRVoid(Builder &builder) const
 		if (auto aty = ReferenceType::From(arg_type))
 			builder[arg_name] = LValue::Create(builder, aty->GetBase(), arg);
 		else
-			builder[arg_name] = LValue::Alloca(builder, arg_type, arg);
+			builder[arg_name]
+				= LValue::Alloca(builder, arg_type, arg, arg_name);
 	}
 	Body->GenIRVoid(builder);
 	builder.Pop();
@@ -120,11 +121,11 @@ void QLang::DefFnStatement::GenIRVoid(Builder &builder) const
 
 	builder.IRBuilder().ClearInsertionPoint();
 
-	std::cerr << "------------------------ Function ------------------------"
-			  << std::endl;
-	ref.IR->print(llvm::errs());
 	if (llvm::verifyFunction(*ref.IR, &llvm::errs()))
+	{
 		ref.IR->erase(ref.IR->begin(), ref.IR->end());
-	std::cerr << "----------------------------------------------------------"
-			  << std::endl;
+		return;
+	}
+
+	builder.Optimize(ref.IR);
 }

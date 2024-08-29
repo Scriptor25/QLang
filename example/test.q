@@ -1,6 +1,7 @@
 def void* malloc(i64)
 def void* realloc(void*, i64)
 def void free(void*)
+def i64 strlen(i8*)
 def i8* strcpy(i8*, i8*)
 def i8* strcat(i8*, i8*)
 def i32 printf(i8*, ?)
@@ -23,17 +24,35 @@ def +string() {
     self[0] = 0
 }
 
+def +string(i8* str) {
+    self.length = strlen(str)
+    self.reserved = self.length + 1
+    self.data = malloc(self.reserved)
+    strcpy(self.data, str)
+}
+
 def -string() {
     free(self.data)
 }
 
-def +string(i8* str) {
-    self()
-    strcpy(self.data, str)
-}
-
 def i8* string:operator$() {
     return self.data
+}
+
+def string& string:operator=(i8* str) {
+    self.length = strlen(str)
+    self.reserved = self.length + 1
+    self.data = realloc(self.data, self.reserved)
+    strcpy(self.data, str)
+    return self
+}
+
+def string& string:operator=(string str) {
+    self.length = str.length
+    self.reserved = str.reserved
+    self.data = realloc(self.data, self.reserved)
+    strcpy(self.data, str.data)
+    return self
 }
 
 def void string:prereserve(i64 n) {

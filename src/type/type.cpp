@@ -104,3 +104,9 @@ bool QLang::Type::IsArray() const { return m_Id == TypeId_Array; }
 bool QLang::Type::IsStruct() const { return m_Id == TypeId_Struct; }
 
 bool QLang::Type::IsFunction() const { return m_Id == TypeId_Function; }
+
+bool QLang::Type::IsFunctionPointer() const
+{
+	return IsPointer()
+		   && dynamic_cast<const PointerType *>(this)->GetBase()->IsFunction();
+}

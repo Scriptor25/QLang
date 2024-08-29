@@ -47,7 +47,8 @@ namespace QLang
 		static LValuePtr Create(
 			Builder &, const TypePtr &type, llvm::Value *ptr);
 		static LValuePtr Alloca(
-			Builder &, const TypePtr &type, llvm::Value *value = nullptr);
+			Builder &, const TypePtr &type, llvm::Value *value = nullptr,
+			const std::string &name = "");
 
 	public:
 		LValue(Builder &, const TypePtr &type, llvm::Value *ptr);

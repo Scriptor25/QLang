@@ -23,7 +23,7 @@ void QLang::DefVarStatement::GenIRVoid(Builder &builder) const
 {
 	if (!builder.IRBuilder().GetInsertBlock())
 	{
-		std::cerr << "TODO: global variable definition" << std::endl;
+		std::cerr << "TODO: QLang::DefVarStatement::GenIRVoid" << std::endl;
 		return;
 	}
 
@@ -44,7 +44,8 @@ void QLang::DefVarStatement::GenIRVoid(Builder &builder) const
 	else
 	{
 		if (init) init = GenCast(builder, init, Type);
-		value = LValue::Alloca(builder, Type, init ? init->Get() : nullptr);
+		value
+			= LValue::Alloca(builder, Type, init ? init->Get() : nullptr, Name);
 		builder.DestroyAtEnd().push_back(value);
 	}
 
