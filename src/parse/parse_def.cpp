@@ -18,13 +18,15 @@ QLang::StatementPtr QLang::Parser::ParseDef()
 	{
 		mode = FnMode_Ctor;
 		type = Type::Get(m_Context, "void");
-		name = Type::Get(m_Context, Expect(TokenType_Name).Value)->GetName();
+		self = Type::Get(m_Context, Expect(TokenType_Name).Value);
+		name = self->GetName();
 	}
 	else if (NextIfAt("-"))
 	{
 		mode = FnMode_Dtor;
 		type = Type::Get(m_Context, "void");
-		name = Type::Get(m_Context, Expect(TokenType_Name).Value)->GetName();
+		self = Type::Get(m_Context, Expect(TokenType_Name).Value);
+		name = self->GetName();
 	}
 	else
 	{
@@ -38,9 +40,15 @@ QLang::StatementPtr QLang::Parser::ParseDef()
 			name = Expect(TokenType_Name).Value;
 		}
 
-		if (name == "operator") do
-				name += Skip().Value;
-			while (!At("("));
+		if (name == "operator")
+		{
+			if (NextIfAt("$")) { name += "$" + type->GetName(); }
+			else
+			{
+				do name += Skip().Value;
+				while (!At("("));
+			}
+		}
 	}
 
 	if (NextIfAt("("))

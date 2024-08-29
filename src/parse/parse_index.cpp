@@ -8,6 +8,6 @@ QLang::ExpressionPtr QLang::Parser::ParseIndex(ExpressionPtr array)
 	auto index = ParseBinary();
 	Expect("]");
 
-	return std::make_unique<IndexExpression>(
-		where, std::move(array), std::move(index));
+	return std::make_unique<BinaryExpression>(
+		where, "[]", std::move(array), std::move(index));
 }

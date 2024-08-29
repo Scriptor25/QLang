@@ -1,3 +1,11 @@
+def void* malloc(i64)
+def void* realloc(void*, i64)
+def void free(void*)
+def i8* strcpy(i8*, i8*)
+def i8* strcat(i8*, i8*)
+def i32 printf(i8*, ?)
+def i32 puts(i8*)
+
 use string as struct string {
     i64 length,
     i64 reserved,
@@ -24,6 +32,10 @@ def +string(i8* str) {
     strcpy(self.data, str)
 }
 
+def i8* string:operator$() {
+    return self.data
+}
+
 def void string:prereserve(i64 n) {
     self.length += n
     if self.length >= self.reserved {
@@ -39,19 +51,20 @@ def string& string:operator+=(i8 chr) {
     return self
 }
 
-def string& string:operator+=(string& str) {
+def string& string:operator+=(string str) {
     self.prereserve(str.length)
     strcat(self.data, str.data)
+    return self
 }
 
-def string operator+(string& lhs, i8 rhs) {
+def string operator+(string lhs, i8 rhs) {
     def string result
     result += lhs
     result += rhs
     return result
 }
 
-def string operator+(string& lhs, string& rhs) {
+def string operator+(string lhs, string rhs) {
     def string result
     result += lhs
     result += rhs

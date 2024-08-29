@@ -64,6 +64,8 @@ QLang::ExpressionPtr QLang::Parser::ParsePrimary()
 		return std::make_unique<ConstStringExpression>(Where, Value);
 	}
 
-	std::cerr << "unhandled token" << std::endl;
+	auto [Where, Type, Value] = Skip();
+	std::cerr << "at " << Where << ": unhandled token '" << Value << "' ("
+			  << Type << ')' << std::endl;
 	return {};
 }

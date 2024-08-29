@@ -70,18 +70,6 @@ namespace QLang
 		std::string Value;
 	};
 
-	struct IndexExpression : Expression
-	{
-		IndexExpression(
-			const SourceLocation &, ExpressionPtr array, ExpressionPtr index);
-
-		std::ostream &Print(std::ostream &) const override;
-		ValuePtr GenIR(Builder &) const override;
-
-		ExpressionPtr Array;
-		ExpressionPtr Index;
-	};
-
 	struct MemberExpression : Expression
 	{
 		MemberExpression(const SourceLocation &, ExpressionPtr object,

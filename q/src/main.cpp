@@ -50,6 +50,8 @@ int main(int argc, const char **argv)
 			ptr->GenIRVoid(builder);
 		}
 
+		builder.Dump();
+
 		stream.close();
 	}
 }

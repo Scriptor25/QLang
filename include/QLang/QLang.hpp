@@ -11,6 +11,8 @@ namespace QLang
 	struct SourceLocation;
 	struct Token;
 
+	struct Function;
+
 	class Type;
 	typedef std::shared_ptr<Type> TypePtr;
 	class PointerType;
@@ -25,11 +27,11 @@ namespace QLang
 	typedef std::shared_ptr<FunctionType> FunctionTypePtr;
 
 	class Value;
-	typedef std::unique_ptr<Value> ValuePtr;
+	typedef std::shared_ptr<Value> ValuePtr;
 	class RValue;
-	typedef std::unique_ptr<RValue> RValuePtr;
+	typedef std::shared_ptr<RValue> RValuePtr;
 	class LValue;
-	typedef std::unique_ptr<LValue> LValuePtr;
+	typedef std::shared_ptr<LValue> LValuePtr;
 
 	struct Statement;
 	typedef std::unique_ptr<Statement> StatementPtr;
@@ -47,6 +49,7 @@ namespace QLang
 		return {};
 	}
 
+	std::ostream &operator<<(std::ostream &, const SourceLocation &);
 	std::ostream &operator<<(std::ostream &, const TypePtr &);
 	std::ostream &operator<<(std::ostream &, const StatementPtr &);
 	std::ostream &operator<<(std::ostream &, const ExpressionPtr &);

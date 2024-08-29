@@ -1,7 +1,14 @@
+#include <QLang/Builder.hpp>
 #include <QLang/Context.hpp>
 #include <QLang/Expression.hpp>
 #include <QLang/Type.hpp>
+#include <llvm/IR/DerivedTypes.h>
 #include <memory>
+
+QLang::StructTypePtr QLang::StructType::From(const TypePtr &type)
+{
+	return std::dynamic_pointer_cast<StructType>(type);
+}
 
 QLang::StructTypePtr QLang::StructType::Get(
 	Context &ctx, const std::string &name)
@@ -10,9 +17,10 @@ QLang::StructTypePtr QLang::StructType::Get(
 	if (!ref)
 	{
 		std::vector<StructElement> elements;
-		ref = std::make_shared<StructType>(ctx, "struct " + name, 0, elements);
+		ref = std::make_shared<StructType>(
+			ctx, "struct " + name, name, 0, elements);
 	}
-	return std::dynamic_pointer_cast<StructType>(ref);
+	return StructType::From(ref);
 }
 
 QLang::StructTypePtr QLang::StructType::Get(
@@ -41,15 +49,37 @@ QLang::StructTypePtr QLang::StructType::Get(
 	auto &ctx = elements[0].Type->GetCtx();
 	auto &ref = ctx.GetType(full_name);
 	if (!ref)
-		ref = std::make_shared<StructType>(ctx, full_name, size, elements);
-	return std::dynamic_pointer_cast<StructType>(ref);
+		ref = std::make_shared<StructType>(
+			ctx, full_name, name, size, elements);
+	return StructType::From(ref);
 }
 
 QLang::StructType::StructType(
-	Context &ctx, const std::string &name, size_t size,
-	std::vector<StructElement> &elements)
-	: Type(ctx, name, size), m_Elements(std::move(elements))
+	Context &ctx, const std::string &name, const std::string &struct_name,
+	size_t size, std::vector<StructElement> &elements)
+	: Type(ctx, name, TypeId_Struct, size), m_StructName(struct_name),
+	  m_Elements(std::move(elements))
 {
+}
+
+llvm::StructType *QLang::StructType::GenIR(Builder &builder) const
+{
+	auto type
+		= llvm::StructType::getTypeByName(builder.IRContext(), m_StructName);
+	if (!type)
+		type = llvm::StructType::create(builder.IRContext(), m_StructName);
+
+	if (m_Elements.empty()) return type;
+
+	if (type->isEmptyTy())
+	{
+		std::vector<llvm::Type *> elements;
+		for (const auto &element : m_Elements)
+			elements.push_back(element.Type->GenIR(builder));
+		type->setBody(elements);
+	}
+
+	return type;
 }
 
 size_t QLang::StructType::GetElementCount() const { return m_Elements.size(); }

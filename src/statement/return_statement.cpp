@@ -1,5 +1,6 @@
 #include <QLang/Builder.hpp>
 #include <QLang/Expression.hpp>
+#include <QLang/Operator.hpp>
 #include <QLang/Statement.hpp>
 #include <QLang/Value.hpp>
 #include <iostream>
@@ -25,5 +26,22 @@ void QLang::ReturnStatement::GenIRVoid(Builder &builder) const
 	}
 
 	auto value = Value->GenIR(builder);
+	if (!value) return;
+
+	if (builder.GetResult()->IsReference())
+	{
+		auto lvalue = LValue::From(value);
+		builder.IRBuilder().CreateRet(lvalue->GetPtr());
+		return;
+	}
+
+	value = GenCast(builder, value, builder.GetResult());
+	for (size_t i = 0; i < builder.DestroyAtEnd().size(); ++i)
+		if (value == builder.DestroyAtEnd()[i])
+		{
+			builder.DestroyAtEnd().erase(builder.DestroyAtEnd().begin() + i);
+			break;
+		}
+
 	builder.IRBuilder().CreateRet(value->Get());
 }

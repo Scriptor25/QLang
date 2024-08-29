@@ -13,6 +13,8 @@ namespace QLang
 
 		TypePtr &GetType(const std::string &);
 
+		void Dump() const;
+
 	private:
 		std::map<std::string, TypePtr> m_Types;
 	};

@@ -2,6 +2,7 @@
 
 #include <QLang/QLang.hpp>
 #include <QLang/SourceLocation.hpp>
+#include <QLang/Type.hpp>
 #include <vector>
 
 namespace QLang
@@ -26,13 +27,6 @@ namespace QLang
 		void GenIRVoid(Builder &) const override;
 
 		std::vector<StatementPtr> List;
-	};
-
-	enum FnMode
-	{
-		FnMode_Func,
-		FnMode_Ctor,
-		FnMode_Dtor,
 	};
 
 	struct Param
