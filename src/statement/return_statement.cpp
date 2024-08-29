@@ -26,11 +26,22 @@ void QLang::ReturnStatement::GenIRVoid(Builder &builder) const
 	}
 
 	auto value = Value->GenIR(builder);
-	if (!value) return;
+	if (!value)
+	{
+		std::cerr << "    at " << Where << std::endl;
+		return;
+	}
 
 	if (builder.GetResult()->IsReference())
 	{
 		auto lvalue = LValue::From(value);
+		if (!lvalue)
+		{
+			std::cerr << "at " << Where << ": result must be a lvalue here"
+					  << std::endl;
+			return;
+		}
+
 		builder.IRBuilder().CreateRet(lvalue->GetPtr());
 		return;
 	}

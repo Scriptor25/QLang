@@ -1,9 +1,18 @@
 #include <QLang/Builder.hpp>
 #include <QLang/Type.hpp>
+#include <llvm/IR/LegacyPassManager.h>
 #include <llvm/IR/PassInstrumentation.h>
 #include <llvm/IR/Value.h>
+#include <llvm/MC/TargetRegistry.h>
 #include <llvm/Passes/PassBuilder.h>
+#include <llvm/Support/CodeGen.h>
+#include <llvm/Support/FileSystem.h>
+#include <llvm/Support/TargetSelect.h>
 #include <llvm/Support/raw_ostream.h>
+#include <llvm/Target/TargetMachine.h>
+#include <llvm/Target/TargetOptions.h>
+#include <llvm/TargetParser/Host.h>
+#include <llvm/TargetParser/TargetParser.h>
 #include <llvm/Transforms/AggressiveInstCombine/AggressiveInstCombine.h>
 #include <llvm/Transforms/InstCombine/InstCombine.h>
 #include <llvm/Transforms/Scalar/GVN.h>
@@ -11,6 +20,7 @@
 #include <llvm/Transforms/Scalar/SimplifyCFG.h>
 #include <llvm/Transforms/Utils/Mem2Reg.h>
 #include <memory>
+#include <system_error>
 
 QLang::Builder::Builder(Context &context) : m_Context(context)
 {
@@ -47,11 +57,61 @@ llvm::IRBuilder<> &QLang::Builder::IRBuilder() const { return *m_IRBuilder; }
 
 llvm::Module &QLang::Builder::IRModule() const { return *m_IRModule; }
 
-void QLang::Builder::Optimize(llvm::Function *fn) { m_FPM->run(*fn, *m_FAM); }
-
 QLang::Context &QLang::Builder::GetContext() const { return m_Context; }
 
+void QLang::Builder::Optimize(llvm::Function *fn) { m_FPM->run(*fn, *m_FAM); }
+
 void QLang::Builder::Dump() { m_IRModule->print(llvm::errs(), nullptr); }
+
+void QLang::Builder::EmitObject(const std::string &filename)
+{
+	llvm::InitializeAllTargetInfos();
+	llvm::InitializeAllTargets();
+	llvm::InitializeAllTargetMCs();
+	llvm::InitializeAllAsmParsers();
+	llvm::InitializeAllAsmPrinters();
+
+	auto triple = llvm::sys::getDefaultTargetTriple();
+
+	std::string err;
+	auto target = llvm::TargetRegistry::lookupTarget(triple, err);
+
+	if (!target)
+	{
+		llvm::errs() << err;
+		return;
+	}
+
+	auto cpu = "generic";
+	auto features = "";
+
+	llvm::TargetOptions opt;
+	auto machine = target->createTargetMachine(
+		triple, cpu, features, opt, llvm::Reloc::PIC_);
+
+	m_IRModule->setDataLayout(machine->createDataLayout());
+	m_IRModule->setTargetTriple(triple);
+
+	std::error_code ec;
+	llvm::raw_fd_ostream dest(filename, ec, llvm::sys::fs::OF_None);
+
+	if (ec)
+	{
+		llvm::errs() << "could not open file: " << ec.message();
+		return;
+	}
+
+	llvm::legacy::PassManager pass;
+	if (machine->addPassesToEmitFile(
+			pass, dest, nullptr, llvm::CodeGenFileType::ObjectFile))
+	{
+		llvm::errs() << "machine cannot emit filetype";
+		return;
+	}
+
+	pass.run(*m_IRModule);
+	dest.flush();
+}
 
 void QLang::Builder::Push() { m_Stack.push_back(m_Values); }
 

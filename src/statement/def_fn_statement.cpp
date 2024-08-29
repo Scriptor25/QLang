@@ -65,7 +65,8 @@ void QLang::DefFnStatement::GenIRVoid(Builder &builder) const
 	if (!Body) return;
 	if (!ref.IR->empty())
 	{
-		std::cerr << "cannot redefine function" << std::endl;
+		std::cerr << "at " << Where << ": cannot redefine function"
+				  << std::endl;
 		return;
 	}
 
@@ -83,6 +84,7 @@ void QLang::DefFnStatement::GenIRVoid(Builder &builder) const
 		arg->setName("self");
 		builder["self"] = LValue::Create(builder, Self, arg);
 	}
+
 	for (size_t i = 0; i < Params.size(); ++i)
 	{
 		auto &[arg_type, arg_name] = Params[i];
@@ -93,9 +95,12 @@ void QLang::DefFnStatement::GenIRVoid(Builder &builder) const
 		if (auto aty = ReferenceType::From(arg_type))
 			builder[arg_name] = LValue::Create(builder, aty->GetBase(), arg);
 		else
+		{
 			builder[arg_name]
 				= LValue::Alloca(builder, arg_type, arg, arg_name);
+		}
 	}
+
 	Body->GenIRVoid(builder);
 	builder.Pop();
 

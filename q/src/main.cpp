@@ -49,6 +49,7 @@ int main(int argc, const char **argv)
 		}
 
 		builder.Dump();
+		builder.EmitObject("a.out");
 
 		stream.close();
 	}

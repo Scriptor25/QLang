@@ -15,5 +15,5 @@ std::ostream &QLang::WhileStatement::Print(std::ostream &stream) const
 
 void QLang::WhileStatement::GenIRVoid(Builder &builder) const
 {
-	std::cerr << "TODO: QLang::WhileStatement::GenIRVoid" << std::endl;
+	std::cerr << "at " << Where << ": TODO" << std::endl;
 }

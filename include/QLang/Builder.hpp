@@ -24,12 +24,11 @@ namespace QLang
 		llvm::LLVMContext &IRContext() const;
 		llvm::IRBuilder<> &IRBuilder() const;
 		llvm::Module &IRModule() const;
-
-		void Optimize(llvm::Function *);
-
 		Context &GetContext() const;
 
+		void Optimize(llvm::Function *);
 		void Dump();
+		void EmitObject(const std::string &filename);
 
 		void Push();
 		void Pop();

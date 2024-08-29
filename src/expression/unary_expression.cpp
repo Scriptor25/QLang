@@ -17,6 +17,6 @@ std::ostream &QLang::UnaryExpression::Print(std::ostream &stream) const
 
 QLang::ValuePtr QLang::UnaryExpression::GenIR(Builder &builder) const
 {
-	std::cerr << "TODO: QLang::UnaryExpression::GenIR" << std::endl;
+	std::cerr << "at " << Where << ": TODO" << std::endl;
 	return {};
 }

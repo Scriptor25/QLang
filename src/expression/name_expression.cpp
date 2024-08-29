@@ -27,9 +27,9 @@ QLang::ValuePtr QLang::NameExpression::GenIR(Builder &builder) const
 				return func->AsValue(builder);
 
 			std::cerr << "at " << Where << ": no constructor for type " << self
-					  << " with args" << std::endl;
-			for (const auto &arg : builder.GetArgs())
-				std::cerr << "    " << arg << std::endl;
+					  << " with args";
+			for (const auto &arg : builder.GetArgs()) std::cerr << " " << arg;
+			std::cerr << std::endl;
 
 			return {};
 		}
@@ -59,9 +59,9 @@ QLang::ValuePtr QLang::NameExpression::GenIR(Builder &builder) const
 			return func->AsValue(builder);
 
 		std::cerr << "at " << Where << ": no function with name '" << Name
-				  << "' and args" << std::endl;
-		for (const auto &arg : builder.GetArgs())
-			std::cerr << "    " << arg << std::endl;
+				  << "' and args";
+		for (const auto &arg : builder.GetArgs()) std::cerr << " " << arg;
+		std::cerr << std::endl;
 
 		return {};
 	}

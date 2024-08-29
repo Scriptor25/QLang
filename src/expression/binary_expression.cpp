@@ -22,9 +22,17 @@ std::ostream &QLang::BinaryExpression::Print(std::ostream &stream) const
 QLang::ValuePtr QLang::BinaryExpression::GenIR(Builder &builder) const
 {
 	auto lhs = LHS->GenIR(builder);
-	if (!lhs) return {};
+	if (!lhs)
+	{
+		std::cerr << "    at " << Where << std::endl;
+		return {};
+	}
 	auto rhs = RHS->GenIR(builder);
-	if (!rhs) return {};
+	if (!rhs)
+	{
+		std::cerr << "    at " << Where << std::endl;
+		return {};
+	}
 
 	auto self = LValue::From(lhs);
 
@@ -39,8 +47,20 @@ QLang::ValuePtr QLang::BinaryExpression::GenIR(Builder &builder) const
 
 	if (Operator == "=")
 	{
+		if (!self)
+		{
+			std::cerr << "at " << Where << ": lhs must be a lvalue here"
+					  << std::endl;
+			return {};
+		}
+
 		rhs = GenCast(builder, rhs, self->GetType());
-		if (!rhs) return {};
+		if (!rhs)
+		{
+			std::cerr << "    at " << Where << std::endl;
+			return {};
+		}
+
 		self->Set(rhs->Get());
 		return self;
 	}
@@ -59,10 +79,25 @@ QLang::ValuePtr QLang::BinaryExpression::GenIR(Builder &builder) const
 	}
 
 	auto higher = Type::HigherOrder(lhs->GetType(), rhs->GetType());
+	if (!higher)
+	{
+		std::cerr << "    at " << Where << std::endl;
+		return {};
+	}
+
 	lhs = GenCast(builder, lhs, higher);
-	if (!lhs) return {};
+	if (!lhs)
+	{
+		std::cerr << "    at " << Where << std::endl;
+		return {};
+	}
+
 	rhs = GenCast(builder, rhs, higher);
-	if (!rhs) return {};
+	if (!rhs)
+	{
+		std::cerr << "    at " << Where << std::endl;
+		return {};
+	}
 
 	if (op == "+") { result = GenAdd(builder, lhs, rhs); }
 	else if (op == "-") { result = GenSub(builder, lhs, rhs); }
@@ -87,14 +122,26 @@ QLang::ValuePtr QLang::BinaryExpression::GenIR(Builder &builder) const
 
 	if (!result)
 	{
-		std::cerr << "QLang::BinaryExpression::GenIR" << std::endl;
+		std::cerr << "at " << Where << ": TODO" << std::endl;
 		return {};
 	}
 
 	if (assign)
 	{
+		if (!self)
+		{
+			std::cerr << "at " << Where << ": lhs must be a lvalue here"
+					  << std::endl;
+			return {};
+		}
+
 		result = GenCast(builder, result, self->GetType());
-		if (!result) return {};
+		if (!result)
+		{
+			std::cerr << "    at " << Where << std::endl;
+			return {};
+		}
+
 		self->Set(result->Get());
 		return self;
 	}

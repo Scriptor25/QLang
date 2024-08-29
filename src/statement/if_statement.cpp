@@ -33,12 +33,15 @@ void QLang::IfStatement::GenIRVoid(Builder &builder) const
 	auto if_ = If->GenIR(builder);
 	if (!if_)
 	{
+		std::cerr << "    at " << Where << std::endl;
+
 		builder.IRBuilder().SetInsertPoint(bkp);
 		then->eraseFromParent();
 		else_->eraseFromParent();
 		if (Else) end->eraseFromParent();
 		return;
 	}
+
 	auto condition = builder.IRBuilder().CreateIsNotNull(if_->Get());
 	builder.IRBuilder().CreateCondBr(condition, then, else_);
 

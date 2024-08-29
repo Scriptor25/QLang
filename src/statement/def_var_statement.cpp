@@ -5,6 +5,7 @@
 #include <QLang/Type.hpp>
 #include <QLang/Value.hpp>
 #include <iostream>
+#include <ostream>
 
 QLang::DefVarStatement::DefVarStatement(
 	const SourceLocation &where, const TypePtr &type, const std::string &name,
@@ -23,7 +24,8 @@ void QLang::DefVarStatement::GenIRVoid(Builder &builder) const
 {
 	if (!builder.IRBuilder().GetInsertBlock())
 	{
-		std::cerr << "TODO: QLang::DefVarStatement::GenIRVoid" << std::endl;
+		std::cerr << "at " << Where << ": global variables are not supported"
+				  << std::endl;
 		return;
 	}
 
@@ -31,19 +33,36 @@ void QLang::DefVarStatement::GenIRVoid(Builder &builder) const
 	if (Init)
 	{
 		init = Init->GenIR(builder);
-		if (!init) return;
+		if (!init)
+		{
+			std::cerr << "    at " << Where << std::endl;
+			return;
+		}
 	}
 
 	LValuePtr value;
-	if (Type->IsReference())
+	if (auto ref_type = ReferenceType::From(Type))
 	{
-		auto ref_type = ReferenceType::From(Type);
 		auto linit = LValue::From(init);
+		if (!linit)
+		{
+			std::cerr << "at " << Where << ": initializer must be a lvalue here"
+					  << std::endl;
+			return;
+		}
 		value = LValue::Create(builder, ref_type->GetBase(), linit->GetPtr());
 	}
 	else
 	{
-		if (init) init = GenCast(builder, init, Type);
+		if (init)
+		{
+			init = GenCast(builder, init, Type);
+			if (!init)
+			{
+				std::cerr << "    at " << Where << std::endl;
+				return;
+			}
+		}
 		value
 			= LValue::Alloca(builder, Type, init ? init->Get() : nullptr, Name);
 		builder.DestroyAtEnd().push_back(value);

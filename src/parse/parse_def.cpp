@@ -79,9 +79,10 @@ QLang::StatementPtr QLang::Parser::ParseDef()
 
 	ExpressionPtr init;
 	if (NextIfAt("=")) init = ParseBinary();
-	else if (NextIfAt("+"))
+	else if (At("+"))
 	{
-		auto callee = std::make_unique<NameExpression>(where, type->GetName());
+		auto w = Skip().Where;
+		auto callee = std::make_unique<NameExpression>(w, type->GetName());
 		init = ParseCall(std::move(callee));
 	}
 

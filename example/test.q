@@ -77,14 +77,14 @@ def string& string:operator+=(string str) {
 }
 
 def string operator+(string lhs, i8 rhs) {
-    def string result
+    def string result +()
     result += lhs
     result += rhs
     return result
 }
 
 def string operator+(string lhs, string rhs) {
-    def string result
+    def string result +()
     result += lhs
     result += rhs
     return result
@@ -101,7 +101,7 @@ def +person(i8* name, i32 age) {
 }
 
 def void person:print() {
-    printf("%s (%d)", self.name.data, self.age)
+    printf("%s (%d)\n", self.name.data, self.age)
 }
 
 def i32 main() {
@@ -110,9 +110,7 @@ def i32 main() {
     def person max +("Max", 20)
 
     felix.print()
-    puts("")
     max.print()
-    puts("")
 
     def string felix_max = felix.name + ' ' + max.name
     puts(felix_max)
