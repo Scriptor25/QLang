@@ -40,13 +40,15 @@ int main(int argc, const char **argv)
 		if (!stream) continue;
 
 		QLang::Context context;
-		QLang::Parser parser(context, stream, filename);
 		QLang::Builder builder(context, linker.IRContext());
+		QLang::Parser parser(builder, stream, filename);
 
 		while (!parser.AtEof())
 		{
 			auto ptr = parser.Parse();
 			if (!ptr) continue;
+
+			std::cerr << ptr << std::endl;
 
 			ptr->GenIRVoid(builder);
 		}

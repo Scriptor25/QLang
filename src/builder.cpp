@@ -92,7 +92,15 @@ QLang::Function *QLang::Builder::FindFunction(
 
 		size_t error = 0;
 		for (size_t i = 0; i < fn_type->GetParamCount(); ++i)
-			error += Type::TypeDiff(*this, fn_type->GetParam(i), args[i]);
+		{
+			auto diff = Type::TypeDiff(*this, fn_type->GetParam(i), args[i]);
+			if (diff == size_t(-1))
+			{
+				error = -1;
+				break;
+			}
+			error += diff;
+		}
 
 		if (error < low_error)
 		{
@@ -203,12 +211,10 @@ void QLang::Builder::ClearCallee() { m_IsCallee = false; }
 
 QLang::ValuePtr &QLang::Builder::Self() { return m_Self; }
 
-void QLang::Builder::SetArgCount(size_t c) { m_Args.resize(c); }
-
 size_t QLang::Builder::GetArgCount() { return m_Args.size(); }
 
 QLang::TypePtr &QLang::Builder::GetArg(size_t i) { return m_Args[i]; }
 
-const std::vector<QLang::TypePtr> &QLang::Builder::GetArgs() { return m_Args; }
+std::vector<QLang::TypePtr> &QLang::Builder::GetArgs() { return m_Args; }
 
 QLang::TypePtr &QLang::Builder::GetResult() { return m_Result; }

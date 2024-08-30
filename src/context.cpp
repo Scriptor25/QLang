@@ -19,3 +19,12 @@ QLang::TypePtr &QLang::Context::GetType(const std::string &name)
 {
 	return m_Types[name];
 }
+
+bool QLang::Context::AddParsed(const std::filesystem::path &parsed)
+{
+	if (std::find(m_Parsed.begin(), m_Parsed.end(), parsed) != m_Parsed.end())
+		return true;
+
+	m_Parsed.push_back(parsed);
+	return false;
+}

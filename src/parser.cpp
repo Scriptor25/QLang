@@ -1,10 +1,12 @@
+#include <QLang/Builder.hpp>
 #include <QLang/Expression.hpp>
 #include <QLang/Parser.hpp>
 #include <iostream>
 
 QLang::Parser::Parser(
-	Context &context, std::istream &stream, const std::string &filename)
-	: m_Context(context), m_Stream(stream), m_Where({ .Filename = filename })
+	Builder &builder, std::istream &stream, const std::string &filename)
+	: m_Builder(builder), m_Context(builder.GetContext()), m_Stream(stream),
+	  m_Where({ .Filename = filename })
 {
 	Next();
 }

@@ -1,5 +1,6 @@
 #include <QLang/Expression.hpp>
 #include <QLang/Parser.hpp>
+#include <QLang/Token.hpp>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -50,6 +51,13 @@ QLang::ExpressionPtr QLang::Parser::ParsePrimary()
 		auto [Where, Type, Value] = Skip();
 		auto value = std::stoull(Value, nullptr, 16);
 		return std::make_unique<ConstIntExpression>(Where, value);
+	}
+
+	if (At(TokenType_Float))
+	{
+		auto [Where, Type, Value] = Skip();
+		auto value = std::stod(Value);
+		return std::make_unique<ConstFloatExpression>(Where, value);
 	}
 
 	if (At(TokenType_Char))

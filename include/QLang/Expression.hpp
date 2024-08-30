@@ -50,6 +50,16 @@ namespace QLang
 		char Value;
 	};
 
+	struct ConstFloatExpression : Expression
+	{
+		ConstFloatExpression(const SourceLocation &, double value);
+
+		std::ostream &Print(std::ostream &) const override;
+		ValuePtr GenIR(Builder &) const override;
+
+		double Value;
+	};
+
 	struct ConstIntExpression : Expression
 	{
 		ConstIntExpression(const SourceLocation &, uint64_t value);

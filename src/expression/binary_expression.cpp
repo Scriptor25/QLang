@@ -39,11 +39,23 @@ QLang::ValuePtr QLang::BinaryExpression::GenIR(Builder &builder) const
 	if (self)
 		if (auto func = builder.FindFunction(
 				"operator" + Operator, lhs->GetType(), { rhs->GetType() }))
-			return GenCall(builder, func->AsValue(builder), self, { rhs });
+		{
+			if (auto result
+				= GenCall(builder, func->AsValue(builder), self, { rhs }))
+				return result;
+			std::cerr << "    at " << Where << std::endl;
+			return {};
+		}
 
 	if (auto func = builder.FindFunction(
 			"operator" + Operator, {}, { lhs->GetType(), rhs->GetType() }))
-		return GenCall(builder, func->AsValue(builder), {}, { lhs, rhs });
+	{
+		if (auto result
+			= GenCall(builder, func->AsValue(builder), {}, { lhs, rhs }))
+			return result;
+		std::cerr << "    at " << Where << std::endl;
+		return {};
+	}
 
 	if (Operator == "=")
 	{

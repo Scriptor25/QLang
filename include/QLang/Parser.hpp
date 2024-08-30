@@ -1,6 +1,5 @@
 #pragma once
 
-#include <QLang/Context.hpp>
 #include <QLang/QLang.hpp>
 #include <QLang/SourceLocation.hpp>
 #include <QLang/Token.hpp>
@@ -11,7 +10,7 @@ namespace QLang
 	class Parser
 	{
 	public:
-		Parser(Context &, std::istream &, const std::string &filename);
+		Parser(Builder &, std::istream &, const std::string &filename);
 
 		bool AtEof() const;
 		StatementPtr Parse();
@@ -34,6 +33,7 @@ namespace QLang
 		TypePtr ParseType();
 
 		void ParseUse();
+		void ParseInclude();
 
 		StatementPtr ParseCompound();
 		StatementPtr ParseDef();
@@ -52,10 +52,12 @@ namespace QLang
 		ExpressionPtr ParseUnary(ExpressionPtr);
 
 	private:
+		Builder &m_Builder;
+		Context &m_Context;
+
 		std::istream &m_Stream;
 		SourceLocation m_Where;
 		int m_C = -1;
 		Token m_Token;
-		Context &m_Context;
 	};
 }

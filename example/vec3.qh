@@ -1,0 +1,37 @@
+use vec3 as struct vec3 { f64[3] e }
+
+def +vec3()
+def +vec3(f64 t)
+def +vec3(f64 x, f64 y, f64 z)
+def +vec3(vec3 v)
+
+def vec3& vec3:operator=(f64 t)
+def vec3& vec3:operator=(vec3 v)
+def vec3 vec3:operator-()
+def f64& vec3:operator[](i64 i)
+
+def vec3& vec3:operator+=(vec3 v)
+def vec3& vec3:operator-=(vec3 v)
+def vec3& vec3:operator*=(f64 t)
+def vec3& vec3:operator/=(f64 t)
+def vec3& vec3:operator%=(f64 t)
+
+def f64 vec3:length_squared()
+def f64 vec3:length()
+
+def vec3 operator+(vec3 a, vec3 b)
+def vec3 operator-(vec3 a, vec3 b)
+def vec3 operator*(f64 a, vec3 b)
+def vec3 operator*(vec3 a, f64 b)
+def vec3 operator/(vec3 a, f64 b)
+def vec3 operator%(vec3 a, f64 b)
+
+def f64 dot(vec3 a, vec3 b)
+def vec3 cross(vec3 a, vec3 b)
+
+def vec3 reflect(vec3 v, vec3 n)
+def vec3 refract(vec3 v, vec3 n, f64 i)
+
+def f64 min(f64, f64)
+def f64 abs(f64)
+def f64 sqrt(f64)

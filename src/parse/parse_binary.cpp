@@ -1,5 +1,6 @@
 #include <QLang/Expression.hpp>
 #include <QLang/Parser.hpp>
+#include <map>
 
 QLang::ExpressionPtr QLang::Parser::ParseBinary()
 {
@@ -48,7 +49,7 @@ QLang::ExpressionPtr QLang::Parser::ParseBinary(
 
 		auto rhs = ParseOperand();
 		if (!rhs) return {};
-		while (At(TokenType_Operator) && get_precedence(m_Token.Value) > prec)
+		while (At(TokenType_Operator) && get_precedence(m_Token.Value) >= prec)
 		{
 			auto next_prec = get_precedence(m_Token.Value);
 			rhs = ParseBinary(

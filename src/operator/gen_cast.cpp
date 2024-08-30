@@ -15,9 +15,6 @@ QLang::ValuePtr QLang::GenCast(
 				"operator$" + dst_type->GetName(), src_type, {}))
 			return GenCall(builder, func->AsValue(builder), self, {});
 
-	if (auto func = builder.FindConstructor(dst_type, { src_type }))
-		return GenCall(builder, func->AsValue(builder), {}, { src });
-
 	auto dst_ty = dst_type->GenIR(builder);
 
 	llvm::Value *result = nullptr;

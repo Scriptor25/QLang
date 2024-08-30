@@ -17,7 +17,6 @@ QLang::ValuePtr QLang::GenCall(
 		auto arg = args[i];
 		if (i < type->GetParamCount())
 		{
-
 			if (type->GetParam(i)->IsReference())
 			{
 				ir_args.push_back(LValue::From(arg)->GetPtr());

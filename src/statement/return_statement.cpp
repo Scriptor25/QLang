@@ -47,6 +47,12 @@ void QLang::ReturnStatement::GenIRVoid(Builder &builder) const
 	}
 
 	value = GenCast(builder, value, builder.GetResult());
+	if (!value)
+	{
+		std::cerr << "    at " << Where << std::endl;
+		return;
+	}
+
 	for (size_t i = 0; i < builder.DestroyAtEnd().size(); ++i)
 		if (value == builder.DestroyAtEnd()[i])
 		{

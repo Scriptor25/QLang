@@ -21,6 +21,24 @@ QLang::ValuePtr QLang::ConstCharExpression::GenIR(Builder &builder) const
 		builder, builder.GetInt8Ty(), builder.IRBuilder().getInt8(Value));
 }
 
+QLang::ConstFloatExpression::ConstFloatExpression(
+	const SourceLocation &where, double value)
+	: Expression(where), Value(value)
+{
+}
+
+std::ostream &QLang::ConstFloatExpression::Print(std::ostream &stream) const
+{
+	return stream << Value;
+}
+
+QLang::ValuePtr QLang::ConstFloatExpression::GenIR(Builder &builder) const
+{
+	auto value
+		= llvm::ConstantFP::get(builder.IRBuilder().getDoubleTy(), Value);
+	return RValue::Create(builder, builder.GetFloat64Ty(), value);
+}
+
 QLang::ConstIntExpression::ConstIntExpression(
 	const SourceLocation &where, uint64_t value)
 	: Expression(where), Value(value)

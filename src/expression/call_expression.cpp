@@ -25,7 +25,10 @@ std::ostream &QLang::CallExpression::Print(std::ostream &stream) const
 
 QLang::ValuePtr QLang::CallExpression::GenIR(Builder &builder) const
 {
-	builder.SetArgCount(Args.size());
+	auto bkp = builder.GetArgs();
+
+	builder.GetArgs().resize(Args.size());
+	builder.ClearCallee();
 
 	std::vector<ValuePtr> args;
 	for (size_t i = 0; i < Args.size(); ++i)
@@ -43,6 +46,7 @@ QLang::ValuePtr QLang::CallExpression::GenIR(Builder &builder) const
 
 	builder.SetCallee();
 	auto callee = Callee->GenIR(builder);
+	builder.GetArgs() = bkp;
 	if (!callee)
 	{
 		std::cerr << "    at " << Where << std::endl;

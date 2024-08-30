@@ -8,6 +8,11 @@ QLang::StatementPtr QLang::Parser::Parse()
 		ParseUse();
 		return {};
 	}
+	if (At("include"))
+	{
+		ParseInclude();
+		return {};
+	}
 
 	if (At("{")) return ParseCompound();
 	if (At("def")) return ParseDef();

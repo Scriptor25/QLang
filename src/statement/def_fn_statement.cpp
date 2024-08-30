@@ -128,9 +128,11 @@ void QLang::DefFnStatement::GenIRVoid(Builder &builder) const
 
 	if (llvm::verifyFunction(*ref.IR, &llvm::errs()))
 	{
+		ref.IR->print(llvm::errs());
 		ref.IR->erase(ref.IR->begin(), ref.IR->end());
 		return;
 	}
 
 	builder.Optimize(ref.IR);
+	ref.IR->print(llvm::errs());
 }

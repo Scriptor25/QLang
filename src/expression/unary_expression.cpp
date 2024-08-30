@@ -14,8 +14,8 @@ QLang::UnaryExpression::UnaryExpression(
 
 std::ostream &QLang::UnaryExpression::Print(std::ostream &stream) const
 {
-	return stream << (Post ? Operator : "") << Operand
-				  << (Post ? "" : Operator);
+	return stream << (Post ? "" : Operator) << Operand
+				  << (Post ? Operator : "");
 }
 
 QLang::ValuePtr QLang::UnaryExpression::GenIR(Builder &builder) const
@@ -32,10 +32,22 @@ QLang::ValuePtr QLang::UnaryExpression::GenIR(Builder &builder) const
 
 	if (self)
 		if (auto func = builder.FindFunction(func_name, self->GetType(), {}))
-			return GenCall(builder, func->AsValue(builder), self, {});
+		{
+			if (auto result
+				= GenCall(builder, func->AsValue(builder), self, {}))
+				return result;
+			std::cerr << "    at " << Where << std::endl;
+			return {};
+		}
 
 	if (auto func = builder.FindFunction(func_name, {}, { operand->GetType() }))
-		return GenCall(builder, func->AsValue(builder), {}, { operand });
+	{
+		if (auto result
+			= GenCall(builder, func->AsValue(builder), {}, { operand }))
+			return result;
+		std::cerr << "    at " << Where << std::endl;
+		return {};
+	}
 
 	ValuePtr result;
 	bool assign;

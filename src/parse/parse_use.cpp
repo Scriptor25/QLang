@@ -1,3 +1,4 @@
+#include <QLang/Context.hpp>
 #include <QLang/Parser.hpp>
 
 void QLang::Parser::ParseUse()

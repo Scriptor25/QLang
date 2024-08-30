@@ -68,10 +68,9 @@ namespace QLang
 
 		ValuePtr &Self();
 
-		void SetArgCount(size_t);
 		size_t GetArgCount();
 		TypePtr &GetArg(size_t);
-		const std::vector<TypePtr> &GetArgs();
+		std::vector<TypePtr> &GetArgs();
 
 		TypePtr &GetResult();
 

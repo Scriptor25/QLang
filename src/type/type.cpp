@@ -13,37 +13,39 @@ QLang::TypePtr QLang::Type::Get(Context &ctx, const std::string &name)
 	return ctx.GetType(name);
 }
 
-size_t QLang::Type::TypeDiff(Builder &builder, TypePtr a, TypePtr b)
+size_t QLang::Type::TypeDiff(Builder &builder, TypePtr p, TypePtr a)
 {
-	if (a->IsVoid() || b->IsVoid()) return 0;
+	if (p->IsVoid() || a->IsVoid()) return 0;
 
+	if (p->IsReference()) p = ReferenceType::From(p)->GetBase();
 	if (a->IsReference()) a = ReferenceType::From(a)->GetBase();
-	if (b->IsReference()) b = ReferenceType::From(b)->GetBase();
 
-	if (a == b) return 0;
+	if (p == a) return 0;
 
-	if (builder.FindFunction("operator$" + a->GetName(), b, {})) return 1;
-	if (builder.FindConstructor(b, { a })) return 2;
+	if (builder.FindFunction("operator$" + p->GetName(), a, {})) return 16;
 
-	if (a->IsPointer() && b->IsPointer())
+	if (p->IsPointer() && a->IsPointer())
 	{
+		p = PointerType::From(p)->GetBase();
 		a = PointerType::From(a)->GetBase();
-		b = PointerType::From(b)->GetBase();
-		return TypeDiff(builder, a, b);
+		return TypeDiff(builder, p, a);
 	}
 
-	if (a->IsArray() || b->IsArray() || a->IsReference() || b->IsReference()
-		|| a->IsStruct() || b->IsStruct() || a->IsFunction() || b->IsFunction())
-		return 1000;
+	if (p->IsArray() || a->IsArray() || p->IsReference() || a->IsReference()
+		|| p->IsStruct() || a->IsStruct() || p->IsFunction() || a->IsFunction())
+		return -1;
 
-	if (a->m_Id == b->m_Id)
+	if (p->m_Id == a->m_Id)
 	{
-		auto as = a->m_Size;
-		auto bs = b->m_Size;
+		auto as = p->m_Size;
+		auto bs = a->m_Size;
 		return as > bs ? as - bs : bs - as;
 	}
 
-	return 1000;
+	if (p->IsFloat() && a->IsInt()) return 16;
+	if (p->IsInt() && a->IsFloat()) return 32;
+
+	return -1;
 }
 
 QLang::TypePtr QLang::Type::HigherOrder(const TypePtr &a, const TypePtr &b)
