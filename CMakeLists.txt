@@ -28,3 +28,5 @@ file(GLOB_RECURSE qsrc "q/src/*.cpp" "q/include/*.hpp")
 add_executable(qlang ${qsrc})
 target_include_directories(qlang PRIVATE "q/include")
 target_link_libraries(qlang PRIVATE q)
+
+install(TARGETS q qlang)
