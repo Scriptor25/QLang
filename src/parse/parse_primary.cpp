@@ -18,7 +18,7 @@ QLang::ExpressionPtr QLang::Parser::ParsePrimary()
 		auto [Where, Type, Value] = Skip();
 		auto operand = ParseOperand();
 		return std::make_unique<UnaryExpression>(
-			Where, Value, std::move(operand), true);
+			Where, Value, std::move(operand), false);
 	}
 
 	if (At(TokenType_Name))

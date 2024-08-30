@@ -50,7 +50,44 @@ QLang::TypePtr QLang::Type::HigherOrder(const TypePtr &a, const TypePtr &b)
 {
 	if (a == b) return a;
 
-	std::cerr << "QLang::Type::HigherOrder" << std::endl;
+	switch (a->m_Id)
+	{
+	case TypeId_Int:
+		switch (b->m_Id)
+		{
+		case TypeId_Int:
+			if (a->m_Size > b->m_Size) return a;
+			return b;
+		case TypeId_Float: return b;
+		case TypeId_Pointer: return a;
+		default: break;
+		}
+		break;
+	case TypeId_Float:
+		switch (b->m_Id)
+		{
+		case TypeId_Int: return a;
+		case TypeId_Float:
+			if (a->m_Size > b->m_Size) return a;
+			return b;
+		case TypeId_Pointer: return a;
+		default: break;
+		}
+		break;
+	case TypeId_Pointer:
+		switch (b->m_Id)
+		{
+		case TypeId_Int: return a;
+		case TypeId_Float: return a;
+		case TypeId_Pointer: return Type::Get(a->m_Ctx, "i64");
+		default: break;
+		}
+		break;
+	default: break;
+	}
+
+	std::cerr << "cannot determine higher order type of " << a << " and " << b
+			  << std::endl;
 	return {};
 }
 

@@ -93,12 +93,12 @@ namespace QLang
 	struct WhileStatement : Statement
 	{
 		WhileStatement(
-			const SourceLocation &, ExpressionPtr condition, StatementPtr loop);
+			const SourceLocation &, ExpressionPtr while_, StatementPtr loop);
 
 		std::ostream &Print(std::ostream &) const override;
 		void GenIRVoid(Builder &) const override;
 
-		ExpressionPtr Condition;
+		ExpressionPtr While;
 		StatementPtr Loop;
 	};
 }

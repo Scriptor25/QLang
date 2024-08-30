@@ -7,9 +7,9 @@ QLang::StatementPtr QLang::Parser::ParseWhile()
 {
 	auto where = Expect("while").Where;
 
-	auto condition = ParseBinary();
+	auto while_ = ParseBinary();
 	auto loop = Parse();
 
 	return std::make_unique<WhileStatement>(
-		where, std::move(condition), std::move(loop));
+		where, std::move(while_), std::move(loop));
 }

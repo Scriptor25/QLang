@@ -31,10 +31,11 @@ namespace QLang
 	ValuePtr GenCall(Builder &, const ValuePtr &, const LValuePtr &,
 					 const std::vector<ValuePtr> &);
 
+	ValuePtr GenInc(Builder &, const ValuePtr &);
+	ValuePtr GenDec(Builder &, const ValuePtr &);
 	ValuePtr GenLNot(Builder &, const ValuePtr &);
 	ValuePtr GenNot(Builder &, const ValuePtr &);
 	ValuePtr GenNeg(Builder &, const ValuePtr &);
-
-	ValuePtr GenReference(Builder &, const ValuePtr &);
-	ValuePtr GenDereference(Builder &, const ValuePtr &);
+	ValuePtr GenRef(Builder &, const ValuePtr &);
+	ValuePtr GenDeref(Builder &, const ValuePtr &);
 }

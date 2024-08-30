@@ -96,13 +96,13 @@ namespace QLang
 	struct UnaryExpression : Expression
 	{
 		UnaryExpression(const SourceLocation &, const std::string &operator_,
-						ExpressionPtr operand, bool left);
+						ExpressionPtr operand, bool post);
 
 		std::ostream &Print(std::ostream &) const override;
 		ValuePtr GenIR(Builder &) const override;
 
 		std::string Operator;
 		ExpressionPtr Operand;
-		bool Left;
+		bool Post;
 	};
 }

@@ -7,7 +7,7 @@ def i32 fib(i32 n) {
         a = b
         b = x
     }
-    return x
+    return b
 }
 
 def i32 puts(i8*)

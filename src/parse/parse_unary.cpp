@@ -7,5 +7,5 @@ QLang::ExpressionPtr QLang::Parser::ParseUnary(ExpressionPtr operand)
 	auto [Where, Type, Value] = Skip();
 
 	return std::make_unique<UnaryExpression>(
-		Where, Value, std::move(operand), false);
+		Where, Value, std::move(operand), true);
 }
