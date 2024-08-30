@@ -1,5 +1,7 @@
 #include <QLang/Context.hpp>
 #include <QLang/Type.hpp>
+#include <algorithm>
+#include <filesystem>
 #include <memory>
 
 QLang::Context::Context()
@@ -18,6 +20,27 @@ QLang::Context::Context()
 QLang::TypePtr &QLang::Context::GetType(const std::string &name)
 {
 	return m_Types[name];
+}
+
+void QLang::Context::AddIncludeDir(const std::filesystem::path &path)
+{
+	m_IncludeDirs.push_back(path);
+}
+
+bool QLang::Context::FindInIncludeDirs(
+	std::filesystem::path &dest, const std::string &filename)
+{
+	for (const auto &dir : m_IncludeDirs)
+	{
+		auto path = dir / filename;
+		if (std::filesystem::exists(path))
+		{
+			dest = path;
+			return true;
+		}
+	}
+
+	return false;
 }
 
 bool QLang::Context::AddParsed(const std::filesystem::path &parsed)

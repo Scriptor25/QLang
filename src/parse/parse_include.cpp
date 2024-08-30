@@ -4,18 +4,28 @@
 #include <QLang/Token.hpp>
 #include <filesystem>
 #include <fstream>
+#include <iostream>
 
 void QLang::Parser::ParseInclude()
 {
 	Expect("include");
 	auto filename = Expect(TokenType_String).Value;
 
-	auto path
-		= std::filesystem::path(m_Where.Filename).parent_path() / filename;
-	if (m_Context.AddParsed(path)) return;
+	std::filesystem::path filepath;
+	if (!m_Context.FindInIncludeDirs(filepath, filename))
+		filepath
+			= std::filesystem::path(m_Where.Filename).parent_path() / filename;
+	if (m_Context.AddParsed(filepath)) return;
 
-	std::ifstream stream(path);
-	Parser parser(m_Builder, stream, filename);
+	std::ifstream stream(filepath);
+	if (!stream)
+	{
+		std::cerr << "failed to open include file '" << filename << "' ("
+				  << filepath << ")" << std::endl;
+		return;
+	}
+
+	Parser parser(m_Builder, stream, filepath.string());
 	while (!parser.AtEof())
 	{
 		auto ptr = parser.Parse();

@@ -10,7 +10,12 @@
             "request": "launch",
             "program": "${command:cmake.launchTargetPath}",
             "args": [
-                "example/fib.q"
+                "example/math/src/main.q",
+                "example/math/src/vec3.q",
+                "-o",
+                "a.out",
+                "-I",
+                "example/math/include"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",

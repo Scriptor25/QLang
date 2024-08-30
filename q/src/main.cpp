@@ -11,6 +11,7 @@
 int main(int argc, const char **argv)
 {
 	std::vector<std::string> input_filenames;
+	std::vector<std::string> include_dirs;
 	std::string output_filename = "a.out";
 
 	for (size_t i = 1; i < argc; ++i)
@@ -20,6 +21,12 @@ int main(int argc, const char **argv)
 		if (arg == "-o")
 		{
 			output_filename = argv[++i];
+			continue;
+		}
+
+		if (arg == "-I")
+		{
+			include_dirs.push_back(argv[++i]);
 			continue;
 		}
 
@@ -40,6 +47,8 @@ int main(int argc, const char **argv)
 		if (!stream) continue;
 
 		QLang::Context context;
+		for (const auto &dir : include_dirs) context.AddIncludeDir(dir);
+
 		QLang::Builder builder(context, linker.IRContext());
 		QLang::Parser parser(builder, stream, filename);
 
