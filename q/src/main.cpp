@@ -48,8 +48,6 @@ int main(int argc, const char **argv)
 			auto ptr = parser.Parse();
 			if (!ptr) continue;
 
-			std::cerr << ptr << std::endl;
-
 			ptr->GenIRVoid(builder);
 		}
 

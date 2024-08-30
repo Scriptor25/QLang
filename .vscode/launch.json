@@ -9,7 +9,9 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${command:cmake.launchTargetPath}",
-            "args": ["example/main.q", "example/vec3.q"],
+            "args": [
+                "example/fib.q"
+            ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],

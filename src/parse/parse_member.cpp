@@ -3,13 +3,10 @@
 
 QLang::ExpressionPtr QLang::Parser::ParseMember(ExpressionPtr object)
 {
-	SourceLocation where;
-	auto dereference = At("!");
+	auto [Where, Type, Value] = Skip();
+	auto [MWhere, MType, MValue] = Expect(TokenType_Name);
 
-	if (!dereference) { where = Expect(".").Where; }
-	else { where = Skip().Where; }
-
-	auto member = Expect(TokenType_Name).Value;
-	return std::make_unique<MemberExpression>(
-		where, std::move(object), dereference, member);
+	auto member = std::make_unique<NameExpression>(MWhere, MValue);
+	return std::make_unique<BinaryExpression>(
+		Where, Value, std::move(object), std::move(member));
 }

@@ -80,19 +80,6 @@ namespace QLang
 		std::string Value;
 	};
 
-	struct MemberExpression : Expression
-	{
-		MemberExpression(const SourceLocation &, ExpressionPtr object,
-						 bool dereference, const std::string &member);
-
-		std::ostream &Print(std::ostream &) const override;
-		ValuePtr GenIR(Builder &) const override;
-
-		ExpressionPtr Object;
-		bool Dereference;
-		std::string Member;
-	};
-
 	struct NameExpression : Expression
 	{
 		NameExpression(const SourceLocation &, const std::string &name);

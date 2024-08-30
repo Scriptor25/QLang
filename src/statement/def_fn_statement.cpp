@@ -134,5 +134,4 @@ void QLang::DefFnStatement::GenIRVoid(Builder &builder) const
 	}
 
 	builder.Optimize(ref.IR);
-	ref.IR->print(llvm::errs());
 }

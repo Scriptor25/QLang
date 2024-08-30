@@ -91,3 +91,8 @@ def vec3 refract(vec3 v, vec3 n, f64 i) {
     def vec3 para = -sqrt(abs(1.0 - perp.length_squared())) * n
     return perp + para
 }
+
+def f64 min(f64 a, f64 b) {
+    if a < b return a
+    return b
+}

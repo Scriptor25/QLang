@@ -36,6 +36,10 @@ namespace QLang
 		void StackPop();
 		ValuePtr &operator[](const std::string &name);
 
+		// Value Utility
+		LValuePtr CreateInstance(
+			const TypePtr &type, const std::string &name = "");
+
 		// Value Destructions
 		std::vector<ValuePtr> &DestroyAtEnd();
 

@@ -10,10 +10,14 @@ QLang::ValuePtr QLang::GenCast(
 	auto src_type = src->GetType();
 	if (src_type == dst_type) return src;
 
+	auto func_name = "operator$" + dst_type->GetName();
+
 	if (auto self = LValue::From(src))
-		if (auto func = builder.FindFunction(
-				"operator$" + dst_type->GetName(), src_type, {}))
+		if (auto func = builder.FindFunction(func_name, src_type, {}))
 			return GenCall(builder, func->AsValue(builder), self, {});
+
+	if (auto func = builder.FindFunction(func_name, {}, { src_type }))
+		return GenCall(builder, func->AsValue(builder), {}, { src });
 
 	auto dst_ty = dst_type->GenIR(builder);
 

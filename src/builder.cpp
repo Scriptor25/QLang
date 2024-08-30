@@ -1,4 +1,6 @@
+#include "QLang/Operator.hpp"
 #include <QLang/Builder.hpp>
+#include <QLang/Expression.hpp>
 #include <QLang/Type.hpp>
 #include <llvm/IR/Value.h>
 #include <llvm/Passes/PassBuilder.h>
@@ -63,6 +65,36 @@ void QLang::Builder::StackPop()
 QLang::ValuePtr &QLang::Builder::operator[](const std::string &name)
 {
 	return m_Values[name];
+}
+
+QLang::LValuePtr QLang::Builder::CreateInstance(
+	const TypePtr &type, const std::string &name)
+{
+	auto instance = LValue::Alloca(*this, type, nullptr, name);
+
+	auto ir_type = type->GenIR(*this);
+	auto null_value = llvm::Constant::getNullValue(ir_type);
+	instance->Set(null_value);
+
+	if (auto struct_type = StructType::From(type))
+	{
+		for (size_t i = 0; i < struct_type->GetElementCount(); ++i)
+		{
+			const auto &element = struct_type->GetElement(i);
+			if (!element.Init) continue;
+
+			auto init = element.Init->GenIR(*this);
+			if (!init) return {};
+			init = GenCast(*this, init, element.Type);
+			if (!init) return {};
+
+			auto gep = m_IRBuilder->CreateStructGEP(
+				ir_type, instance->GetPtr(), i, element.Name);
+			m_IRBuilder->CreateStore(init->Get(), gep);
+		}
+	}
+
+	return instance;
 }
 
 std::vector<QLang::ValuePtr> &QLang::Builder::DestroyAtEnd()

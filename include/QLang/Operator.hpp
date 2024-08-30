@@ -26,6 +26,7 @@ namespace QLang
 	ValuePtr GenLShr(Builder &, const ValuePtr &, const ValuePtr &);
 	ValuePtr GenAShr(Builder &, const ValuePtr &, const ValuePtr &);
 
+	ValuePtr GenMember(Builder &, ValuePtr, bool deref, const std::string &);
 	ValuePtr GenSubscript(Builder &, const ValuePtr &, const ValuePtr &);
 	ValuePtr GenCast(Builder &, const ValuePtr &, const TypePtr &);
 	ValuePtr GenCall(Builder &, const ValuePtr &, const LValuePtr &,

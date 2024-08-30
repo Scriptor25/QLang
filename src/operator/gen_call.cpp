@@ -35,7 +35,7 @@ QLang::ValuePtr QLang::GenCall(
 
 	if (type->GetMode() == FnMode_Ctor)
 	{
-		auto inst = LValue::Alloca(builder, type->GetSelf());
+		auto inst = self ? self : LValue::Alloca(builder, type->GetSelf());
 		ir_args.insert(ir_args.begin(), inst->GetPtr());
 		builder.IRBuilder().CreateCall(ir_type, callee->Get(), ir_args);
 		return inst;

@@ -76,15 +76,22 @@ def string& string:operator+=(string str) {
     return self
 }
 
+def string operator+(i8 lhs, string rhs) {
+    def string result
+    result += lhs
+    result += rhs
+    return result
+}
+
 def string operator+(string lhs, i8 rhs) {
-    def string result +()
+    def string result
     result += lhs
     result += rhs
     return result
 }
 
 def string operator+(string lhs, string rhs) {
-    def string result +()
+    def string result
     result += lhs
     result += rhs
     return result

@@ -21,12 +21,37 @@ std::ostream &QLang::BinaryExpression::Print(std::ostream &stream) const
 
 QLang::ValuePtr QLang::BinaryExpression::GenIR(Builder &builder) const
 {
+	auto bkp = builder.IsCallee();
+	builder.ClearCallee();
+
 	auto lhs = LHS->GenIR(builder);
 	if (!lhs)
 	{
 		std::cerr << "    at " << Where << std::endl;
 		return {};
 	}
+
+	if (bkp) builder.SetCallee();
+
+	if (Operator == ".")
+	{
+		if (auto result = GenMember(
+				builder, lhs, false,
+				dynamic_cast<const NameExpression *>(RHS.get())->Name))
+			return result;
+		std::cerr << "    at " << Where << std::endl;
+		return {};
+	}
+	if (Operator == "!")
+	{
+		if (auto result = GenMember(
+				builder, lhs, false,
+				dynamic_cast<const NameExpression *>(RHS.get())->Name))
+			return result;
+		std::cerr << "    at " << Where << std::endl;
+		return {};
+	}
+
 	auto rhs = RHS->GenIR(builder);
 	if (!rhs)
 	{
@@ -77,7 +102,12 @@ QLang::ValuePtr QLang::BinaryExpression::GenIR(Builder &builder) const
 		return self;
 	}
 
-	if (Operator == "[]") return GenSubscript(builder, lhs, rhs);
+	if (Operator == "[]")
+	{
+		if (auto result = GenSubscript(builder, lhs, rhs)) return result;
+		std::cerr << "    at " << Where << std::endl;
+		return {};
+	}
 
 	std::string op = Operator;
 	bool assign = false;

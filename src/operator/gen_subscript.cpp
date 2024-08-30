@@ -25,6 +25,8 @@ QLang::ValuePtr QLang::GenSubscript(
 		return LValue::Create(builder, type->GetBase(), gep);
 	}
 
-	std::cerr << "QLang::GenSubscript" << std::endl;
+	std::cerr
+		<< "subscript operand must be either an array or a pointer, but is "
+		<< array->GetType() << std::endl;
 	return {};
 }

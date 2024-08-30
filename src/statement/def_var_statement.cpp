@@ -40,7 +40,7 @@ void QLang::DefVarStatement::GenIRVoid(Builder &builder) const
 		}
 	}
 
-	LValuePtr value;
+	LValuePtr instance;
 	if (auto ref_type = ReferenceType::From(Type))
 	{
 		auto linit = LValue::From(init);
@@ -50,10 +50,18 @@ void QLang::DefVarStatement::GenIRVoid(Builder &builder) const
 					  << std::endl;
 			return;
 		}
-		value = LValue::Create(builder, ref_type->GetBase(), linit->GetPtr());
+		instance
+			= LValue::Create(builder, ref_type->GetBase(), linit->GetPtr());
 	}
 	else
 	{
+		instance = builder.CreateInstance(Type, Name);
+		if (!instance)
+		{
+			std::cerr << "    at " << Where << std::endl;
+			return;
+		}
+
 		if (init)
 		{
 			init = GenCast(builder, init, Type);
@@ -62,11 +70,24 @@ void QLang::DefVarStatement::GenIRVoid(Builder &builder) const
 				std::cerr << "    at " << Where << std::endl;
 				return;
 			}
+
+			instance->Set(init->Get());
 		}
-		value
-			= LValue::Alloca(builder, Type, init ? init->Get() : nullptr, Name);
-		builder.DestroyAtEnd().push_back(value);
+		else
+		{
+			if (auto func = builder.FindConstructor(Type, {}))
+			{
+				init = GenCall(builder, func->AsValue(builder), instance, {});
+				if (!init)
+				{
+					std::cerr << "    at " << Where << std::endl;
+					return;
+				}
+			}
+		}
+
+		builder.DestroyAtEnd().push_back(instance);
 	}
 
-	builder[Name] = value;
+	builder[Name] = instance;
 }
