@@ -73,7 +73,7 @@ void QLang::DefFnStatement::GenIRVoid(Builder &builder) const
 	auto bb = llvm::BasicBlock::Create(builder.IRContext(), "entry", ref.IR);
 	builder.IRBuilder().SetInsertPoint(bb);
 
-	builder.Push();
+	builder.StackPush();
 	builder.GetResult() = type->GetResult();
 	builder.DestroyAtEnd().clear();
 
@@ -102,7 +102,7 @@ void QLang::DefFnStatement::GenIRVoid(Builder &builder) const
 	}
 
 	Body->GenIRVoid(builder);
-	builder.Pop();
+	builder.StackPop();
 
 	if (type->GetResult()->IsVoid())
 		for (auto &block : *ref.IR)

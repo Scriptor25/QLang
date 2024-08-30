@@ -18,7 +18,7 @@ QLang::ValuePtr QLang::NameExpression::GenIR(Builder &builder) const
 {
 	if (builder.IsCallee())
 	{
-		builder.IsCallee() = false;
+		builder.ClearCallee();
 
 		if (Name == "self")
 		{

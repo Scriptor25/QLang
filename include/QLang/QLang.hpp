@@ -7,6 +7,7 @@ namespace QLang
 	class Context;
 	class Parser;
 	class Builder;
+	class Linker;
 
 	struct SourceLocation;
 	struct Token;

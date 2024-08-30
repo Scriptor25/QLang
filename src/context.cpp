@@ -1,6 +1,5 @@
 #include <QLang/Context.hpp>
 #include <QLang/Type.hpp>
-#include <iostream>
 #include <memory>
 
 QLang::Context::Context()
@@ -19,10 +18,4 @@ QLang::Context::Context()
 QLang::TypePtr &QLang::Context::GetType(const std::string &name)
 {
 	return m_Types[name];
-}
-
-void QLang::Context::Dump() const
-{
-	for (const auto &[name, type] : m_Types)
-		std::cerr << name << ": " << type << std::endl;
 }

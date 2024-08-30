@@ -41,7 +41,7 @@ QLang::ValuePtr QLang::CallExpression::GenIR(Builder &builder) const
 		builder.GetArg(i) = value->GetType();
 	}
 
-	builder.IsCallee() = true;
+	builder.SetCallee();
 	auto callee = Callee->GenIR(builder);
 	if (!callee)
 	{

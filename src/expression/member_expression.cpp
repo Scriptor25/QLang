@@ -20,7 +20,7 @@ std::ostream &QLang::MemberExpression::Print(std::ostream &stream) const
 QLang::ValuePtr QLang::MemberExpression::GenIR(Builder &builder) const
 {
 	bool is_callee = builder.IsCallee();
-	if (is_callee) builder.IsCallee() = false;
+	if (is_callee) builder.ClearCallee();
 
 	auto object = Object->GenIR(builder);
 	if (!object)

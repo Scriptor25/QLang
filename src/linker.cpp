@@ -1,0 +1,78 @@
+#include <QLang/Builder.hpp>
+#include <QLang/Linker.hpp>
+#include <llvm/IR/LLVMContext.h>
+#include <llvm/IR/LegacyPassManager.h>
+#include <llvm/Linker/Linker.h>
+#include <llvm/MC/TargetRegistry.h>
+#include <llvm/Support/CodeGen.h>
+#include <llvm/Support/FileSystem.h>
+#include <llvm/Support/TargetSelect.h>
+#include <llvm/Support/raw_ostream.h>
+#include <llvm/Target/TargetMachine.h>
+#include <llvm/Target/TargetOptions.h>
+#include <llvm/TargetParser/Host.h>
+#include <memory>
+
+QLang::Linker::Linker()
+{
+	m_IRContext = std::make_unique<llvm::LLVMContext>();
+	m_IRModule = std::make_unique<llvm::Module>("module", *m_IRContext);
+}
+
+llvm::LLVMContext &QLang::Linker::IRContext() const { return *m_IRContext; }
+
+void QLang::Linker::Link(Builder &builder)
+{
+	auto &module = builder.IRModulePtr();
+	llvm::Linker::linkModules(*m_IRModule, std::move(module));
+}
+
+void QLang::Linker::EmitObject(const std::string &filename)
+{
+	llvm::InitializeAllTargetInfos();
+	llvm::InitializeAllTargets();
+	llvm::InitializeAllTargetMCs();
+	llvm::InitializeAllAsmParsers();
+	llvm::InitializeAllAsmPrinters();
+
+	auto triple = llvm::sys::getDefaultTargetTriple();
+
+	std::string err;
+	auto target = llvm::TargetRegistry::lookupTarget(triple, err);
+
+	if (!target)
+	{
+		llvm::errs() << err;
+		return;
+	}
+
+	auto cpu = "generic";
+	auto features = "";
+
+	llvm::TargetOptions opt;
+	auto machine = target->createTargetMachine(
+		triple, cpu, features, opt, llvm::Reloc::PIC_);
+
+	m_IRModule->setDataLayout(machine->createDataLayout());
+	m_IRModule->setTargetTriple(triple);
+
+	std::error_code ec;
+	llvm::raw_fd_ostream dest(filename, ec, llvm::sys::fs::OF_None);
+
+	if (ec)
+	{
+		llvm::errs() << "could not open file: " << ec.message();
+		return;
+	}
+
+	llvm::legacy::PassManager pass;
+	if (machine->addPassesToEmitFile(
+			pass, dest, nullptr, llvm::CodeGenFileType::ObjectFile))
+	{
+		llvm::errs() << "machine cannot emit filetype";
+		return;
+	}
+
+	pass.run(*m_IRModule);
+	dest.flush();
+}

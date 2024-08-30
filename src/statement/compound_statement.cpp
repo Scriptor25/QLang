@@ -28,7 +28,7 @@ std::ostream &QLang::CompoundStatement::Print(std::ostream &stream) const
 
 void QLang::CompoundStatement::GenIRVoid(Builder &builder) const
 {
-	builder.Push();
+	builder.StackPush();
 	for (const auto &ptr : List) ptr->GenIRVoid(builder);
-	builder.Pop();
+	builder.StackPop();
 }

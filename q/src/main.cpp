@@ -1,5 +1,6 @@
 #include <QLang/Builder.hpp>
 #include <QLang/Context.hpp>
+#include <QLang/Linker.hpp>
 #include <QLang/Parser.hpp>
 #include <QLang/Statement.hpp>
 #include <fstream>
@@ -10,7 +11,7 @@
 int main(int argc, const char **argv)
 {
 	std::vector<std::string> input_filenames;
-	std::string output_filename;
+	std::string output_filename = "a.out";
 
 	for (size_t i = 1; i < argc; ++i)
 	{
@@ -31,6 +32,8 @@ int main(int argc, const char **argv)
 		return 1;
 	}
 
+	QLang::Linker linker;
+
 	for (const auto &filename : input_filenames)
 	{
 		std::ifstream stream(filename);
@@ -38,7 +41,7 @@ int main(int argc, const char **argv)
 
 		QLang::Context context;
 		QLang::Parser parser(context, stream, filename);
-		QLang::Builder builder(context);
+		QLang::Builder builder(context, linker.IRContext());
 
 		while (!parser.AtEof())
 		{
@@ -48,9 +51,9 @@ int main(int argc, const char **argv)
 			ptr->GenIRVoid(builder);
 		}
 
-		builder.Dump();
-		builder.EmitObject("a.out");
-
 		stream.close();
+		linker.Link(builder);
 	}
+
+	linker.EmitObject(output_filename);
 }

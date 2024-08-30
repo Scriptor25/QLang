@@ -19,37 +19,29 @@ namespace QLang
 	class Builder
 	{
 	public:
-		explicit Builder(Context &);
+		Builder(Context &, llvm::LLVMContext &);
+
+		Context &GetContext() const;
 
 		llvm::LLVMContext &IRContext() const;
 		llvm::IRBuilder<> &IRBuilder() const;
 		llvm::Module &IRModule() const;
-		Context &GetContext() const;
+
+		std::unique_ptr<llvm::Module> &IRModulePtr();
 
 		void Optimize(llvm::Function *);
-		void Dump();
-		void EmitObject(const std::string &filename);
 
-		void Push();
-		void Pop();
-
+		// Value Stack Utility
+		void StackPush();
+		void StackPop();
 		ValuePtr &operator[](const std::string &name);
 
+		// Value Destructions
 		std::vector<ValuePtr> &DestroyAtEnd();
 
-		bool &IsCallee();
-		ValuePtr &Self();
-
-		void SetArgCount(size_t);
-		size_t GetArgCount();
-		TypePtr &GetArg(size_t);
-		const std::vector<TypePtr> &GetArgs();
-
-		TypePtr &GetResult();
-
+		// Function Utility
 		Function &GetFunction(
 			const std::string &name, const FunctionTypePtr &type);
-
 		Function *FindFunction(
 			const std::string &name, const TypePtr &self,
 			const std::vector<TypePtr> &args);
@@ -57,6 +49,7 @@ namespace QLang
 			const TypePtr &self, const std::vector<TypePtr> &args);
 		Function *FindDestructor(const TypePtr &self);
 
+		// Type Utility
 		TypePtr GetVoidTy() const;
 		TypePtr GetInt1Ty() const;
 		TypePtr GetInt8Ty() const;
@@ -66,12 +59,26 @@ namespace QLang
 		TypePtr GetFloat16Ty() const;
 		TypePtr GetFloat32Ty() const;
 		TypePtr GetFloat64Ty() const;
-
 		PointerTypePtr GetVoidPtrTy() const;
 		PointerTypePtr GetInt8PtrTy() const;
 
+		bool IsCallee();
+		void SetCallee();
+		void ClearCallee();
+
+		ValuePtr &Self();
+
+		void SetArgCount(size_t);
+		size_t GetArgCount();
+		TypePtr &GetArg(size_t);
+		const std::vector<TypePtr> &GetArgs();
+
+		TypePtr &GetResult();
+
 	private:
-		std::unique_ptr<llvm::LLVMContext> m_IRContext;
+		Context &m_Context;
+
+		llvm::LLVMContext &m_IRContext;
 		std::unique_ptr<llvm::IRBuilder<>> m_IRBuilder;
 		std::unique_ptr<llvm::Module> m_IRModule;
 
@@ -83,18 +90,16 @@ namespace QLang
 		std::unique_ptr<llvm::PassInstrumentationCallbacks> m_PIC;
 		std::unique_ptr<llvm::StandardInstrumentations> m_SI;
 
-		Context &m_Context;
-
-		bool m_IsCallee = false;
-		ValuePtr m_Self;
-		std::vector<TypePtr> m_Args;
-		TypePtr m_Result;
-
 		std::vector<std::map<std::string, ValuePtr>> m_Stack;
 		std::map<std::string, ValuePtr> m_Values;
 
 		std::vector<QLang::ValuePtr> m_DestroyAtEnd;
 
 		std::map<std::string, std::map<FunctionTypePtr, Function>> m_Functions;
+
+		bool m_IsCallee = false;
+		ValuePtr m_Self;
+		std::vector<TypePtr> m_Args;
+		TypePtr m_Result;
 	};
 }
