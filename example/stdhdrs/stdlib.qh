@@ -1,0 +1,71 @@
+# Macros #
+macro NULL 0
+macro RAND_MAX 32767
+
+# Types #
+use div_t as struct div_t {
+    i32 quot,
+    i32 rem
+}
+use ldiv_t as struct ldiv_t {
+    i64 quot,
+    i64 rem
+}
+use lldiv_t as struct lldiv_t {
+    i64 quot,
+    i64 rem
+}
+
+# String conversion #
+def f64 atof(i8* str)
+def i32 atoi(i8* str)
+def i64 atol(i8* str)
+def i64 atoll(i8* str)
+def f64 strtod(i8* str, i8** endptr)
+def f32 strtof(i8* str, i8** endptr)
+def i64 strtol(i8* str, i8** endptr, i32 base)
+def f64 strtold(i8* str, i8** endptr)
+def i64 strtoll(i8* str, i8** endptr, i32 base)
+def i64 strtoul(i8* str, i8** endptr, i32 base)
+def i64 strtoull(i8* str, i8** endptr, i32 base)
+
+# Pseudo-random sequence generation #
+def void rand()
+def void srand(i32 seed)
+
+# Dynamic memory management #
+def void* calloc(i64 num, i64 size)
+def void free(void* ptr)
+def void* malloc(i64 size)
+def void* realloc(void* ptr, i64 size)
+
+# Environment #
+def void abort()
+def i32 atexit(void()* func)
+def i32 at_quick_exit(void()* func)
+def void exit(i32 status)
+def i8* getenv(i8* name)
+def void quick_exit(i32 status)
+def i32 system(i8* command)
+def void _Exit(i32 status)
+
+# Searching and sorting #
+def void* bsearch(void* key, void* base, i64 num, i64 size, i32(void*, void*)* compar)
+def void qsort(void* base, i64 num, i64 size, i32(void*, void*)* compar)
+
+# Integer arithmetics #
+def i32 abs(i32 n)
+def div_t div(i32 numer, i32 denom)
+def i64 labs(i64 n)
+def ldiv_t ldiv(i64 numer, i64 denom)
+def i64 llabs(i64 n)
+def lldiv_t lldiv(i64 numer, i64 denom)
+
+# Multibyte characters #
+def i32 mblen(i8* pmb, i64 max)
+def i32 mbtowc(i32* pwc, i8* pmb, i64 max)
+def i32 wctomb(i8* pmb, i32 wc)
+
+# Multibyte strings #
+def i64 mbstowcs(i32* dest, i8* src, i64 max)
+def i64 wcstombs(i8* dest, i32* src, i64 max)
