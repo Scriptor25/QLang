@@ -1,3 +1,4 @@
+#include <QLang/Context.hpp>
 #include <QLang/Expression.hpp>
 #include <QLang/Parser.hpp>
 #include <QLang/Token.hpp>
@@ -25,6 +26,9 @@ QLang::ExpressionPtr QLang::Parser::ParsePrimary()
 	if (At(TokenType_Name))
 	{
 		auto [Where, Type, Value] = Skip();
+		if (m_Context.HasMacro(Value) && !m_Context.GetMacro(Value).IsCallee)
+			return dynamic_pointer_cast<Expression>(
+				m_Context.GetMacro(Value).Resolve(*this));
 		return std::make_unique<NameExpression>(Where, Value);
 	}
 

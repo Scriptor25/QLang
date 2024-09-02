@@ -13,6 +13,11 @@ QLang::StatementPtr QLang::Parser::Parse()
 		ParseInclude();
 		return {};
 	}
+	if (At("macro"))
+	{
+		ParseMacro();
+		return {};
+	}
 
 	if (At("{")) return ParseCompound();
 	if (At("def")) return ParseDef();

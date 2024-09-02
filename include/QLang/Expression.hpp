@@ -90,6 +90,19 @@ namespace QLang
 		std::string Name;
 	};
 
+	struct TernaryExpression : Expression
+	{
+		TernaryExpression(const SourceLocation &, ExpressionPtr if_,
+						  ExpressionPtr then, ExpressionPtr else_);
+
+		std::ostream &Print(std::ostream &) const override;
+		ValuePtr GenIR(Builder &) const override;
+
+		ExpressionPtr If;
+		ExpressionPtr Then;
+		ExpressionPtr Else;
+	};
+
 	struct UnaryExpression : Expression
 	{
 		UnaryExpression(const SourceLocation &, const std::string &operator_,

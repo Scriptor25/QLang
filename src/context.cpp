@@ -51,3 +51,13 @@ bool QLang::Context::AddParsed(const std::filesystem::path &parsed)
 	m_Parsed.push_back(parsed);
 	return false;
 }
+
+QLang::Macro &QLang::Context::GetMacro(const std::string &name)
+{
+	return m_Macros[name];
+}
+
+bool QLang::Context::HasMacro(const std::string &name)
+{
+	return m_Macros.count(name);
+}

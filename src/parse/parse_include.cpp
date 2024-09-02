@@ -25,7 +25,7 @@ void QLang::Parser::ParseInclude()
 		return;
 	}
 
-	Parser parser(m_Builder, stream, filepath.string());
+	Parser parser(m_Builder, stream, { .Filename = filepath.string() });
 	while (!parser.AtEof())
 	{
 		auto ptr = parser.Parse();

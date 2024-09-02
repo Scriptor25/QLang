@@ -31,6 +31,8 @@ namespace QLang
 
 		void Optimize(llvm::Function *);
 
+		void Print();
+
 		// Value Stack Utility
 		void StackPush();
 		void StackPop();

@@ -2,6 +2,7 @@
 #include <QLang/Builder.hpp>
 #include <QLang/Expression.hpp>
 #include <QLang/Type.hpp>
+#include <llvm-18/llvm/Support/raw_ostream.h>
 #include <llvm/IR/Value.h>
 #include <llvm/Passes/PassBuilder.h>
 #include <llvm/Transforms/AggressiveInstCombine/AggressiveInstCombine.h>
@@ -53,6 +54,8 @@ std::unique_ptr<llvm::Module> &QLang::Builder::IRModulePtr()
 }
 
 void QLang::Builder::Optimize(llvm::Function *fn) { m_FPM->run(*fn, *m_FAM); }
+
+void QLang::Builder::Print() { m_IRModule->print(llvm::errs(), nullptr); }
 
 void QLang::Builder::StackPush() { m_Stack.push_back(m_Values); }
 

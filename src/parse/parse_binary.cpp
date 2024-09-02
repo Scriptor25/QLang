@@ -1,6 +1,7 @@
 #include <QLang/Expression.hpp>
 #include <QLang/Parser.hpp>
 #include <map>
+#include <memory>
 
 QLang::ExpressionPtr QLang::Parser::ParseBinary()
 {
@@ -10,9 +11,9 @@ QLang::ExpressionPtr QLang::Parser::ParseBinary()
 static int get_precedence(const std::string &op)
 {
 	static std::map<std::string, int> precedences{
-		{ "=", 0 },	 { "<<=", 0 }, { ">>=", 0 }, { ">>>=", 0 },
-		{ "+=", 0 }, { "-=", 0 },  { "*=", 0 },	 { "/=", 0 },
-		{ "%=", 0 }, { "&=", 0 },  { "|=", 0 },	 { "^=", 0 },
+		{ "?", 0 },	 { "=", 0 },  { "<<=", 0 }, { ">>=", 0 }, { ">>>=", 0 },
+		{ "+=", 0 }, { "-=", 0 }, { "*=", 0 },	{ "/=", 0 },  { "%=", 0 },
+		{ "&=", 0 }, { "|=", 0 }, { "^=", 0 },
 
 		{ "||", 1 },
 
@@ -26,13 +27,13 @@ static int get_precedence(const std::string &op)
 
 		{ "==", 6 }, { "!=", 6 },
 
-		{ "<", 7 },	 { "<=", 7 },  { ">", 7 },	 { ">=", 7 },
+		{ "<", 7 },	 { "<=", 7 }, { ">", 7 },	{ ">=", 7 },
 
-		{ "<<", 8 }, { ">>", 8 },  { ">>>", 8 },
+		{ "<<", 8 }, { ">>", 8 }, { ">>>", 8 },
 
 		{ "+", 9 },	 { "-", 9 },
 
-		{ "*", 10 }, { "/", 10 },  { "%", 10 },
+		{ "*", 10 }, { "/", 10 }, { "%", 10 },
 	};
 
 	if (precedences.count(op)) return precedences[op];
@@ -55,6 +56,15 @@ QLang::ExpressionPtr QLang::Parser::ParseBinary(
 			rhs = ParseBinary(
 				std::move(rhs), prec + (next_prec > prec ? 1 : 0));
 			if (!rhs) return {};
+		}
+
+		if (Value == "?")
+		{
+			Expect(":");
+			auto else_ = ParseBinary();
+			lhs = std::make_unique<TernaryExpression>(
+				Where, std::move(lhs), std::move(rhs), std::move(else_));
+			continue;
 		}
 
 		lhs = std::make_unique<BinaryExpression>(

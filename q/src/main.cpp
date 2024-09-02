@@ -50,7 +50,7 @@ int main(int argc, const char **argv)
 		for (const auto &dir : include_dirs) context.AddIncludeDir(dir);
 
 		QLang::Builder builder(context, linker.IRContext());
-		QLang::Parser parser(builder, stream, filename);
+		QLang::Parser parser(builder, stream, { .Filename = filename });
 
 		while (!parser.AtEof())
 		{

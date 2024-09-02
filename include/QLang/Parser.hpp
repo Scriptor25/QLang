@@ -10,7 +10,9 @@ namespace QLang
 	class Parser
 	{
 	public:
-		Parser(Builder &, std::istream &, const std::string &filename);
+		Parser(Builder &, std::istream &, const SourceLocation &where);
+
+		Builder &GetBuilder();
 
 		bool AtEof() const;
 		StatementPtr Parse();
@@ -34,6 +36,7 @@ namespace QLang
 
 		void ParseUse();
 		void ParseInclude();
+		void ParseMacro();
 
 		StatementPtr ParseCompound();
 		StatementPtr ParseDef();

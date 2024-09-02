@@ -1,5 +1,6 @@
 #pragma once
 
+#include <QLang/Macro.hpp>
 #include <QLang/QLang.hpp>
 #include <filesystem>
 #include <map>
@@ -20,8 +21,12 @@ namespace QLang
 			std::filesystem::path &dest, const std::string &filename);
 		bool AddParsed(const std::filesystem::path &);
 
+		Macro &GetMacro(const std::string &name);
+		bool HasMacro(const std::string &name);
+
 	private:
 		std::map<std::string, TypePtr> m_Types;
+		std::map<std::string, Macro> m_Macros;
 
 		std::vector<std::filesystem::path> m_IncludeDirs;
 		std::vector<std::filesystem::path> m_Parsed;

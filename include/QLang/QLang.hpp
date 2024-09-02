@@ -12,6 +12,7 @@ namespace QLang
 	struct SourceLocation;
 	struct Token;
 
+	struct Macro;
 	struct Function;
 
 	class Type;

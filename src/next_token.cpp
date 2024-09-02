@@ -7,7 +7,7 @@ static int is_operator(const int c)
 {
 	return c == '+' || c == '-' || c == '*' || c == '/' || c == '%' || c == '&'
 		   || c == '|' || c == '^' || c == '=' || c == '<' || c == '>'
-		   || c == '!' || c == '~';
+		   || c == '!' || c == '~' || c == '?';
 }
 
 static int is_compound_operator(const int c)
@@ -122,6 +122,14 @@ QLang::Token QLang::Parser::NextToken()
 			default:
 				if (m_C <= 0x20) break;
 
+				if (is_operator(m_C))
+				{
+					where = m_Where;
+					state = State_Operator;
+					value += static_cast<char>(m_C);
+					break;
+				}
+
 				if (isdigit(m_C))
 				{
 					where = m_Where;
@@ -131,18 +139,10 @@ QLang::Token QLang::Parser::NextToken()
 					break;
 				}
 
-				if (isalnum(m_C) || m_C == '_')
+				if (isalnum(m_C) || m_C == '_' || m_C == '\\')
 				{
 					where = m_Where;
 					state = State_Name;
-					value += static_cast<char>(m_C);
-					break;
-				}
-
-				if (is_operator(m_C))
-				{
-					where = m_Where;
-					state = State_Operator;
 					value += static_cast<char>(m_C);
 					break;
 				}
@@ -255,7 +255,7 @@ QLang::Token QLang::Parser::NextToken()
 			return { where, TokenType_HexInt, value };
 
 		case State_Name:
-			if (isalnum(m_C) || m_C == '_')
+			if (isalnum(m_C) || m_C == '_' || m_C == '\\')
 			{
 				value += static_cast<char>(m_C);
 				break;

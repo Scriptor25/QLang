@@ -1,15 +1,18 @@
 #include <QLang/Builder.hpp>
 #include <QLang/Expression.hpp>
 #include <QLang/Parser.hpp>
+#include <QLang/SourceLocation.hpp>
 #include <iostream>
 
 QLang::Parser::Parser(
-	Builder &builder, std::istream &stream, const std::string &filename)
+	Builder &builder, std::istream &stream, const SourceLocation &where)
 	: m_Builder(builder), m_Context(builder.GetContext()), m_Stream(stream),
-	  m_Where({ .Filename = filename })
+	  m_Where(where)
 {
 	Next();
 }
+
+QLang::Builder &QLang::Parser::GetBuilder() { return m_Builder; }
 
 bool QLang::Parser::AtEof() const { return m_Token.Type == TokenType_Eof; }
 
