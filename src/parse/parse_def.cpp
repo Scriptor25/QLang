@@ -3,7 +3,9 @@
 #include <QLang/Statement.hpp>
 #include <QLang/Token.hpp>
 #include <QLang/Type.hpp>
+#include <iostream>
 #include <memory>
+#include <ostream>
 
 QLang::StatementPtr QLang::Parser::ParseDef()
 {
@@ -19,6 +21,11 @@ QLang::StatementPtr QLang::Parser::ParseDef()
 		mode = FnMode_Ctor;
 		type = Type::Get(m_Context, "void");
 		self = Type::Get(m_Context, Expect(TokenType_Name).Value);
+		if (!self)
+		{
+			std::cerr << "    at " << where << std::endl;
+			return {};
+		}
 		name = self->GetName();
 	}
 	else if (NextIfAt("-"))
@@ -26,17 +33,32 @@ QLang::StatementPtr QLang::Parser::ParseDef()
 		mode = FnMode_Dtor;
 		type = Type::Get(m_Context, "void");
 		self = Type::Get(m_Context, Expect(TokenType_Name).Value);
+		if (!self)
+		{
+			std::cerr << "    at " << where << std::endl;
+			return {};
+		}
 		name = self->GetName();
 	}
 	else
 	{
 		mode = FnMode_Func;
 		type = ParseType();
+		if (!type)
+		{
+			std::cerr << "    at " << where << std::endl;
+			return {};
+		}
 		name = Expect(TokenType_Name).Value;
 
 		if (NextIfAt(":"))
 		{
 			self = Type::Get(m_Context, name);
+			if (!self)
+			{
+				std::cerr << "    at " << where << std::endl;
+				return {};
+			}
 			name = Expect(TokenType_Name).Value;
 		}
 
@@ -66,6 +88,14 @@ QLang::StatementPtr QLang::Parser::ParseDef()
 
 			auto &param = params.emplace_back();
 			param.Type = ParseType();
+			if (!param.Type)
+			{
+				std::cerr << "    at " << where << std::endl;
+				while (!NextIfAt(")")) Next();
+				if (NextIfAt("{"))
+					while (!NextIfAt("}")) Next();
+				return {};
+			}
 			if (At(TokenType_Name)) param.Name = Skip().Value;
 			if (!At(")")) Expect(",");
 		}

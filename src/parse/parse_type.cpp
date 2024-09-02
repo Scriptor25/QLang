@@ -2,6 +2,7 @@
 #include <QLang/Parser.hpp>
 #include <QLang/Token.hpp>
 #include <QLang/Type.hpp>
+#include <iostream>
 
 QLang::TypePtr QLang::Parser::ParseType()
 {
@@ -26,7 +27,16 @@ QLang::TypePtr QLang::Parser::ParseType()
 			base = StructType::Get(name, elements);
 		}
 	}
-	else if (At(TokenType_Name)) { base = Type::Get(m_Context, Skip().Value); }
+	else if (At(TokenType_Name))
+	{
+		auto [Where, Type, Value] = Skip();
+		base = Type::Get(m_Context, Value);
+		if (!base)
+		{
+			std::cerr << "    at " << Where << std::endl;
+			return {};
+		}
+	}
 
 	while (true)
 	{

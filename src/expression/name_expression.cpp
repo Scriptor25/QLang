@@ -1,4 +1,5 @@
 #include <QLang/Builder.hpp>
+#include <QLang/Context.hpp>
 #include <QLang/Expression.hpp>
 #include <QLang/Type.hpp>
 #include <iostream>
@@ -51,7 +52,7 @@ QLang::ValuePtr QLang::NameExpression::GenIR(Builder &builder) const
 			}
 		}
 
-		if (auto self = Type::Get(builder.GetContext(), Name))
+		if (auto self = builder.GetContext().GetType(Name))
 			if (auto func = builder.FindConstructor(self, builder.GetArgs()))
 				return func->AsValue(builder);
 
