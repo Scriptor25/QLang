@@ -10,10 +10,12 @@
             "request": "launch",
             "program": "${command:cmake.launchTargetPath}",
             "args": [
-                "-I", "include", "-o", "bin/main.o", "src/main.q"
+                "-I",
+                "example/stdhdrs",
+                "example/macro/main.q"
             ],
             "stopAtEntry": false,
-            "cwd": "/home/felix/projects/q/qmake/",
+            "cwd": "${workspaceFolder}",
             "environment": [],
             "externalConsole": false,
             "MIMode": "gdb",

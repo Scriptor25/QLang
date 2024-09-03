@@ -10,3 +10,5 @@ std::ostream &QLang::operator<<(std::ostream &stream, const StatementPtr &ptr)
 	if (!ptr) return stream << "(null)";
 	return ptr->Print(stream);
 }
+
+void QLang::Print(const StatementPtr &ptr) { std::cout << ptr << std::endl; }

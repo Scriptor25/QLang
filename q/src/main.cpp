@@ -1,3 +1,4 @@
+#include "QLang/QLang.hpp"
 #include <QLang/Builder.hpp>
 #include <QLang/Context.hpp>
 #include <QLang/Linker.hpp>
@@ -50,17 +51,18 @@ int main(int argc, const char **argv)
 		for (const auto &dir : include_dirs) context.AddIncludeDir(dir);
 
 		QLang::Builder builder(context, linker.IRContext());
-		QLang::Parser parser(builder, stream, { .Filename = filename });
+		QLang::Parser parser(
+			builder, stream, { .Filename = filename },
+			[&](QLang::StatementPtr ptr)
+			{
+				std::cerr << ptr << std::endl;
+				ptr->GenIRVoid(builder);
+			});
 
-		while (!parser.AtEof())
-		{
-			auto ptr = parser.Parse();
-			if (!ptr) continue;
-
-			ptr->GenIRVoid(builder);
-		}
-
+		parser.Parse();
 		stream.close();
+
+		builder.Print();
 		linker.Link(builder);
 	}
 

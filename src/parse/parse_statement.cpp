@@ -1,7 +1,8 @@
 #include <QLang/Expression.hpp>
 #include <QLang/Parser.hpp>
+#include <QLang/QLang.hpp>
 
-QLang::StatementPtr QLang::Parser::Parse()
+QLang::StatementPtr QLang::Parser::ParseStatement()
 {
 	if (At("use"))
 	{

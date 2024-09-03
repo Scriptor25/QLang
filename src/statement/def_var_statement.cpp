@@ -24,6 +24,16 @@ void QLang::DefVarStatement::GenIRVoid(Builder &builder) const
 {
 	if (!builder.IRBuilder().GetInsertBlock())
 	{
+		if (!Init)
+		{
+			auto ir_type = Type->GenIR(builder);
+			auto ptr = new llvm::GlobalVariable(
+				builder.IRModule(), ir_type, false,
+				llvm::GlobalValue::ExternalLinkage, nullptr, Name);
+			builder[Name] = LValue::Create(builder, Type, ptr);
+			return;
+		}
+
 		std::cerr << "at " << Where << ": global variables are not supported"
 				  << std::endl;
 		return;

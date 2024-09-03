@@ -100,6 +100,11 @@ QLang::Token QLang::Parser::NextToken()
 			{
 			case '#': state = State_Comment; break;
 
+			case '\\':
+				m_C = Get();
+				if (m_C == '\n') NewLine();
+				break;
+
 			case '"':
 				where = m_Where;
 				state = State_String;
@@ -139,7 +144,7 @@ QLang::Token QLang::Parser::NextToken()
 					break;
 				}
 
-				if (isalnum(m_C) || m_C == '_' || m_C == '\\')
+				if (isalnum(m_C) || m_C == '_')
 				{
 					where = m_Where;
 					state = State_Name;
@@ -164,13 +169,13 @@ QLang::Token QLang::Parser::NextToken()
 			break;
 
 		case State_Comment:
-			if (m_C == '#') state = State_Normal;
+			if (m_C == '#' || m_C < 0) state = State_Normal;
 			else if (m_C == '\n')
 				NewLine();
 			break;
 
 		case State_String:
-			if (m_C != '"')
+			if (m_C != '"' && m_C >= 0)
 			{
 				if (m_C == '\\') Escape();
 				value += static_cast<char>(m_C);
@@ -180,7 +185,7 @@ QLang::Token QLang::Parser::NextToken()
 			return { where, TokenType_String, value };
 
 		case State_Char:
-			if (m_C != '\'')
+			if (m_C != '\'' && m_C >= 0)
 			{
 				if (m_C == '\\') Escape();
 				value += static_cast<char>(m_C);
@@ -255,7 +260,7 @@ QLang::Token QLang::Parser::NextToken()
 			return { where, TokenType_HexInt, value };
 
 		case State_Name:
-			if (isalnum(m_C) || m_C == '_' || m_C == '\\')
+			if (isalnum(m_C) || m_C == '_')
 			{
 				value += static_cast<char>(m_C);
 				break;

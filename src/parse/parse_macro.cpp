@@ -2,7 +2,7 @@
 #include <QLang/Parser.hpp>
 #include <QLang/QLang.hpp>
 #include <QLang/Statement.hpp>
-#include <sstream>
+#include <string>
 #include <vector>
 
 void QLang::Parser::ParseMacro()
@@ -20,18 +20,29 @@ void QLang::Parser::ParseMacro()
 			if (!At(")")) Expect(",");
 		}
 
-	auto value = Parse();
-
 	auto &ref = m_Context.GetMacro(name);
-	ref.Where = value->Where;
+	ref.Where = m_Token.Where;
 	ref.Name = name;
 	ref.Params = params;
 	ref.IsCallee = is_callee;
+	ref.Value = m_Token.Value;
 
-	std::stringstream stream;
-	value->Print(stream);
-	stream.flush();
-	ref.Value = stream.str();
+	while (m_C >= 0 && m_C != '\n')
+	{
+		if (m_C == '\\')
+		{
+			m_C = Get();
+			if (m_C == '\n') NewLine();
+			else
+				ref.Value += '\\';
+		}
+
+		ref.Value += static_cast<char>(m_C);
+		m_C = Get();
+	}
+	m_C = Get();
+	NewLine();
+	Next();
 
 	/*
 	macro min(a, b) ((a) < (b) ? (a) : (b))

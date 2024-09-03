@@ -2,10 +2,10 @@
 #include <QLang/Parser.hpp>
 #include <memory>
 
-QLang::ExpressionPtr QLang::Parser::ParseIndex(ExpressionPtr array)
+QLang::StatementPtr QLang::Parser::ParseIndex(ExpressionPtr array)
 {
 	auto where = Expect("[").Where;
-	auto index = ParseBinary();
+	auto index = dynamic_pointer_cast<Expression>(ParseBinary());
 	Expect("]");
 
 	return std::make_unique<BinaryExpression>(

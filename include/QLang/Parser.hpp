@@ -3,19 +3,24 @@
 #include <QLang/QLang.hpp>
 #include <QLang/SourceLocation.hpp>
 #include <QLang/Token.hpp>
+#include <functional>
 #include <istream>
 
 namespace QLang
 {
+	typedef std::function<void(StatementPtr)> Callback;
+
 	class Parser
 	{
 	public:
-		Parser(Builder &, std::istream &, const SourceLocation &where);
+		Parser(Builder &, std::istream &, const SourceLocation &where,
+			   Callback callback);
 
 		Builder &GetBuilder();
+		Callback GetCallback();
 
-		bool AtEof() const;
-		StatementPtr Parse();
+		void Parse();
+		StatementPtr ParseStatement();
 
 	private:
 		int Get();
@@ -24,6 +29,7 @@ namespace QLang
 		Token NextToken();
 
 		Token &Next();
+		bool AtEof() const;
 		bool At(TokenType);
 		bool At(const std::string &);
 		bool NextIfAt(TokenType);
@@ -44,19 +50,20 @@ namespace QLang
 		StatementPtr ParseReturn();
 		StatementPtr ParseWhile();
 
-		ExpressionPtr ParseBinary();
-		ExpressionPtr ParseBinary(ExpressionPtr, size_t);
+		StatementPtr ParseBinary();
+		StatementPtr ParseBinary(StatementPtr, size_t);
 
-		ExpressionPtr ParseOperand();
-		ExpressionPtr ParsePrimary();
-		ExpressionPtr ParseCall(ExpressionPtr);
-		ExpressionPtr ParseIndex(ExpressionPtr);
-		ExpressionPtr ParseMember(ExpressionPtr);
-		ExpressionPtr ParseUnary(ExpressionPtr);
+		StatementPtr ParseOperand();
+		StatementPtr ParsePrimary();
+		StatementPtr ParseCall(ExpressionPtr);
+		StatementPtr ParseIndex(ExpressionPtr);
+		StatementPtr ParseMember(ExpressionPtr);
+		StatementPtr ParseUnary(ExpressionPtr);
 
 	private:
 		Builder &m_Builder;
 		Context &m_Context;
+		Callback m_Callback;
 
 		std::istream &m_Stream;
 		SourceLocation m_Where;

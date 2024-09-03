@@ -108,12 +108,12 @@ QLang::StatementPtr QLang::Parser::ParseDef()
 	}
 
 	ExpressionPtr init;
-	if (NextIfAt("=")) init = ParseBinary();
+	if (NextIfAt("=")) init = dynamic_pointer_cast<Expression>(ParseBinary());
 	else if (At("+"))
 	{
 		auto w = Skip().Where;
 		auto callee = std::make_unique<NameExpression>(w, type->GetName());
-		init = ParseCall(std::move(callee));
+		init = dynamic_pointer_cast<Expression>(ParseCall(std::move(callee)));
 	}
 
 	return std::make_unique<DefVarStatement>(

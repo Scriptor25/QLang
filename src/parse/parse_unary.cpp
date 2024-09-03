@@ -2,7 +2,7 @@
 #include <QLang/Parser.hpp>
 #include <memory>
 
-QLang::ExpressionPtr QLang::Parser::ParseUnary(ExpressionPtr operand)
+QLang::StatementPtr QLang::Parser::ParseUnary(ExpressionPtr operand)
 {
 	auto [Where, Type, Value] = Skip();
 

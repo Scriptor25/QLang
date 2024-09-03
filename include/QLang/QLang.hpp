@@ -55,4 +55,6 @@ namespace QLang
 	std::ostream &operator<<(std::ostream &, const TypePtr &);
 	std::ostream &operator<<(std::ostream &, const StatementPtr &);
 	std::ostream &operator<<(std::ostream &, const ExpressionPtr &);
+
+	void Print(const StatementPtr &);
 }

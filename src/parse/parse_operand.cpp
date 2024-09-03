@@ -1,7 +1,7 @@
 #include <QLang/Expression.hpp>
 #include <QLang/Parser.hpp>
 
-QLang::ExpressionPtr QLang::Parser::ParseOperand()
+QLang::StatementPtr QLang::Parser::ParseOperand()
 {
 	auto ptr = ParsePrimary();
 
@@ -9,25 +9,25 @@ QLang::ExpressionPtr QLang::Parser::ParseOperand()
 	{
 		if (At("("))
 		{
-			ptr = ParseCall(std::move(ptr));
+			ptr = ParseCall(dynamic_pointer_cast<Expression>(std::move(ptr)));
 			continue;
 		}
 
 		if (At("["))
 		{
-			ptr = ParseIndex(std::move(ptr));
+			ptr = ParseIndex(dynamic_pointer_cast<Expression>(std::move(ptr)));
 			continue;
 		}
 
 		if (At(".") || At("!"))
 		{
-			ptr = ParseMember(std::move(ptr));
+			ptr = ParseMember(dynamic_pointer_cast<Expression>(std::move(ptr)));
 			continue;
 		}
 
 		if (At("++") || At("--"))
 		{
-			ptr = ParseUnary(std::move(ptr));
+			ptr = ParseUnary(dynamic_pointer_cast<Expression>(std::move(ptr)));
 			continue;
 		}
 

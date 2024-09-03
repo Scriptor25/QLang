@@ -1,7 +1,7 @@
 #include <QLang/Expression.hpp>
 #include <QLang/Parser.hpp>
 
-QLang::ExpressionPtr QLang::Parser::ParseMember(ExpressionPtr object)
+QLang::StatementPtr QLang::Parser::ParseMember(ExpressionPtr object)
 {
 	auto [Where, Type, Value] = Skip();
 	auto [MWhere, MType, MValue] = Expect(TokenType_Name);

@@ -40,6 +40,18 @@ namespace QLang
 		std::vector<ExpressionPtr> Args;
 	};
 
+	struct CastExpression : Expression
+	{
+		CastExpression(
+			const SourceLocation &, const TypePtr &dst, ExpressionPtr src);
+
+		std::ostream &Print(std::ostream &) const override;
+		ValuePtr GenIR(Builder &) const override;
+
+		TypePtr Dst;
+		ExpressionPtr Src;
+	};
+
 	struct ConstCharExpression : Expression
 	{
 		ConstCharExpression(const SourceLocation &, char value);

@@ -1,11 +1,15 @@
 # Macros #
 macro EOF -1
-macro NULL 0
+macro NULL cast(void*) 0
 
 # Types #
 use FILE as struct FILE
 use fpos_t as struct fpos_t
 use va_list as struct va_list { void* ptr }
+
+# Constants #
+def FILE* stdout
+def FILE* stderr
 
 # Operations on files #
 def i32 remove(i8* filename)

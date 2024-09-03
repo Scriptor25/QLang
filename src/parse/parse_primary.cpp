@@ -1,3 +1,4 @@
+#include "QLang/QLang.hpp"
 #include <QLang/Context.hpp>
 #include <QLang/Expression.hpp>
 #include <QLang/Parser.hpp>
@@ -6,8 +7,14 @@
 #include <memory>
 #include <string>
 
-QLang::ExpressionPtr QLang::Parser::ParsePrimary()
+QLang::StatementPtr QLang::Parser::ParsePrimary()
 {
+	if (AtEof())
+	{
+		std::cerr << "reached eof" << std::endl;
+		return {};
+	}
+
 	if (NextIfAt("("))
 	{
 		auto ptr = ParseBinary();
@@ -15,10 +22,20 @@ QLang::ExpressionPtr QLang::Parser::ParsePrimary()
 		return ptr;
 	}
 
+	if (At("cast"))
+	{
+		auto [Where, Type, Value] = Skip();
+		Expect("(");
+		auto dst = ParseType();
+		Expect(")");
+		auto src = dynamic_pointer_cast<Expression>(ParseOperand());
+		return std::make_unique<CastExpression>(Where, dst, std::move(src));
+	}
+
 	if (At(TokenType_Operator))
 	{
 		auto [Where, Type, Value] = Skip();
-		auto operand = ParseOperand();
+		auto operand = dynamic_pointer_cast<Expression>(ParseOperand());
 		return std::make_unique<UnaryExpression>(
 			Where, Value, std::move(operand), false);
 	}
@@ -27,8 +44,7 @@ QLang::ExpressionPtr QLang::Parser::ParsePrimary()
 	{
 		auto [Where, Type, Value] = Skip();
 		if (m_Context.HasMacro(Value) && !m_Context.GetMacro(Value).IsCallee)
-			return dynamic_pointer_cast<Expression>(
-				m_Context.GetMacro(Value).Resolve(*this));
+			return m_Context.GetMacro(Value).Resolve(*this);
 		return std::make_unique<NameExpression>(Where, Value);
 	}
 
@@ -73,6 +89,7 @@ QLang::ExpressionPtr QLang::Parser::ParsePrimary()
 	if (At(TokenType_String))
 	{
 		auto [Where, Type, Value] = Skip();
+		while (At(TokenType_String)) Value += Skip().Value;
 		return std::make_unique<ConstStringExpression>(Where, Value);
 	}
 

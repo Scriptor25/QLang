@@ -1,9 +1,9 @@
 include "stdio.qh"
 include "stdlib.qh"
 
-macro assert(E) {
-    if !(E) {
-        fprintf(stderr, "Assertion failed: \E\")
-        abort()
-    }
+macro assert(E) {\
+    if !(\E\) {\
+        fprintf(stderr, "Assertion failed: "\\E\\"\n")\
+        abort()\
+    }\
 }

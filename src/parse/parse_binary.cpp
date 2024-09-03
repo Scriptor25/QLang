@@ -3,7 +3,7 @@
 #include <map>
 #include <memory>
 
-QLang::ExpressionPtr QLang::Parser::ParseBinary()
+QLang::StatementPtr QLang::Parser::ParseBinary()
 {
 	return ParseBinary(ParseOperand(), 0);
 }
@@ -40,35 +40,37 @@ static int get_precedence(const std::string &op)
 	return -1;
 }
 
-QLang::ExpressionPtr QLang::Parser::ParseBinary(
-	ExpressionPtr lhs, size_t min_prec)
+QLang::StatementPtr QLang::Parser::ParseBinary(
+	StatementPtr lhs, size_t min_prec)
 {
 	while (At(TokenType_Operator) && get_precedence(m_Token.Value) >= min_prec)
 	{
 		auto [Where, Type, Value] = Skip();
 		auto prec = get_precedence(Value);
 
-		auto rhs = ParseOperand();
+		auto rhs = dynamic_pointer_cast<Expression>(ParseOperand());
 		if (!rhs) return {};
 		while (At(TokenType_Operator) && get_precedence(m_Token.Value) >= prec)
 		{
 			auto next_prec = get_precedence(m_Token.Value);
-			rhs = ParseBinary(
-				std::move(rhs), prec + (next_prec > prec ? 1 : 0));
+			rhs = dynamic_pointer_cast<Expression>(
+				ParseBinary(std::move(rhs), prec + (next_prec > prec ? 1 : 0)));
 			if (!rhs) return {};
 		}
 
 		if (Value == "?")
 		{
 			Expect(":");
-			auto else_ = ParseBinary();
+			auto else_ = dynamic_pointer_cast<Expression>(ParseBinary());
 			lhs = std::make_unique<TernaryExpression>(
-				Where, std::move(lhs), std::move(rhs), std::move(else_));
+				Where, dynamic_pointer_cast<Expression>(std::move(lhs)),
+				std::move(rhs), std::move(else_));
 			continue;
 		}
 
 		lhs = std::make_unique<BinaryExpression>(
-			Where, Value, std::move(lhs), std::move(rhs));
+			Where, Value, dynamic_pointer_cast<Expression>(std::move(lhs)),
+			std::move(rhs));
 	}
 
 	return lhs;

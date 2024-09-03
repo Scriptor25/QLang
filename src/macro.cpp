@@ -7,8 +7,8 @@
 QLang::StatementPtr QLang::Macro::Resolve(Parser &parser)
 {
 	std::stringstream stream(Value);
-	Parser p(parser.GetBuilder(), stream, Where);
-	return p.Parse();
+	Parser p(parser.GetBuilder(), stream, Where, parser.GetCallback());
+	return p.ParseStatement();
 }
 
 QLang::StatementPtr QLang::Macro::Resolve(
@@ -24,6 +24,25 @@ QLang::StatementPtr QLang::Macro::Resolve(
 	Parser &parser, std::vector<StatementPtr> &args)
 {
 	std::string value = Value;
+
+	// replace as string
+	for (size_t i = 0; i < value.length(); ++i)
+	{
+		for (size_t a = 0; a < Params.size(); ++a)
+		{
+			const auto &param = Params[a];
+			auto pos = value.find("\\\\" + param + "\\\\", i);
+			if (pos == std::string::npos) continue;
+			std::stringstream ss;
+			ss << '"';
+			args[a]->Print(ss);
+			ss << '"';
+			value.replace(pos, param.length() + 4, ss.str());
+			i = pos + param.length() + 4;
+		}
+	}
+
+	// replace as expression
 	for (size_t i = 0; i < value.length(); ++i)
 	{
 		for (size_t a = 0; a < Params.size(); ++a)
@@ -39,6 +58,6 @@ QLang::StatementPtr QLang::Macro::Resolve(
 	}
 
 	std::stringstream stream(value);
-	Parser p(parser.GetBuilder(), stream, Where);
-	return p.Parse();
+	Parser p(parser.GetBuilder(), stream, Where, parser.GetCallback());
+	return p.ParseStatement();
 }

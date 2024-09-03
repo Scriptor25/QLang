@@ -1,8 +1,10 @@
+#include "QLang/QLang.hpp"
 #include <QLang/Expression.hpp>
 #include <QLang/Parser.hpp>
 #include <QLang/Token.hpp>
 #include <QLang/Type.hpp>
 #include <iostream>
+#include <vector>
 
 QLang::TypePtr QLang::Parser::ParseType()
 {
@@ -20,7 +22,9 @@ QLang::TypePtr QLang::Parser::ParseType()
 				auto &element = elements.emplace_back();
 				element.Type = ParseType();
 				element.Name = Expect(TokenType_Name).Value;
-				if (NextIfAt("=")) element.Init = ParseBinary();
+				if (NextIfAt("="))
+					element.Init
+						= dynamic_pointer_cast<Expression>(ParseBinary());
 				if (!At("}")) Expect(",");
 			}
 
@@ -59,6 +63,49 @@ QLang::TypePtr QLang::Parser::ParseType()
 			auto length = length_expr->Value;
 			Expect("]");
 			base = ArrayType::Get(base, length);
+			continue;
+		}
+
+		if (NextIfAt("("))
+		{
+			FnMode mode = FnMode_Func;
+			TypePtr self;
+			if (NextIfAt("+"))
+			{
+				mode = FnMode_Ctor;
+				self = ParseType();
+				Expect(")");
+				Expect("(");
+			}
+			else if (NextIfAt("-"))
+			{
+				mode = FnMode_Dtor;
+				self = ParseType();
+				Expect(")");
+				Expect("(");
+			}
+			else if (NextIfAt(":"))
+			{
+				self = ParseType();
+				Expect(")");
+				Expect("(");
+			}
+
+			std::vector<TypePtr> params;
+			bool vararg = false;
+			while (!NextIfAt(")"))
+			{
+				if (NextIfAt("?"))
+				{
+					vararg = true;
+					Expect(")");
+					break;
+				}
+				params.push_back(ParseType());
+				if (!At(")")) Expect(",");
+			}
+
+			base = FunctionType::Get(mode, base, self, params, vararg);
 			continue;
 		}
 
