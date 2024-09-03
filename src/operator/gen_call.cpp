@@ -8,46 +8,45 @@ QLang::ValuePtr QLang::GenCall(
 	Builder &builder, const ValuePtr &callee, const LValuePtr &self,
 	const std::vector<ValuePtr> &args)
 {
-	auto type = FunctionType::FromPtr(callee->GetType());
-	auto ir_type = type->GenIR(builder);
+	auto func_type = FunctionType::FromPtr(callee->GetType());
+	auto fn_ty = func_type->GenIR(builder);
 
-	std::vector<llvm::Value *> ir_args;
+	std::vector<llvm::Value *> vargs;
 	for (size_t i = 0; i < args.size(); ++i)
 	{
 		auto arg = args[i];
-		if (i < type->GetParamCount())
+		if (i < func_type->GetParamCount())
 		{
-			if (type->GetParam(i)->IsReference())
+			if (func_type->GetParam(i)->IsReference())
 			{
-				ir_args.push_back(LValue::From(arg)->GetPtr());
+				vargs.push_back(LValue::From(arg)->GetPtr());
 				continue;
 			}
 
-			arg = GenCast(builder, arg, type->GetParam(i));
+			arg = GenCast(builder, arg, func_type->GetParam(i));
 			if (!arg) return {};
 
-			ir_args.push_back(arg->Get());
+			vargs.push_back(arg->Get());
 			continue;
 		}
 
-		ir_args.push_back(arg->Get());
+		vargs.push_back(arg->Get());
 	}
 
-	if (type->GetMode() == FnMode_Ctor)
+	if (func_type->GetMode() == FnMode_Ctor)
 	{
-		auto inst = self ? self : LValue::Alloca(builder, type->GetSelf());
-		ir_args.insert(ir_args.begin(), inst->GetPtr());
-		builder.IRBuilder().CreateCall(ir_type, callee->Get(), ir_args);
+		auto inst = self ? self : builder.CreateInstance(func_type->GetSelf());
+		vargs.insert(vargs.begin(), inst->GetPtr());
+		builder.IRBuilder().CreateCall(fn_ty, callee->Get(), vargs);
 		return inst;
 	}
 
-	if (type->GetSelf()) ir_args.insert(ir_args.begin(), self->GetPtr());
+	if (func_type->GetSelf()) vargs.insert(vargs.begin(), self->GetPtr());
 
-	auto result
-		= builder.IRBuilder().CreateCall(ir_type, callee->Get(), ir_args);
+	auto result = builder.IRBuilder().CreateCall(fn_ty, callee->Get(), vargs);
 
-	if (auto ref_type = ReferenceType::From(type->GetResult()))
+	if (auto ref_type = ReferenceType::From(func_type->GetResult()))
 		return LValue::Create(builder, ref_type->GetBase(), result);
 
-	return RValue::Create(builder, type->GetResult(), result);
+	return RValue::Create(builder, func_type->GetResult(), result);
 }

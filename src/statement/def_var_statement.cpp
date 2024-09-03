@@ -17,14 +17,38 @@ QLang::DefVarStatement::DefVarStatement(
 
 QLang::DefVarStatement::DefVarStatement(
 	const SourceLocation &where, const TypePtr &type, const std::string &name,
+	std::vector<StatementPtr> args)
+	: DefVarStatement(where, type, name, dyn_cast<Expression>(args))
+{
+}
+
+QLang::DefVarStatement::DefVarStatement(
+	const SourceLocation &where, const TypePtr &type, const std::string &name,
 	ExpressionPtr init)
 	: Statement(where), Type(type), Name(name), Init(std::move(init))
 {
 }
 
+QLang::DefVarStatement::DefVarStatement(
+	const SourceLocation &where, const TypePtr &type, const std::string &name,
+	std::vector<ExpressionPtr> args)
+	: Statement(where), Type(type), Name(name), Args(std::move(args))
+{
+}
+
 std::ostream &QLang::DefVarStatement::Print(std::ostream &stream) const
 {
-	if (!Init) return stream << "def " << Type << ' ' << Name;
+	if (!Init)
+	{
+		if (Args.empty()) return stream << "def " << Type << ' ' << Name;
+		stream << "def " << Type << ' ' << Name << " { ";
+		for (size_t i = 0; i < Args.size(); ++i)
+		{
+			if (i > 0) stream << ", ";
+			stream << Args[i];
+		}
+		return stream << " }";
+	}
 	return stream << "def " << Type << ' ' << Name << " = " << Init;
 }
 
@@ -93,9 +117,18 @@ void QLang::DefVarStatement::GenIRVoid(Builder &builder) const
 		}
 		else
 		{
-			if (auto func = builder.FindConstructor(Type, {}))
+			std::vector<ValuePtr> args;
+			std::vector<TypePtr> arg_types;
+			for (const auto &arg : Args)
 			{
-				init = GenCall(builder, func->AsValue(builder), instance, {});
+				auto varg = arg->GenIR(builder);
+				args.push_back(varg);
+				arg_types.push_back(varg->GetType());
+			}
+
+			if (auto func = builder.FindConstructor(Type, arg_types))
+			{
+				init = GenCall(builder, func->AsValue(builder), instance, args);
 				if (!init)
 				{
 					std::cerr << "    at " << Where << std::endl;
@@ -103,8 +136,6 @@ void QLang::DefVarStatement::GenIRVoid(Builder &builder) const
 				}
 			}
 		}
-
-		builder.DestroyAtEnd().push_back(instance);
 	}
 
 	builder[Name] = instance;

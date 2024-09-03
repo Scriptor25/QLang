@@ -12,6 +12,8 @@ QLang::StatementPtr QLang::Parser::ParseDef()
 {
 	auto where = Expect("def").Where;
 
+	bool is_extern = NextIfAt("ext");
+
 	FnMode mode;
 	TypePtr type;
 	TypePtr self;
@@ -104,16 +106,23 @@ QLang::StatementPtr QLang::Parser::ParseDef()
 		if (At("{")) body = ParseCompound();
 
 		return std::make_unique<DefFnStatement>(
-			where, mode, type, self, name, params, vararg, std::move(body));
+			where, is_extern, mode, type, self, name, params, vararg,
+			std::move(body));
 	}
 
 	StatementPtr init;
 	if (NextIfAt("=")) init = ParseBinary();
-	else if (At("+"))
+	else if (NextIfAt("{"))
 	{
-		auto w = Skip().Where;
-		auto callee = std::make_unique<NameExpression>(w, type->GetName());
-		init = ParseCall(std::move(callee));
+		std::vector<StatementPtr> args;
+		while (!NextIfAt("}"))
+		{
+			args.push_back(ParseStatement());
+			if (!At("}")) Expect(",");
+		}
+
+		return std::make_unique<DefVarStatement>(
+			where, type, name, std::move(args));
 	}
 
 	return std::make_unique<DefVarStatement>(

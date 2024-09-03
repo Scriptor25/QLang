@@ -40,15 +40,14 @@ void QLang::ReturnStatement::GenIRVoid(Builder &builder) const
 
 	if (builder.GetResult()->IsReference())
 	{
-		auto lvalue = LValue::From(value);
-		if (!lvalue)
+		if (auto ref = LValue::From(value))
 		{
-			std::cerr << "at " << Where << ": result must be a lvalue here"
-					  << std::endl;
+			builder.IRBuilder().CreateRet(ref->GetPtr());
 			return;
 		}
 
-		builder.IRBuilder().CreateRet(lvalue->GetPtr());
+		std::cerr << "at " << Where << ": result must be a lvalue here"
+				  << std::endl;
 		return;
 	}
 
@@ -59,12 +58,6 @@ void QLang::ReturnStatement::GenIRVoid(Builder &builder) const
 		return;
 	}
 
-	for (size_t i = 0; i < builder.DestroyAtEnd().size(); ++i)
-		if (value == builder.DestroyAtEnd()[i])
-		{
-			builder.DestroyAtEnd().erase(builder.DestroyAtEnd().begin() + i);
-			break;
-		}
-
+	builder.RemoveLocalDtor(value);
 	builder.IRBuilder().CreateRet(value->Get());
 }

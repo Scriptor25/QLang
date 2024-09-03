@@ -38,13 +38,16 @@ namespace QLang
 	struct DefFnStatement : Statement
 	{
 		DefFnStatement(
-			const SourceLocation &, FnMode mode, const TypePtr &result,
-			const TypePtr &self, const std::string &name,
+			const SourceLocation &, bool is_extern, FnMode mode,
+			const TypePtr &result, const TypePtr &self, const std::string &name,
 			const std::vector<Param> &params, bool vararg, StatementPtr body);
 
 		std::ostream &Print(std::ostream &) const override;
 		void GenIRVoid(Builder &) const override;
 
+		std::string GenName() const;
+
+		bool IsExtern;
 		FnMode Mode;
 		TypePtr Result;
 		TypePtr Self;
@@ -59,8 +62,16 @@ namespace QLang
 		DefVarStatement(const SourceLocation &, const TypePtr &type,
 						const std::string &name, StatementPtr init);
 
+		DefVarStatement(
+			const SourceLocation &, const TypePtr &type,
+			const std::string &name, std::vector<StatementPtr> args);
+
 		DefVarStatement(const SourceLocation &, const TypePtr &type,
 						const std::string &name, ExpressionPtr init);
+
+		DefVarStatement(
+			const SourceLocation &, const TypePtr &type,
+			const std::string &name, std::vector<ExpressionPtr> args);
 
 		std::ostream &Print(std::ostream &) const override;
 		void GenIRVoid(Builder &) const override;
@@ -68,6 +79,7 @@ namespace QLang
 		TypePtr Type;
 		std::string Name;
 		ExpressionPtr Init;
+		std::vector<ExpressionPtr> Args;
 	};
 
 	struct IfStatement : Statement

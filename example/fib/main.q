@@ -10,11 +10,11 @@ def i32 fib(i32 n) {
     return b
 }
 
-def i32 puts(i8*)
-def i32 printf(i8*, ?)
-def i32 atoi(i8*)
+def ext i32 puts(i8*)
+def ext i32 printf(i8*, ?)
+def ext i32 atoi(i8*)
 
-def i32 main(i32 argc, i8** argv) {
+def ext i32 main(i32 argc, i8** argv) {
     if argc != 2 {
         puts("USAGE: fib <n>")
         return 1

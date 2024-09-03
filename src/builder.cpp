@@ -97,12 +97,46 @@ QLang::LValuePtr QLang::Builder::CreateInstance(
 		}
 	}
 
+	CreateLocalDtor(instance);
 	return instance;
 }
 
-std::vector<QLang::ValuePtr> &QLang::Builder::DestroyAtEnd()
+void QLang::Builder::ClearLocalDtors() { m_LocalDtors.clear(); }
+
+void QLang::Builder::CreateLocalDtor(const LValuePtr &value)
 {
-	return m_DestroyAtEnd;
+	if (auto func = FindDestructor(value->GetType()))
+	{
+		m_LocalDtors.push_back({ func, value });
+		return;
+	}
+
+	if (auto str_ty = StructType::From(value->GetType()))
+	{
+		for (size_t i = 0; i < str_ty->GetElementCount(); ++i)
+		{
+			auto member = GenMember(*this, value, i);
+			CreateLocalDtor(member);
+		}
+	}
+}
+
+void QLang::Builder::RemoveLocalDtor(const ValuePtr &value)
+{
+	for (size_t i = 0; i < m_LocalDtors.size(); ++i)
+	{
+		if (m_LocalDtors[i].Self == value)
+		{
+			m_LocalDtors.erase(m_LocalDtors.begin() + i);
+			break;
+		}
+	}
+}
+
+void QLang::Builder::GenLocalDtors()
+{
+	for (auto &call : m_LocalDtors)
+		GenCall(*this, call.Callee->AsValue(*this), call.Self, {});
 }
 
 QLang::Function &QLang::Builder::GetFunction(

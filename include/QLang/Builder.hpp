@@ -16,6 +16,12 @@
 
 namespace QLang
 {
+	struct DtorCall
+	{
+		Function *Callee = nullptr;
+		LValuePtr Self;
+	};
+
 	class Builder
 	{
 	public:
@@ -43,7 +49,10 @@ namespace QLang
 			const TypePtr &type, const std::string &name = "");
 
 		// Value Destructions
-		std::vector<ValuePtr> &DestroyAtEnd();
+		void ClearLocalDtors();
+		void CreateLocalDtor(const LValuePtr &value);
+		void RemoveLocalDtor(const ValuePtr &value);
+		void GenLocalDtors();
 
 		// Function Utility
 		Function &GetFunction(
@@ -98,7 +107,7 @@ namespace QLang
 		std::vector<std::map<std::string, ValuePtr>> m_Stack;
 		std::map<std::string, ValuePtr> m_Values;
 
-		std::vector<QLang::ValuePtr> m_DestroyAtEnd;
+		std::vector<DtorCall> m_LocalDtors;
 
 		std::map<std::string, std::map<FunctionTypePtr, Function>> m_Functions;
 

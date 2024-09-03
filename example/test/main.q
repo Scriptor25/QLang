@@ -1,16 +1,16 @@
-def void* malloc(i64)
-def void* realloc(void*, i64)
-def void free(void*)
-def i64 strlen(i8*)
-def i8* strcpy(i8*, i8*)
-def i8* strcat(i8*, i8*)
-def i32 printf(i8*, ?)
-def i32 puts(i8*)
+def ext void* malloc(i64)
+def ext void* realloc(void*, i64)
+def ext void free(void*)
+def ext i64 strlen(i8*)
+def ext i8* strcpy(i8*, i8*)
+def ext i8* strcat(i8*, i8*)
+def ext i32 printf(i8*, ?)
+def ext i32 puts(i8*)
 
 use string as struct string {
-    i64 length,
-    i64 reserved,
-    i8* data
+    i64 length = 0,
+    i64 reserved = 8,
+    i8* data = 0
 }
 
 def i8& string:operator[](i64 i) {
@@ -18,8 +18,6 @@ def i8& string:operator[](i64 i) {
 }
 
 def +string() {
-    self.length = 0
-    self.reserved = 8
     self.data = malloc(self.reserved)
     self[0] = 0
 }
@@ -111,10 +109,10 @@ def void person:print() {
     printf("%s (%d)\n", self.name.data, self.age)
 }
 
-def i32 main() {
+def ext i32 main() {
 
-    def person felix +("Felix", 18)
-    def person max +("Max", 20)
+    def person felix { "Felix", 18 }
+    def person max { "Max", 20 }
 
     felix.print()
     max.print()

@@ -1,6 +1,9 @@
 include "vec3.qh"
 
-def +vec3() { self[0] = self[1] = self[2] = 0.0 }
+macro min(a, b) ((#a#) < (#b#) ? (#a#) : (#b#))
+
+def ext f64 abs(f64)
+def ext f64 sqrt(f64)
 
 def +vec3(f64 t) { self[0] = self[1] = self[2] = t }
 
@@ -90,9 +93,4 @@ def vec3 refract(vec3 v, vec3 n, f64 i) {
     def vec3 perp = i * (v + ct * n)
     def vec3 para = -sqrt(abs(1.0 - perp.length_squared())) * n
     return perp + para
-}
-
-def f64 min(f64 a, f64 b) {
-    if a < b return a
-    return b
 }

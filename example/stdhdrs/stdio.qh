@@ -8,65 +8,65 @@ use fpos_t as struct fpos_t
 use va_list as struct va_list
 
 ;; Constants
-def FILE* stdout
-def FILE* stderr
+def ext FILE* stdout
+def ext FILE* stderr
 
 ;; Operations on files
-def i32 remove(i8* filename)
-def i32 rename(i8* oldname, i8* newname)
-def FILE* tmpfile()
-def i8* tmpnam(i8* str)
+def ext i32 remove(i8* filename)
+def ext i32 rename(i8* oldname, i8* newname)
+def ext FILE* tmpfile()
+def ext i8* tmpnam(i8* str)
 
 ;; File access
-def i32 fclose(FILE* stream)
-def i32 fflush(FILE* stream)
-def FILE* fopen(i8* filename, i8* mode)
-def FILE* freopen(i8* filename, i8* mode, FILE* stream)
-def void setbuf(FILE* stream, i8* buffer)
-def i32 setvbuf(FILE* stream, i8* buffer, i32 mode, i64 size)
+def ext i32 fclose(FILE* stream)
+def ext i32 fflush(FILE* stream)
+def ext FILE* fopen(i8* filename, i8* mode)
+def ext FILE* freopen(i8* filename, i8* mode, FILE* stream)
+def ext void setbuf(FILE* stream, i8* buffer)
+def ext i32 setvbuf(FILE* stream, i8* buffer, i32 mode, i64 size)
 
 ;; Formatted input/output
-def i32 fprintf(FILE* stream, i8* format, ?)
-def i32 fscanf(FILE* stream, i8* format, ?)
-def i32 printf(i8* format, ?)
-def i32 scanf(i8* format, ?)
-def i32 snprintf(i8* s, i64 n, i8* format, ?)
-def i32 sprintf(i8* str, i8* format, ?)
-def i32 sscanf(i8* s, i8* format, ?)
-def i32 vfprintf(FILE* stream, i8* format, va_list arg)
-def i32 vfscanf(FILE* stream, i8* format, va_list arg)
-def i32 vprintf(i8* format, va_list arg)
-def i32 vscanf(i8* format, va_list arg)
-def i32 vsnprintf(i8* s, i64 n, i8* format, va_list arg)
-def i32 vsprintf(i8* s, i8* format, va_list arg)
-def i32 vsscanf(i8* s, i8* format, va_list arg)
+def ext i32 fprintf(FILE* stream, i8* format, ?)
+def ext i32 fscanf(FILE* stream, i8* format, ?)
+def ext i32 printf(i8* format, ?)
+def ext i32 scanf(i8* format, ?)
+def ext i32 snprintf(i8* s, i64 n, i8* format, ?)
+def ext i32 sprintf(i8* str, i8* format, ?)
+def ext i32 sscanf(i8* s, i8* format, ?)
+def ext i32 vfprintf(FILE* stream, i8* format, va_list arg)
+def ext i32 vfscanf(FILE* stream, i8* format, va_list arg)
+def ext i32 vprintf(i8* format, va_list arg)
+def ext i32 vscanf(i8* format, va_list arg)
+def ext i32 vsnprintf(i8* s, i64 n, i8* format, va_list arg)
+def ext i32 vsprintf(i8* s, i8* format, va_list arg)
+def ext i32 vsscanf(i8* s, i8* format, va_list arg)
 
 ;; Character input/output
-def i32 fgetc(FILE* stream)
-def i8* fgets(i8* str, i32 num, FILE* stream)
-def i32 fputc(i32 character, FILE* stream)
-def i32 fputs(i8* str, FILE* stream)
-def i32 getc(FILE* stream)
-def i32 getchar()
-def i8* gets(i8* str)
-def i32 putc(i32 character, FILE* stream)
-def i32 putchar(i32 character)
-def i32 puts(i8* str)
-def i32 ungetc(i32 character, FILE* stream)
+def ext i32 fgetc(FILE* stream)
+def ext i8* fgets(i8* str, i32 num, FILE* stream)
+def ext i32 fputc(i32 character, FILE* stream)
+def ext i32 fputs(i8* str, FILE* stream)
+def ext i32 getc(FILE* stream)
+def ext i32 getchar()
+def ext i8* gets(i8* str)
+def ext i32 putc(i32 character, FILE* stream)
+def ext i32 putchar(i32 character)
+def ext i32 puts(i8* str)
+def ext i32 ungetc(i32 character, FILE* stream)
 
 ;; Direct input/output
-def i64 fread(void* ptr, i64 size, i64 count, FILE* stream)
-def i64 fwrite(void* ptr, i64 size, i64 count, FILE* stream)
+def ext i64 fread(void* ptr, i64 size, i64 count, FILE* stream)
+def ext i64 fwrite(void* ptr, i64 size, i64 count, FILE* stream)
 
 ;; File positioning
-def i32 fgetpos(FILE* stream, fpos_t* pos)
-def i32 fseek(FILE* stream, i64 offset, i32 origin)
-def i32 fsetpos(FILE* stream, fpos_t* pos)
-def i64 ftell(FILE* stream)
-def void rewind(FILE* stream)
+def ext i32 fgetpos(FILE* stream, fpos_t* pos)
+def ext i32 fseek(FILE* stream, i64 offset, i32 origin)
+def ext i32 fsetpos(FILE* stream, fpos_t* pos)
+def ext i64 ftell(FILE* stream)
+def ext void rewind(FILE* stream)
 
 ;; Error handling
-def void clearerr(FILE* stream)
-def i32 feof(FILE* stream)
-def i32 ferror(FILE* stream)
-def void perror(i8* str)
+def ext void clearerr(FILE* stream)
+def ext i32 feof(FILE* stream)
+def ext i32 ferror(FILE* stream)
+def ext void perror(i8* str)

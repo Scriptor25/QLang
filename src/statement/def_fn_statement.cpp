@@ -8,19 +8,22 @@
 #include <llvm/IR/BasicBlock.h>
 #include <llvm/IR/Verifier.h>
 #include <llvm/Support/raw_ostream.h>
+#include <string>
 
 QLang::DefFnStatement::DefFnStatement(
-	const SourceLocation &where, FnMode mode, const TypePtr &result,
-	const TypePtr &self, const std::string &name,
+	const SourceLocation &where, bool is_extern, FnMode mode,
+	const TypePtr &result, const TypePtr &self, const std::string &name,
 	const std::vector<Param> &params, bool vararg, StatementPtr body)
-	: Statement(where), Mode(mode), Result(result), Self(self), Name(name),
-	  Params(params), VarArg(vararg), Body(std::move(body))
+	: Statement(where), IsExtern(is_extern), Mode(mode), Result(result),
+	  Self(self), Name(name), Params(params), VarArg(vararg),
+	  Body(std::move(body))
 {
 }
 
 std::ostream &QLang::DefFnStatement::Print(std::ostream &stream) const
 {
 	stream << "def ";
+	if (IsExtern) stream << "ext ";
 	if (Mode == FnMode_Func)
 	{
 		stream << Result << ' ';
@@ -58,7 +61,7 @@ void QLang::DefFnStatement::GenIRVoid(Builder &builder) const
 		ref.Type = type;
 		ref.IRType = type->GenIR(builder);
 		ref.IR = llvm::Function::Create(
-			ref.IRType, llvm::GlobalValue::ExternalLinkage, Name,
+			ref.IRType, llvm::GlobalValue::ExternalLinkage, GenName(),
 			builder.IRModule());
 	}
 
@@ -75,7 +78,7 @@ void QLang::DefFnStatement::GenIRVoid(Builder &builder) const
 
 	builder.StackPush();
 	builder.GetResult() = type->GetResult();
-	builder.DestroyAtEnd().clear();
+	builder.ClearLocalDtors();
 
 	unsigned off = Self ? 1 : 0;
 	if (off)
@@ -118,10 +121,7 @@ void QLang::DefFnStatement::GenIRVoid(Builder &builder) const
 		if (!terminator || !terminator->willReturn()) continue;
 
 		builder.IRBuilder().SetInsertPoint(terminator);
-		for (auto &value : builder.DestroyAtEnd())
-			if (auto func = builder.FindDestructor(value->GetType()))
-				GenCall(
-					builder, func->AsValue(builder), LValue::From(value), {});
+		builder.GenLocalDtors();
 	}
 
 	builder.IRBuilder().ClearInsertionPoint();
@@ -134,4 +134,39 @@ void QLang::DefFnStatement::GenIRVoid(Builder &builder) const
 	}
 
 	builder.Optimize(ref.IR);
+}
+
+std::string QLang::DefFnStatement::GenName() const
+{
+	if (IsExtern) return Name;
+
+	std::string name = Name;
+
+	name += ';' + Result->GetName();
+
+	if (Self)
+	{
+		name += ';';
+		switch (Mode)
+		{
+		case FnMode_Func: name += ':'; break;
+		case FnMode_Ctor: name += '+'; break;
+		case FnMode_Dtor: name += '-'; break;
+		}
+		name += Self->GetName();
+	}
+
+	name += ';' + std::to_string(Params.size());
+	for (auto &p : Params)
+	{
+		name += ';';
+		name += p.Type->GetName();
+	}
+	if (VarArg) name += ";?";
+
+	auto hash = std::hash<std::string>()(name);
+
+	char buf[256];
+	sprintf(buf, "%s__%016lX", Name.c_str(), hash);
+	return buf;
 }

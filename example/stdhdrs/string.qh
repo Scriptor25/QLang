@@ -1,33 +1,33 @@
 macro NULL 0
 
 ;; Copying
-def void* memcpy(void* destination, void* source, i64 num)
-def void* memmove(void* destination, void* source, i64 num)
-def i8* strcpy(i8* destination, i8* source)
-def i8* strncpy(i8* destination, i8* source, i64 num)
+def ext void* memcpy(void* destination, void* source, i64 num)
+def ext void* memmove(void* destination, void* source, i64 num)
+def ext i8* strcpy(i8* destination, i8* source)
+def ext i8* strncpy(i8* destination, i8* source, i64 num)
 
 ;; Concatenation
-def i8* strcat(i8* destination, i8* source)
-def i8* strncat(i8* destination, i8* source)
+def ext i8* strcat(i8* destination, i8* source)
+def ext i8* strncat(i8* destination, i8* source)
 
 ;; Comparison
-def i32 memcmp(void* ptr1, void* ptr2, i64 num)
-def i32 strcmp(i8* str1, i8* str2)
-def i32 strcoll(i8* str1, i8* str2)
-def i32 strncmp(i8* str1, i8* str2, i64 num)
-def i64 strxfrm(i8* destination, i8* source, i64 num)
+def ext i32 memcmp(void* ptr1, void* ptr2, i64 num)
+def ext i32 strcmp(i8* str1, i8* str2)
+def ext i32 strcoll(i8* str1, i8* str2)
+def ext i32 strncmp(i8* str1, i8* str2, i64 num)
+def ext i64 strxfrm(i8* destination, i8* source, i64 num)
 
 ;; Searching
-def void* memchr(void* ptr, i32 value, i64 num)
-def i8* strchr(i8* str, i32 character)
-def i64 strcspn(i8* str1, i8* str2)
-def i8* strpbrk(i8* str1, i8* str2)
-def i8* strrchr(i8* str, i32 character)
-def i64 strcspn(i8* str1, i8* str2)
-def i8* strstr(i8* str1, i8* str2)
-def i8* strtok(i8* str, i8* delimiters)
+def ext void* memchr(void* ptr, i32 value, i64 num)
+def ext i8* strchr(i8* str, i32 character)
+def ext i64 strcspn(i8* str1, i8* str2)
+def ext i8* strpbrk(i8* str1, i8* str2)
+def ext i8* strrchr(i8* str, i32 character)
+def ext i64 strcspn(i8* str1, i8* str2)
+def ext i8* strstr(i8* str1, i8* str2)
+def ext i8* strtok(i8* str, i8* delimiters)
 
 ;; Other
-def void* memset(void* ptr, i32 value, i64 num)
-def i8* strerror(i32 errnum)
-def i64 strlen(i8* str)
+def ext void* memset(void* ptr, i32 value, i64 num)
+def ext i8* strerror(i32 errnum)
+def ext i64 strlen(i8* str)

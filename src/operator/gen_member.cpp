@@ -1,5 +1,6 @@
 #include <QLang/Builder.hpp>
 #include <QLang/Operator.hpp>
+#include <QLang/QLang.hpp>
 #include <QLang/Type.hpp>
 #include <iostream>
 
@@ -28,16 +29,11 @@ QLang::ValuePtr QLang::GenMember(
 
 	auto str_type = StructType::From(object->GetType());
 
-	TypePtr type;
 	size_t i;
 	for (i = 0; i < str_type->GetElementCount(); ++i)
-		if (str_type->GetElement(i).Name == member)
-		{
-			type = str_type->GetElement(i).Type;
-			break;
-		}
+		if (str_type->GetElement(i).Name == member) break;
 
-	if (!type)
+	if (i >= str_type->GetElementCount())
 	{
 		std::cerr << object->GetType() << " does not have a member with name '"
 				  << member << "'" << std::endl;
@@ -51,7 +47,17 @@ QLang::ValuePtr QLang::GenMember(
 		return {};
 	}
 
-	auto gep = builder.IRBuilder().CreateStructGEP(
-		str_type->GenIR(builder), lobject->GetPtr(), i, member);
-	return LValue::Create(builder, type, gep);
+	return GenMember(builder, lobject, i);
+}
+
+QLang::LValuePtr QLang::GenMember(
+	Builder &builder, const LValuePtr &object, size_t i)
+{
+	auto struct_type = StructType::From(object->GetType());
+	auto &[type, member, unused] = struct_type->GetElement(i);
+
+	auto str_ty = object->GetIRType();
+	auto ptr = builder.IRBuilder().CreateStructGEP(
+		str_ty, object->GetPtr(), i, member);
+	return LValue::Create(builder, type, ptr);
 }
