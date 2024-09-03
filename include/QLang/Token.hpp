@@ -22,6 +22,8 @@ namespace QLang
 
 	struct Token
 	{
+		bool operator!() const;
+
 		SourceLocation Where;
 		TokenType Type;
 		std::string Value;

@@ -6,6 +6,12 @@
 #include <iostream>
 
 QLang::ReturnStatement::ReturnStatement(
+	const SourceLocation &where, StatementPtr value)
+	: ReturnStatement(where, dyn_cast<Expression>(value))
+{
+}
+
+QLang::ReturnStatement::ReturnStatement(
 	const SourceLocation &where, ExpressionPtr value)
 	: Statement(where), Value(std::move(value))
 {

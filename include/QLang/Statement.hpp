@@ -57,6 +57,9 @@ namespace QLang
 	struct DefVarStatement : Statement
 	{
 		DefVarStatement(const SourceLocation &, const TypePtr &type,
+						const std::string &name, StatementPtr init);
+
+		DefVarStatement(const SourceLocation &, const TypePtr &type,
 						const std::string &name, ExpressionPtr init);
 
 		std::ostream &Print(std::ostream &) const override;
@@ -69,6 +72,9 @@ namespace QLang
 
 	struct IfStatement : Statement
 	{
+		IfStatement(const SourceLocation &, StatementPtr if_, StatementPtr then,
+					StatementPtr else_);
+
 		IfStatement(const SourceLocation &, ExpressionPtr if_,
 					StatementPtr then, StatementPtr else_);
 
@@ -82,6 +88,7 @@ namespace QLang
 
 	struct ReturnStatement : Statement
 	{
+		ReturnStatement(const SourceLocation &, StatementPtr value);
 		ReturnStatement(const SourceLocation &, ExpressionPtr value);
 
 		std::ostream &Print(std::ostream &) const override;
@@ -92,6 +99,9 @@ namespace QLang
 
 	struct WhileStatement : Statement
 	{
+		WhileStatement(
+			const SourceLocation &, StatementPtr while_, StatementPtr loop);
+
 		WhileStatement(
 			const SourceLocation &, ExpressionPtr while_, StatementPtr loop);
 

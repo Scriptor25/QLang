@@ -1,6 +1,5 @@
 #include <QLang/Parser.hpp>
 #include <QLang/Statement.hpp>
-#include <iostream>
 #include <vector>
 
 QLang::StatementPtr QLang::Parser::ParseCompound()
@@ -11,11 +10,6 @@ QLang::StatementPtr QLang::Parser::ParseCompound()
 	while (!NextIfAt("}"))
 	{
 		auto ptr = ParseStatement();
-		if (!ptr)
-		{
-			std::cerr << "wtf" << std::endl;
-			continue;
-		}
 		list.push_back(std::move(ptr));
 	}
 

@@ -1,6 +1,6 @@
-#include "QLang/Operator.hpp"
 #include <QLang/Builder.hpp>
 #include <QLang/Expression.hpp>
+#include <QLang/Operator.hpp>
 #include <QLang/Type.hpp>
 #include <llvm-18/llvm/Support/raw_ostream.h>
 #include <llvm/IR/Value.h>

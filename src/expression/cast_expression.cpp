@@ -1,6 +1,12 @@
-#include "QLang/Operator.hpp"
 #include <QLang/Expression.hpp>
+#include <QLang/Operator.hpp>
 #include <iostream>
+
+QLang::CastExpression::CastExpression(
+	const SourceLocation &where, const TypePtr &dst, StatementPtr src)
+	: CastExpression(where, dst, dyn_cast<Expression>(src))
+{
+}
 
 QLang::CastExpression::CastExpression(
 	const SourceLocation &where, const TypePtr &dst, ExpressionPtr src)

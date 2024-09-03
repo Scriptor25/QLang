@@ -7,7 +7,7 @@ QLang::StatementPtr QLang::Parser::ParseIf()
 {
 	auto where = Expect("if").Where;
 
-	auto if_ = dynamic_pointer_cast<Expression>(ParseBinary());
+	auto if_ = ParseBinary();
 	auto then = ParseStatement();
 
 	StatementPtr else_;

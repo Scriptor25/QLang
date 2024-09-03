@@ -1,8 +1,17 @@
 #include <QLang/Builder.hpp>
 #include <QLang/Expression.hpp>
+#include <QLang/QLang.hpp>
 #include <QLang/Statement.hpp>
 #include <iostream>
 #include <llvm/IR/BasicBlock.h>
+
+QLang::IfStatement::IfStatement(
+	const SourceLocation &where, StatementPtr if_, StatementPtr then,
+	StatementPtr else_)
+	: IfStatement(
+		  where, dyn_cast<Expression>(if_), std::move(then), std::move(else_))
+{
+}
 
 QLang::IfStatement::IfStatement(
 	const SourceLocation &where, ExpressionPtr if_, StatementPtr then,

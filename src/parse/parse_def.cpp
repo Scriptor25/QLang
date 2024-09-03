@@ -1,5 +1,6 @@
 #include <QLang/Expression.hpp>
 #include <QLang/Parser.hpp>
+#include <QLang/QLang.hpp>
 #include <QLang/Statement.hpp>
 #include <QLang/Token.hpp>
 #include <QLang/Type.hpp>
@@ -87,15 +88,14 @@ QLang::StatementPtr QLang::Parser::ParseDef()
 			}
 
 			auto &param = params.emplace_back();
+
 			param.Type = ParseType();
 			if (!param.Type)
 			{
 				std::cerr << "    at " << where << std::endl;
-				while (!NextIfAt(")")) Next();
-				if (NextIfAt("{"))
-					while (!NextIfAt("}")) Next();
 				return {};
 			}
+
 			if (At(TokenType_Name)) param.Name = Skip().Value;
 			if (!At(")")) Expect(",");
 		}
@@ -107,13 +107,13 @@ QLang::StatementPtr QLang::Parser::ParseDef()
 			where, mode, type, self, name, params, vararg, std::move(body));
 	}
 
-	ExpressionPtr init;
-	if (NextIfAt("=")) init = dynamic_pointer_cast<Expression>(ParseBinary());
+	StatementPtr init;
+	if (NextIfAt("=")) init = ParseBinary();
 	else if (At("+"))
 	{
 		auto w = Skip().Where;
 		auto callee = std::make_unique<NameExpression>(w, type->GetName());
-		init = dynamic_pointer_cast<Expression>(ParseCall(std::move(callee)));
+		init = ParseCall(std::move(callee));
 	}
 
 	return std::make_unique<DefVarStatement>(

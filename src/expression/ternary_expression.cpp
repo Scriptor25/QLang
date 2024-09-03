@@ -1,9 +1,20 @@
-#include "QLang/Operator.hpp"
 #include <QLang/Builder.hpp>
 #include <QLang/Expression.hpp>
+#include <QLang/Operator.hpp>
+#include <QLang/QLang.hpp>
 #include <QLang/Type.hpp>
 #include <QLang/Value.hpp>
 #include <iostream>
+
+QLang::TernaryExpression::TernaryExpression(
+	const SourceLocation &where, StatementPtr if_, StatementPtr then,
+	StatementPtr else_)
+	: TernaryExpression(
+		  where, dyn_cast<Expression>(std::move(if_)),
+		  dyn_cast<Expression>(std::move(then)),
+		  dyn_cast<Expression>(std::move(else_)))
+{
+}
 
 QLang::TernaryExpression::TernaryExpression(
 	const SourceLocation &where, ExpressionPtr if_, ExpressionPtr then,

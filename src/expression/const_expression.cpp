@@ -3,6 +3,33 @@
 #include <QLang/Type.hpp>
 #include <QLang/Value.hpp>
 #include <iostream>
+#include <string>
+
+static std::string unescape(int c)
+{
+	if (c >= 0x20) return std::string(1, c);
+	switch (c)
+	{
+	case 0x07: return "\\a";
+	case 0x08: return "\\b";
+	case 0x09: return "\\t";
+	case 0x0A: return "\\n";
+	case 0x0B: return "\\v";
+	case 0x0C: return "\\f";
+	case 0x0D: return "\\r";
+	default:
+		char buf[5];
+		sprintf(buf, "\\x%02X", c);
+		return buf;
+	}
+}
+
+static std::string unescape(const std::string &str)
+{
+	std::string s;
+	for (int c : str) s += unescape(c);
+	return s;
+}
 
 QLang::ConstCharExpression::ConstCharExpression(
 	const SourceLocation &where, char value)
@@ -12,7 +39,7 @@ QLang::ConstCharExpression::ConstCharExpression(
 
 std::ostream &QLang::ConstCharExpression::Print(std::ostream &stream) const
 {
-	return stream << '\'' << Value << '\'';
+	return stream << '\'' << unescape(Value) << '\'';
 }
 
 QLang::ValuePtr QLang::ConstCharExpression::GenIR(Builder &builder) const
@@ -64,7 +91,7 @@ QLang::ConstStringExpression::ConstStringExpression(
 
 std::ostream &QLang::ConstStringExpression::Print(std::ostream &stream) const
 {
-	return stream << '"' << Value << '"';
+	return stream << '"' << unescape(Value) << '"';
 }
 
 QLang::ValuePtr QLang::ConstStringExpression::GenIR(Builder &builder) const

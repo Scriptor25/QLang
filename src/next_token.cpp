@@ -73,6 +73,8 @@ QLang::Token QLang::Parser::NextToken()
 	{
 		State_Normal,
 		State_Comment,
+		State_SLComment,
+		State_MLComment,
 		State_Name,
 		State_Radix,
 		State_Bin,
@@ -98,7 +100,7 @@ QLang::Token QLang::Parser::NextToken()
 		case State_Normal:
 			switch (m_C)
 			{
-			case '#': state = State_Comment; break;
+			case ';': state = State_Comment; break;
 
 			case '\\':
 				m_C = Get();
@@ -169,7 +171,19 @@ QLang::Token QLang::Parser::NextToken()
 			break;
 
 		case State_Comment:
-			if (m_C == '#' || m_C < 0) state = State_Normal;
+			state = m_C == ';' ? State_SLComment : State_MLComment;
+			break;
+
+		case State_SLComment:
+			if (m_C == '\n' || m_C < 0)
+			{
+				NewLine();
+				state = State_Normal;
+			}
+			break;
+
+		case State_MLComment:
+			if (m_C == ';' || m_C < 0) state = State_Normal;
 			else if (m_C == '\n')
 				NewLine();
 			break;

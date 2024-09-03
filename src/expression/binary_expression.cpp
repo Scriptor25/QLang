@@ -1,9 +1,18 @@
 #include <QLang/Builder.hpp>
 #include <QLang/Expression.hpp>
 #include <QLang/Operator.hpp>
+#include <QLang/QLang.hpp>
 #include <QLang/Value.hpp>
 #include <iostream>
 #include <memory>
+
+QLang::BinaryExpression::BinaryExpression(
+	const SourceLocation &where, const std::string &operator_, StatementPtr lhs,
+	StatementPtr rhs)
+	: BinaryExpression(where, operator_, dyn_cast<Expression>(lhs),
+					   dyn_cast<Expression>(rhs))
+{
+}
 
 QLang::BinaryExpression::BinaryExpression(
 	const SourceLocation &where, const std::string &operator_,

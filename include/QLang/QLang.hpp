@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <vector>
 
 namespace QLang
 {
@@ -41,7 +42,7 @@ namespace QLang
 	typedef std::unique_ptr<Expression> ExpressionPtr;
 
 	template <typename T, typename U>
-	std::unique_ptr<T> dynamic_pointer_cast(std::unique_ptr<U> &&ptr)
+	std::unique_ptr<T> dyn_cast(std::unique_ptr<U> &&ptr)
 	{
 		if (T *p = dynamic_cast<T *>(ptr.get()))
 		{
@@ -49,6 +50,26 @@ namespace QLang
 			return std::unique_ptr<T>(p);
 		}
 		return {};
+	}
+
+	template <typename T, typename U>
+	std::unique_ptr<T> dyn_cast(std::unique_ptr<U> &ptr)
+	{
+		if (T *p = dynamic_cast<T *>(ptr.get()))
+		{
+			ptr.release();
+			return std::unique_ptr<T>(p);
+		}
+		return {};
+	}
+
+	template <typename T, typename U>
+	std::vector<std::unique_ptr<T>> dyn_cast(
+		std::vector<std::unique_ptr<U>> &uv)
+	{
+		std::vector<std::unique_ptr<T>> tv(uv.size());
+		for (size_t i = 0; i < tv.size(); ++i) tv[i] = dyn_cast<T, U>(uv[i]);
+		return tv;
 	}
 
 	std::ostream &operator<<(std::ostream &, const SourceLocation &);

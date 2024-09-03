@@ -43,25 +43,4 @@ void QLang::Parser::ParseMacro()
 	m_C = Get();
 	NewLine();
 	Next();
-
-	/*
-	macro min(a, b) ((a) < (b) ? (a) : (b))
-
-	...
-
-	min(123, 456 + 789) -> ((123) < (456 + 789) ? (123) : (456 + 789))
-	*/
-
-	/*
-	macro init(name) Init_\name()
-
-	...
-
-	init(ABC) -> Init_ABC()
-	*/
-
-	/*
-	<name>  -> <arg>
-	\<name> -> <argname>
-	*/
 }

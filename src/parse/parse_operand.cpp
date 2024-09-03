@@ -9,25 +9,25 @@ QLang::StatementPtr QLang::Parser::ParseOperand()
 	{
 		if (At("("))
 		{
-			ptr = ParseCall(dynamic_pointer_cast<Expression>(std::move(ptr)));
+			ptr = ParseCall(std::move(ptr));
 			continue;
 		}
 
 		if (At("["))
 		{
-			ptr = ParseIndex(dynamic_pointer_cast<Expression>(std::move(ptr)));
+			ptr = ParseIndex(std::move(ptr));
 			continue;
 		}
 
 		if (At(".") || At("!"))
 		{
-			ptr = ParseMember(dynamic_pointer_cast<Expression>(std::move(ptr)));
+			ptr = ParseMember(std::move(ptr));
 			continue;
 		}
 
 		if (At("++") || At("--"))
 		{
-			ptr = ParseUnary(dynamic_pointer_cast<Expression>(std::move(ptr)));
+			ptr = ParseUnary(std::move(ptr));
 			continue;
 		}
 

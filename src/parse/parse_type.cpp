@@ -1,6 +1,6 @@
-#include "QLang/QLang.hpp"
 #include <QLang/Expression.hpp>
 #include <QLang/Parser.hpp>
+#include <QLang/QLang.hpp>
 #include <QLang/Token.hpp>
 #include <QLang/Type.hpp>
 #include <iostream>
@@ -23,8 +23,7 @@ QLang::TypePtr QLang::Parser::ParseType()
 				element.Type = ParseType();
 				element.Name = Expect(TokenType_Name).Value;
 				if (NextIfAt("="))
-					element.Init
-						= dynamic_pointer_cast<Expression>(ParseBinary());
+					element.Init = dyn_cast<Expression>(ParseBinary());
 				if (!At("}")) Expect(",");
 			}
 
@@ -58,8 +57,7 @@ QLang::TypePtr QLang::Parser::ParseType()
 
 		if (NextIfAt("["))
 		{
-			auto length_expr
-				= dynamic_pointer_cast<ConstIntExpression>(ParseOperand());
+			auto length_expr = dyn_cast<ConstIntExpression>(ParseOperand());
 			auto length = length_expr->Value;
 			Expect("]");
 			base = ArrayType::Get(base, length);

@@ -1,6 +1,6 @@
 include "assert.qh"
 
-macro min(a, b) ((\a\) < (\b\) ? (\a\) : (\b\))
+macro min(a, b) ((#a#) < (#b#) ? (#a#) : (#b#))
 
 def i32 main() {
     def f64 m = min(1.234, 5432)

@@ -4,18 +4,18 @@
 #include <QLang/QLang.hpp>
 #include <vector>
 
-QLang::StatementPtr QLang::Parser::ParseCall(ExpressionPtr callee)
+QLang::StatementPtr QLang::Parser::ParseCall(StatementPtr callee)
 {
 	auto where = Expect("(").Where;
 
-	std::vector<ExpressionPtr> args;
+	std::vector<StatementPtr> args;
 	while (!NextIfAt(")"))
 	{
-		args.push_back(dynamic_pointer_cast<Expression>(ParseBinary()));
+		args.push_back(ParseBinary());
 		if (!At(")")) Expect(",");
 	}
 
-	if (auto name = dynamic_cast<NameExpression *>(callee.get()))
+	if (auto name = dyn_cast<NameExpression>(callee))
 	{
 		if (m_Context.HasMacro(name->Name))
 		{
@@ -27,7 +27,10 @@ QLang::StatementPtr QLang::Parser::ParseCall(ExpressionPtr callee)
 				return statement;
 			}
 		}
+
+		callee = std::move(name);
 	}
 
-	return std::make_unique<CallExpression>(where, std::move(callee), args);
+	return std::make_unique<CallExpression>(
+		where, std::move(callee), std::move(args));
 }

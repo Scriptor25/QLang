@@ -1,8 +1,8 @@
-#include "QLang/QLang.hpp"
 #include <QLang/Builder.hpp>
 #include <QLang/Context.hpp>
 #include <QLang/Linker.hpp>
 #include <QLang/Parser.hpp>
+#include <QLang/QLang.hpp>
 #include <QLang/Statement.hpp>
 #include <fstream>
 #include <iostream>

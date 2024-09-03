@@ -16,7 +16,7 @@ QLang::StatementPtr QLang::Macro::Resolve(
 {
 	std::vector<StatementPtr> stmt_args;
 	for (auto &arg : args)
-		stmt_args.push_back(dynamic_pointer_cast<Statement>(std::move(arg)));
+		stmt_args.push_back(dyn_cast<Statement>(std::move(arg)));
 	return Resolve(parser, stmt_args);
 }
 
@@ -31,7 +31,7 @@ QLang::StatementPtr QLang::Macro::Resolve(
 		for (size_t a = 0; a < Params.size(); ++a)
 		{
 			const auto &param = Params[a];
-			auto pos = value.find("\\\\" + param + "\\\\", i);
+			auto pos = value.find("##" + param + "##", i);
 			if (pos == std::string::npos) continue;
 			std::stringstream ss;
 			ss << '"';
@@ -48,7 +48,7 @@ QLang::StatementPtr QLang::Macro::Resolve(
 		for (size_t a = 0; a < Params.size(); ++a)
 		{
 			const auto &param = Params[a];
-			auto pos = value.find('\\' + param + '\\', i);
+			auto pos = value.find('#' + param + '#', i);
 			if (pos == std::string::npos) continue;
 			std::stringstream ss;
 			args[a]->Print(ss);

@@ -1,13 +1,22 @@
 #include <QLang/Builder.hpp>
 #include <QLang/Expression.hpp>
 #include <QLang/Operator.hpp>
+#include <QLang/QLang.hpp>
 #include <QLang/Type.hpp>
 #include <QLang/Value.hpp>
 #include <iostream>
 
 QLang::CallExpression::CallExpression(
+	const SourceLocation &where, StatementPtr callee,
+	std::vector<StatementPtr> args)
+	: CallExpression(
+		  where, dyn_cast<Expression>(callee), dyn_cast<Expression>(args))
+{
+}
+
+QLang::CallExpression::CallExpression(
 	const SourceLocation &where, ExpressionPtr callee,
-	std::vector<ExpressionPtr> &args)
+	std::vector<ExpressionPtr> args)
 	: Expression(where), Callee(std::move(callee)), Args(std::move(args))
 {
 }

@@ -55,10 +55,10 @@ namespace QLang
 
 		StatementPtr ParseOperand();
 		StatementPtr ParsePrimary();
-		StatementPtr ParseCall(ExpressionPtr);
-		StatementPtr ParseIndex(ExpressionPtr);
-		StatementPtr ParseMember(ExpressionPtr);
-		StatementPtr ParseUnary(ExpressionPtr);
+		StatementPtr ParseCall(StatementPtr);
+		StatementPtr ParseIndex(StatementPtr);
+		StatementPtr ParseMember(StatementPtr);
+		StatementPtr ParseUnary(StatementPtr);
 
 	private:
 		Builder &m_Builder;

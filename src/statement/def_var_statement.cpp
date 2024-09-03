@@ -1,11 +1,19 @@
 #include <QLang/Builder.hpp>
 #include <QLang/Expression.hpp>
 #include <QLang/Operator.hpp>
+#include <QLang/QLang.hpp>
 #include <QLang/Statement.hpp>
 #include <QLang/Type.hpp>
 #include <QLang/Value.hpp>
 #include <iostream>
 #include <ostream>
+
+QLang::DefVarStatement::DefVarStatement(
+	const SourceLocation &where, const TypePtr &type, const std::string &name,
+	StatementPtr init)
+	: DefVarStatement(where, type, name, dyn_cast<Expression>(std::move(init)))
+{
+}
 
 QLang::DefVarStatement::DefVarStatement(
 	const SourceLocation &where, const TypePtr &type, const std::string &name,

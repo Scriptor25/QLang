@@ -5,6 +5,12 @@
 #include <iostream>
 
 QLang::WhileStatement::WhileStatement(
+	const SourceLocation &where, StatementPtr while_, StatementPtr loop)
+	: WhileStatement(where, dyn_cast<Expression>(while_), std::move(loop))
+{
+}
+
+QLang::WhileStatement::WhileStatement(
 	const SourceLocation &where, ExpressionPtr while_, StatementPtr loop)
 	: Statement(where), While(std::move(while_)), Loop(std::move(loop))
 {

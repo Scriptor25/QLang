@@ -6,6 +6,13 @@
 
 QLang::UnaryExpression::UnaryExpression(
 	const SourceLocation &where, const std::string &operator_,
+	StatementPtr operand, bool post)
+	: UnaryExpression(where, operator_, dyn_cast<Expression>(operand), post)
+{
+}
+
+QLang::UnaryExpression::UnaryExpression(
+	const SourceLocation &where, const std::string &operator_,
 	ExpressionPtr operand, bool post)
 	: Expression(where), Operator(operator_), Operand(std::move(operand)),
 	  Post(post)

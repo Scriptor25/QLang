@@ -1,7 +1,7 @@
-#include "QLang/QLang.hpp"
 #include <QLang/Context.hpp>
 #include <QLang/Expression.hpp>
 #include <QLang/Parser.hpp>
+#include <QLang/QLang.hpp>
 #include <QLang/Token.hpp>
 #include <iostream>
 #include <memory>
@@ -28,14 +28,14 @@ QLang::StatementPtr QLang::Parser::ParsePrimary()
 		Expect("(");
 		auto dst = ParseType();
 		Expect(")");
-		auto src = dynamic_pointer_cast<Expression>(ParseOperand());
+		auto src = ParseOperand();
 		return std::make_unique<CastExpression>(Where, dst, std::move(src));
 	}
 
 	if (At(TokenType_Operator))
 	{
 		auto [Where, Type, Value] = Skip();
-		auto operand = dynamic_pointer_cast<Expression>(ParseOperand());
+		auto operand = ParseOperand();
 		return std::make_unique<UnaryExpression>(
 			Where, Value, std::move(operand), false);
 	}

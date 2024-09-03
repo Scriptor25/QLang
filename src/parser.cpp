@@ -4,6 +4,7 @@
 #include <QLang/SourceLocation.hpp>
 #include <QLang/Token.hpp>
 #include <iostream>
+#include <stdexcept>
 
 QLang::Parser::Parser(
 	Builder &builder, std::istream &stream, const SourceLocation &where,
@@ -71,7 +72,7 @@ QLang::Token QLang::Parser::Expect(TokenType type)
 	if (At(type)) return Skip();
 	std::cerr << "at " << m_Token.Where << ": expected type " << type
 			  << ", but is " << m_Token.Type << std::endl;
-	return {};
+	throw std::runtime_error("QLang::Parser::Expect");
 }
 
 QLang::Token QLang::Parser::Expect(const std::string &value)
@@ -79,5 +80,5 @@ QLang::Token QLang::Parser::Expect(const std::string &value)
 	if (At(value)) return Skip();
 	std::cerr << "at " << m_Token.Where << ": expected '" << value
 			  << "', but is '" << m_Token.Value << "'" << std::endl;
-	return {};
+	throw std::runtime_error("QLang::Parser::Expect");
 }
