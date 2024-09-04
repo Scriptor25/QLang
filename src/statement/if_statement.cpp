@@ -59,13 +59,15 @@ void QLang::IfStatement::GenIRVoid(Builder &builder) const
 	then = builder.IRBuilder().GetInsertBlock();
 	if (!then->getTerminator()) builder.IRBuilder().CreateBr(end);
 
-	builder.IRBuilder().SetInsertPoint(else_);
 	if (Else)
 	{
+		builder.IRBuilder().SetInsertPoint(else_);
 		Else->GenIRVoid(builder);
 		else_ = builder.IRBuilder().GetInsertBlock();
 		if (!else_->getTerminator()) builder.IRBuilder().CreateBr(end);
 	}
 
 	if (end->hasNPredecessors(0)) end->eraseFromParent();
+	else
+		builder.IRBuilder().SetInsertPoint(end);
 }
