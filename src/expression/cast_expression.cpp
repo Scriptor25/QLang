@@ -16,7 +16,7 @@ QLang::CastExpression::CastExpression(
 
 std::ostream &QLang::CastExpression::Print(std::ostream &stream) const
 {
-	return stream << "cast(" << Dst << ") " << Src;
+	return stream << "cast(" << Dst << ") (" << Src << ')';
 }
 
 QLang::ValuePtr QLang::CastExpression::GenIR(Builder &builder) const

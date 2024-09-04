@@ -59,23 +59,26 @@ namespace QLang
 
 	struct DefVarStatement : Statement
 	{
-		DefVarStatement(const SourceLocation &, const TypePtr &type,
-						const std::string &name, StatementPtr init);
+		DefVarStatement(
+			const SourceLocation &, bool is_extern, const TypePtr &type,
+			const std::string &name, StatementPtr init);
 
 		DefVarStatement(
-			const SourceLocation &, const TypePtr &type,
+			const SourceLocation &, bool is_extern, const TypePtr &type,
 			const std::string &name, std::vector<StatementPtr> args);
 
-		DefVarStatement(const SourceLocation &, const TypePtr &type,
-						const std::string &name, ExpressionPtr init);
+		DefVarStatement(
+			const SourceLocation &, bool is_extern, const TypePtr &type,
+			const std::string &name, ExpressionPtr init);
 
 		DefVarStatement(
-			const SourceLocation &, const TypePtr &type,
+			const SourceLocation &, bool is_extern, const TypePtr &type,
 			const std::string &name, std::vector<ExpressionPtr> args);
 
 		std::ostream &Print(std::ostream &) const override;
 		void GenIRVoid(Builder &) const override;
 
+		bool IsExtern;
 		TypePtr Type;
 		std::string Name;
 		ExpressionPtr Init;

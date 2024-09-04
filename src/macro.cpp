@@ -26,9 +26,9 @@ QLang::StatementPtr QLang::Macro::Resolve(
 	std::string value = Value;
 
 	// replace as string
-	for (size_t i = 0; i < value.length(); ++i)
+	for (size_t a = 0; a < Params.size(); ++a)
 	{
-		for (size_t a = 0; a < Params.size(); ++a)
+		for (size_t i = 0; i < value.length(); ++i)
 		{
 			const auto &param = Params[a];
 			auto pos = value.find("##" + param + "##", i);
@@ -43,9 +43,9 @@ QLang::StatementPtr QLang::Macro::Resolve(
 	}
 
 	// replace as expression
-	for (size_t i = 0; i < value.length(); ++i)
+	for (size_t a = 0; a < Params.size(); ++a)
 	{
-		for (size_t a = 0; a < Params.size(); ++a)
+		for (size_t i = 0; i < value.length(); ++i)
 		{
 			const auto &param = Params[a];
 			auto pos = value.find('#' + param + '#', i);

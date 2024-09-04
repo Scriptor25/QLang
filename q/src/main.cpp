@@ -4,6 +4,7 @@
 #include <QLang/Parser.hpp>
 #include <QLang/QLang.hpp>
 #include <QLang/Statement.hpp>
+#include <ctime>
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -47,10 +48,16 @@ int main(int argc, const char **argv)
 		std::ifstream stream(filename);
 		if (!stream) continue;
 
+		std::string modulename
+			= std::filesystem::path(filename)
+				  .replace_extension()
+				  .filename()
+				  .string();
+
 		QLang::Context context;
 		for (const auto &dir : include_dirs) context.AddIncludeDir(dir);
 
-		QLang::Builder builder(context, linker.IRContext());
+		QLang::Builder builder(context, linker.IRContext(), modulename);
 		QLang::Parser parser(
 			builder, stream, { .Filename = filename },
 			[&](QLang::StatementPtr ptr)

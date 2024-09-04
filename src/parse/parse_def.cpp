@@ -122,9 +122,9 @@ QLang::StatementPtr QLang::Parser::ParseDef()
 		}
 
 		return std::make_unique<DefVarStatement>(
-			where, type, name, std::move(args));
+			where, is_extern, type, name, std::move(args));
 	}
 
 	return std::make_unique<DefVarStatement>(
-		where, type, name, std::move(init));
+		where, is_extern, type, name, std::move(init));
 }

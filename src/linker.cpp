@@ -2,6 +2,7 @@
 #include <QLang/Linker.hpp>
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/LegacyPassManager.h>
+#include <llvm/IR/Verifier.h>
 #include <llvm/Linker/Linker.h>
 #include <llvm/MC/TargetRegistry.h>
 #include <llvm/Support/CodeGen.h>
@@ -24,6 +25,8 @@ llvm::LLVMContext &QLang::Linker::IRContext() const { return *m_IRContext; }
 void QLang::Linker::Link(Builder &builder)
 {
 	auto &module = builder.IRModulePtr();
+	if (llvm::verifyModule(*module, &llvm::errs())) return;
+
 	llvm::Linker::linkModules(*m_IRModule, std::move(module));
 }
 

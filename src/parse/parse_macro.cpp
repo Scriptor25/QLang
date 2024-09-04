@@ -11,7 +11,7 @@ void QLang::Parser::ParseMacro()
 	auto name = Expect(TokenType_Name).Value;
 
 	std::vector<std::string> params;
-	bool is_callee = NextIfAt("(");
+	bool is_callee = !NextIfAt("=") && NextIfAt("(");
 
 	if (is_callee)
 		while (!NextIfAt(")"))

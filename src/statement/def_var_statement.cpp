@@ -9,47 +9,53 @@
 #include <ostream>
 
 QLang::DefVarStatement::DefVarStatement(
-	const SourceLocation &where, const TypePtr &type, const std::string &name,
-	StatementPtr init)
-	: DefVarStatement(where, type, name, dyn_cast<Expression>(std::move(init)))
+	const SourceLocation &where, bool is_extern, const TypePtr &type,
+	const std::string &name, StatementPtr init)
+	: DefVarStatement(
+		  where, is_extern, type, name, dyn_cast<Expression>(std::move(init)))
 {
 }
 
 QLang::DefVarStatement::DefVarStatement(
-	const SourceLocation &where, const TypePtr &type, const std::string &name,
-	std::vector<StatementPtr> args)
-	: DefVarStatement(where, type, name, dyn_cast<Expression>(args))
+	const SourceLocation &where, bool is_extern, const TypePtr &type,
+	const std::string &name, std::vector<StatementPtr> args)
+	: DefVarStatement(where, is_extern, type, name, dyn_cast<Expression>(args))
 {
 }
 
 QLang::DefVarStatement::DefVarStatement(
-	const SourceLocation &where, const TypePtr &type, const std::string &name,
-	ExpressionPtr init)
-	: Statement(where), Type(type), Name(name), Init(std::move(init))
+	const SourceLocation &where, bool is_extern, const TypePtr &type,
+	const std::string &name, ExpressionPtr init)
+	: Statement(where), IsExtern(is_extern), Type(type), Name(name),
+	  Init(std::move(init))
 {
 }
 
 QLang::DefVarStatement::DefVarStatement(
-	const SourceLocation &where, const TypePtr &type, const std::string &name,
-	std::vector<ExpressionPtr> args)
-	: Statement(where), Type(type), Name(name), Args(std::move(args))
+	const SourceLocation &where, bool is_extern, const TypePtr &type,
+	const std::string &name, std::vector<ExpressionPtr> args)
+	: Statement(where), IsExtern(is_extern), Type(type), Name(name),
+	  Args(std::move(args))
 {
 }
 
 std::ostream &QLang::DefVarStatement::Print(std::ostream &stream) const
 {
-	if (!Init)
+	stream << "def ";
+	if (IsExtern) stream << "ext ";
+	stream << Type << ' ' << Name;
+
+	if (Init) return stream << " = " << Init;
+
+	if (Args.empty()) return stream;
+
+	stream << " { ";
+	for (size_t i = 0; i < Args.size(); ++i)
 	{
-		if (Args.empty()) return stream << "def " << Type << ' ' << Name;
-		stream << "def " << Type << ' ' << Name << " { ";
-		for (size_t i = 0; i < Args.size(); ++i)
-		{
-			if (i > 0) stream << ", ";
-			stream << Args[i];
-		}
-		return stream << " }";
+		if (i > 0) stream << ", ";
+		stream << Args[i];
 	}
-	return stream << "def " << Type << ' ' << Name << " = " << Init;
+	return stream << " }";
 }
 
 void QLang::DefVarStatement::GenIRVoid(Builder &builder) const
@@ -59,9 +65,14 @@ void QLang::DefVarStatement::GenIRVoid(Builder &builder) const
 		if (!Init)
 		{
 			auto ir_type = Type->GenIR(builder);
+			llvm::Constant *init = nullptr;
+			if (!IsExtern) init = llvm::Constant::getNullValue(ir_type);
+
 			auto ptr = new llvm::GlobalVariable(
 				builder.IRModule(), ir_type, false,
-				llvm::GlobalValue::ExternalLinkage, nullptr, Name);
+				IsExtern ? llvm::GlobalValue::ExternalLinkage
+						 : llvm::GlobalValue::InternalLinkage,
+				init, Name);
 			builder[Name] = LValue::Create(builder, Type, ptr);
 			return;
 		}

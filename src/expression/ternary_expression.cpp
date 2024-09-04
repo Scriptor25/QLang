@@ -26,7 +26,7 @@ QLang::TernaryExpression::TernaryExpression(
 
 std::ostream &QLang::TernaryExpression::Print(std::ostream &stream) const
 {
-	return stream << If << " ? " << Then << " : " << Else;
+	return stream << '(' << If << " ? " << Then << " : " << Else << ')';
 }
 
 QLang::ValuePtr QLang::TernaryExpression::GenIR(Builder &builder) const
@@ -65,6 +65,7 @@ QLang::ValuePtr QLang::TernaryExpression::GenIR(Builder &builder) const
 		end->eraseFromParent();
 		return {};
 	}
+	then = builder.IRBuilder().GetInsertBlock();
 	auto then_br = builder.IRBuilder().CreateBr(end);
 
 	builder.IRBuilder().SetInsertPoint(else_);
@@ -81,6 +82,7 @@ QLang::ValuePtr QLang::TernaryExpression::GenIR(Builder &builder) const
 		end->eraseFromParent();
 		return {};
 	}
+	else_ = builder.IRBuilder().GetInsertBlock();
 	auto else_br = builder.IRBuilder().CreateBr(end);
 
 	auto type = Type::HigherOrder(then_value->GetType(), else_value->GetType());

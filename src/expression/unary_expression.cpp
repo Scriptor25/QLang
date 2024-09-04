@@ -21,8 +21,8 @@ QLang::UnaryExpression::UnaryExpression(
 
 std::ostream &QLang::UnaryExpression::Print(std::ostream &stream) const
 {
-	return stream << (Post ? "" : Operator) << Operand
-				  << (Post ? Operator : "");
+	return stream << '(' << (Post ? "" : Operator) << Operand
+				  << (Post ? Operator : "") << ')';
 }
 
 QLang::ValuePtr QLang::UnaryExpression::GenIR(Builder &builder) const

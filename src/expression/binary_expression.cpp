@@ -25,7 +25,7 @@ QLang::BinaryExpression::BinaryExpression(
 std::ostream &QLang::BinaryExpression::Print(std::ostream &stream) const
 {
 	if (Operator == "[]") return stream << LHS << '[' << RHS << ']';
-	return stream << LHS << ' ' << Operator << ' ' << RHS;
+	return stream << '(' << LHS << ' ' << Operator << ' ' << RHS << ')';
 }
 
 QLang::ValuePtr QLang::BinaryExpression::GenIR(Builder &builder) const

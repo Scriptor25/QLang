@@ -1,0 +1,29 @@
+;; Macros
+macro CLOCKS_PER_SEC 1000000
+macro NULL = (cast(void*)0)
+
+;; Types
+use tm as struct tm {
+    i32 tm_sec,
+    i32 tm_min,
+    i32 tm_hour,
+    i32 tm_mday,
+    i32 tm_mon,
+    i32 tm_year,
+    i32 tm_wday,
+    i32 tm_yday,
+    i32 tm_isdst
+}
+
+;; Time manipulation
+def ext i64 clock()
+def ext f64 difftime(i64 end, i64 beginning)
+def ext i64 mktime(tm* timeptr)
+def ext i64 time(i64* timer)
+
+;; Conversion
+def ext i8* asctime(tm* timeptr)
+def ext i8* ctime(i64* timer)
+def ext tm* gmtime(i64* timer)
+def ext tm* localtime(i64* timer)
+def ext i64 strftime(i8* ptr, i64 maxsize, i8* format, tm* timeptr)

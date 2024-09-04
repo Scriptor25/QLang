@@ -10,7 +10,9 @@
             "request": "launch",
             "program": "${command:cmake.launchTargetPath}",
             "args": [
-                "example/test/main.q",
+                "example/donut/main.q",
+                "-I",
+                "example/stdhdrs"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",

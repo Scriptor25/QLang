@@ -25,7 +25,7 @@ namespace QLang
 	class Builder
 	{
 	public:
-		Builder(Context &, llvm::LLVMContext &);
+		Builder(Context &, llvm::LLVMContext &, const std::string& modulename);
 
 		Context &GetContext() const;
 

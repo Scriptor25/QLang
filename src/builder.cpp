@@ -2,21 +2,24 @@
 #include <QLang/Expression.hpp>
 #include <QLang/Operator.hpp>
 #include <QLang/Type.hpp>
-#include <llvm-18/llvm/Support/raw_ostream.h>
 #include <llvm/IR/Value.h>
 #include <llvm/Passes/PassBuilder.h>
+#include <llvm/Support/raw_ostream.h>
 #include <llvm/Transforms/AggressiveInstCombine/AggressiveInstCombine.h>
+#include <llvm/Transforms/InstCombine/InstCombine.h>
 #include <llvm/Transforms/Scalar/GVN.h>
 #include <llvm/Transforms/Scalar/Reassociate.h>
 #include <llvm/Transforms/Scalar/SimplifyCFG.h>
 #include <llvm/Transforms/Utils/Mem2Reg.h>
 #include <memory>
 
-QLang::Builder::Builder(Context &context, llvm::LLVMContext &ir_context)
+QLang::Builder::Builder(
+	Context &context, llvm::LLVMContext &ir_context,
+	const std::string &modulename)
 	: m_Context(context), m_IRContext(ir_context)
 {
 	m_IRBuilder = std::make_unique<llvm::IRBuilder<>>(m_IRContext);
-	m_IRModule = std::make_unique<llvm::Module>("module", m_IRContext);
+	m_IRModule = std::make_unique<llvm::Module>(modulename, m_IRContext);
 
 	m_FPM = std::make_unique<llvm::FunctionPassManager>();
 	m_LAM = std::make_unique<llvm::LoopAnalysisManager>();
@@ -29,6 +32,7 @@ QLang::Builder::Builder(Context &context, llvm::LLVMContext &ir_context)
 	m_SI->registerCallbacks(*m_PIC, m_MAM.get());
 
 	m_FPM->addPass(llvm::AggressiveInstCombinePass());
+	m_FPM->addPass(llvm::InstCombinePass());
 	m_FPM->addPass(llvm::ReassociatePass());
 	m_FPM->addPass(llvm::GVNPass());
 	m_FPM->addPass(llvm::SimplifyCFGPass());
