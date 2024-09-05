@@ -2,11 +2,9 @@
 
 #include <QLang/Function.hpp>
 #include <QLang/QLang.hpp>
-#include <QLang/Value.hpp>
 #include <llvm/Analysis/CGSCCPassManager.h>
 #include <llvm/Analysis/LoopAnalysisManager.h>
 #include <llvm/IR/IRBuilder.h>
-#include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Module.h>
 #include <llvm/IR/PassManager.h>
 #include <llvm/Passes/StandardInstrumentations.h>
@@ -25,19 +23,19 @@ namespace QLang
 	class Builder
 	{
 	public:
-		Builder(Context &, llvm::LLVMContext &, const std::string& modulename);
+		Builder(Context &, llvm::LLVMContext &, const std::string &module_name);
 
-		Context &GetContext() const;
+		[[nodiscard]] Context &GetContext() const;
 
-		llvm::LLVMContext &IRContext() const;
-		llvm::IRBuilder<> &IRBuilder() const;
-		llvm::Module &IRModule() const;
+		[[nodiscard]] llvm::LLVMContext &IRContext() const;
+		[[nodiscard]] llvm::IRBuilder<> &IRBuilder() const;
+		[[nodiscard]] llvm::Module &IRModule() const;
 
 		std::unique_ptr<llvm::Module> &IRModulePtr();
 
-		void Optimize(llvm::Function *);
+		void Optimize(llvm::Function *) const;
 
-		void Print();
+		void Print() const;
 
 		// Value Stack Utility
 		void StackPush();
@@ -48,7 +46,7 @@ namespace QLang
 		LValuePtr CreateInstance(
 			const TypePtr &type, const std::string &name = "");
 
-		// Value Destructions
+		// Local destructors
 		void ClearLocalDtors();
 		void CreateLocalDtor(const LValuePtr &value);
 		void RemoveLocalDtor(const ValuePtr &value);
@@ -65,25 +63,25 @@ namespace QLang
 		Function *FindDestructor(const TypePtr &self);
 
 		// Type Utility
-		TypePtr GetVoidTy() const;
-		TypePtr GetInt1Ty() const;
-		TypePtr GetInt8Ty() const;
-		TypePtr GetInt16Ty() const;
-		TypePtr GetInt32Ty() const;
-		TypePtr GetInt64Ty() const;
-		TypePtr GetFloat16Ty() const;
-		TypePtr GetFloat32Ty() const;
-		TypePtr GetFloat64Ty() const;
-		PointerTypePtr GetVoidPtrTy() const;
-		PointerTypePtr GetInt8PtrTy() const;
+		[[nodiscard]] TypePtr GetVoidTy() const;
+		[[nodiscard]] TypePtr GetInt1Ty() const;
+		[[nodiscard]] TypePtr GetInt8Ty() const;
+		[[nodiscard]] TypePtr GetInt16Ty() const;
+		[[nodiscard]] TypePtr GetInt32Ty() const;
+		[[nodiscard]] TypePtr GetInt64Ty() const;
+		[[nodiscard]] TypePtr GetFloat16Ty() const;
+		[[nodiscard]] TypePtr GetFloat32Ty() const;
+		[[nodiscard]] TypePtr GetFloat64Ty() const;
+		[[nodiscard]] PointerTypePtr GetVoidPtrTy() const;
+		[[nodiscard]] PointerTypePtr GetInt8PtrTy() const;
 
-		bool IsCallee();
+		[[nodiscard]] bool IsCallee() const;
 		void SetCallee();
 		void ClearCallee();
 
 		ValuePtr &Self();
 
-		size_t GetArgCount();
+		[[nodiscard]] size_t GetArgCount() const;
 		TypePtr &GetArg(size_t);
 		std::vector<TypePtr> &GetArgs();
 

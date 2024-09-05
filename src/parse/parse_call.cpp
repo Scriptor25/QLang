@@ -19,8 +19,9 @@ QLang::StatementPtr QLang::Parser::ParseCall(StatementPtr callee)
 	{
 		if (m_Context.HasMacro(name->Name))
 		{
-			auto &macro = m_Context.GetMacro(name->Name);
-			if (macro.IsCallee)
+			if (auto &[_where, _name, _params, _is_callee, _value]
+				= m_Context.GetMacro(name->Name);
+				_is_callee)
 			{
 				auto statement
 					= m_Context.GetMacro(name->Name).Resolve(*this, args);

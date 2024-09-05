@@ -4,6 +4,7 @@
 #include <QLang/Type.hpp>
 #include <llvm/IR/DerivedTypes.h>
 #include <memory>
+#include <utility>
 
 QLang::StructTypePtr QLang::StructType::From(const TypePtr &type)
 {
@@ -20,7 +21,7 @@ QLang::StructTypePtr QLang::StructType::Get(
 		ref = std::make_shared<StructType>(
 			ctx, "struct " + name, name, 0, elements);
 	}
-	return StructType::From(ref);
+	return From(ref);
 }
 
 QLang::StructTypePtr QLang::StructType::Get(
@@ -31,8 +32,7 @@ QLang::StructTypePtr QLang::StructType::Get(
 	auto full_name = "struct " + name;
 	if (!name.empty())
 	{
-		for (size_t i = 0; i < elements.size(); ++i)
-			size += elements[i].Type->GetSize();
+		for (auto &[Type, Name, Init] : elements) size += Type->GetSize();
 	}
 	else
 	{
@@ -51,14 +51,14 @@ QLang::StructTypePtr QLang::StructType::Get(
 	if (!ref)
 		ref = std::make_shared<StructType>(
 			ctx, full_name, name, size, elements);
-	return StructType::From(ref);
+	return From(ref);
 }
 
 QLang::StructType::StructType(
-	Context &ctx, const std::string &name, const std::string &struct_name,
-	size_t size, std::vector<StructElement> &elements)
-	: Type(ctx, name, TypeId_Struct, size), m_StructName(struct_name),
-	  m_Elements(std::move(elements))
+	Context &ctx, const std::string &name, std::string struct_name,
+	const size_t size, std::vector<StructElement> &elements)
+	: Type(ctx, name, TypeId_Struct, size),
+	  m_StructName(std::move(struct_name)), m_Elements(std::move(elements))
 {
 }
 
@@ -74,8 +74,9 @@ llvm::StructType *QLang::StructType::GenIR(Builder &builder) const
 	if (type->isEmptyTy())
 	{
 		std::vector<llvm::Type *> elements;
-		for (const auto &element : m_Elements)
-			elements.push_back(element.Type->GenIR(builder));
+		elements.reserve(m_Elements.size());
+		for (const auto &[Type, Name, Init] : m_Elements)
+			elements.push_back(Type->GenIR(builder));
 		type->setBody(elements);
 	}
 

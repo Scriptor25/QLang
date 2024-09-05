@@ -2,6 +2,7 @@
 #include <QLang/Operator.hpp>
 #include <QLang/QLang.hpp>
 #include <QLang/Type.hpp>
+#include <QLang/Value.hpp>
 #include <iostream>
 
 QLang::ValuePtr QLang::GenMember(
@@ -18,7 +19,7 @@ QLang::ValuePtr QLang::GenMember(
 		builder.ClearCallee();
 		builder.Self() = object;
 
-		if (auto func = builder.FindFunction(
+		if (const auto func = builder.FindFunction(
 				member, object->GetType(), builder.GetArgs()))
 			return func->AsValue(builder);
 
@@ -27,7 +28,7 @@ QLang::ValuePtr QLang::GenMember(
 		return {};
 	}
 
-	auto str_type = StructType::From(object->GetType());
+	const auto str_type = StructType::From(object->GetType());
 
 	size_t i;
 	for (i = 0; i < str_type->GetElementCount(); ++i)
@@ -40,7 +41,7 @@ QLang::ValuePtr QLang::GenMember(
 		return {};
 	}
 
-	auto lobject = LValue::From(object);
+	const auto lobject = LValue::From(object);
 	if (!lobject)
 	{
 		std::cerr << "object must be a lvalue here" << std::endl;
@@ -53,11 +54,11 @@ QLang::ValuePtr QLang::GenMember(
 QLang::LValuePtr QLang::GenMember(
 	Builder &builder, const LValuePtr &object, size_t i)
 {
-	auto struct_type = StructType::From(object->GetType());
+	const auto struct_type = StructType::From(object->GetType());
 	auto &[type, member, unused] = struct_type->GetElement(i);
 
-	auto str_ty = object->GetIRType();
-	auto ptr = builder.IRBuilder().CreateStructGEP(
+	const auto str_ty = object->GetIRType();
+	const auto ptr = builder.IRBuilder().CreateStructGEP(
 		str_ty, object->GetPtr(), i, member);
 	return LValue::Create(builder, type, ptr);
 }

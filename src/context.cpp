@@ -32,8 +32,7 @@ bool QLang::Context::FindInIncludeDirs(
 {
 	for (const auto &dir : m_IncludeDirs)
 	{
-		auto path = dir / filename;
-		if (std::filesystem::exists(path))
+		if (auto path = dir / filename; exists(path))
 		{
 			dest = path;
 			return true;
@@ -57,7 +56,7 @@ QLang::Macro &QLang::Context::GetMacro(const std::string &name)
 	return m_Macros[name];
 }
 
-bool QLang::Context::HasMacro(const std::string &name)
+bool QLang::Context::HasMacro(const std::string &name) const
 {
 	return m_Macros.count(name);
 }

@@ -22,7 +22,7 @@ namespace QLang
 		bool AddParsed(const std::filesystem::path &);
 
 		Macro &GetMacro(const std::string &name);
-		bool HasMacro(const std::string &name);
+		[[nodiscard]] bool HasMacro(const std::string &name) const;
 
 	private:
 		std::map<std::string, TypePtr> m_Types;

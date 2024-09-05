@@ -7,9 +7,10 @@
 #include <QLang/Value.hpp>
 #include <iostream>
 #include <ostream>
+#include <utility>
 
 QLang::DefVarStatement::DefVarStatement(
-	const SourceLocation &where, bool is_extern, const TypePtr &type,
+	const SourceLocation &where, const bool is_extern, const TypePtr &type,
 	const std::string &name, StatementPtr init)
 	: DefVarStatement(
 		  where, is_extern, type, name, dyn_cast<Expression>(std::move(init)))
@@ -17,25 +18,25 @@ QLang::DefVarStatement::DefVarStatement(
 }
 
 QLang::DefVarStatement::DefVarStatement(
-	const SourceLocation &where, bool is_extern, const TypePtr &type,
+	const SourceLocation &where, const bool is_extern, const TypePtr &type,
 	const std::string &name, std::vector<StatementPtr> args)
 	: DefVarStatement(where, is_extern, type, name, dyn_cast<Expression>(args))
 {
 }
 
 QLang::DefVarStatement::DefVarStatement(
-	const SourceLocation &where, bool is_extern, const TypePtr &type,
-	const std::string &name, ExpressionPtr init)
-	: Statement(where), IsExtern(is_extern), Type(type), Name(name),
-	  Init(std::move(init))
+	const SourceLocation &where, const bool is_extern, TypePtr type,
+	std::string name, ExpressionPtr init)
+	: Statement(where), IsExtern(is_extern), Type(std::move(type)),
+	  Name(std::move(name)), Init(std::move(init))
 {
 }
 
 QLang::DefVarStatement::DefVarStatement(
-	const SourceLocation &where, bool is_extern, const TypePtr &type,
-	const std::string &name, std::vector<ExpressionPtr> args)
-	: Statement(where), IsExtern(is_extern), Type(type), Name(name),
-	  Args(std::move(args))
+	const SourceLocation &where, const bool is_extern, TypePtr type,
+	std::string name, std::vector<ExpressionPtr> args)
+	: Statement(where), IsExtern(is_extern), Type(std::move(type)),
+	  Name(std::move(name)), Args(std::move(args))
 {
 }
 
@@ -64,11 +65,11 @@ void QLang::DefVarStatement::GenIRVoid(Builder &builder) const
 	{
 		if (!Init)
 		{
-			auto ir_type = Type->GenIR(builder);
+			const auto ir_type = Type->GenIR(builder);
 			llvm::Constant *init = nullptr;
 			if (!IsExtern) init = llvm::Constant::getNullValue(ir_type);
 
-			auto ptr = new llvm::GlobalVariable(
+			const auto ptr = new llvm::GlobalVariable(
 				builder.IRModule(), ir_type, false,
 				IsExtern ? llvm::GlobalValue::ExternalLinkage
 						 : llvm::GlobalValue::InternalLinkage,
@@ -94,17 +95,17 @@ void QLang::DefVarStatement::GenIRVoid(Builder &builder) const
 	}
 
 	LValuePtr instance;
-	if (auto ref_type = ReferenceType::From(Type))
+	if (const auto ref_type = ReferenceType::From(Type))
 	{
-		auto linit = LValue::From(init);
-		if (!linit)
+		const auto l_init = LValue::From(init);
+		if (!l_init)
 		{
 			std::cerr << "at " << Where << ": initializer must be a lvalue here"
 					  << std::endl;
 			return;
 		}
 		instance
-			= LValue::Create(builder, ref_type->GetBase(), linit->GetPtr());
+			= LValue::Create(builder, ref_type->GetBase(), l_init->GetPtr());
 	}
 	else
 	{
@@ -132,12 +133,12 @@ void QLang::DefVarStatement::GenIRVoid(Builder &builder) const
 			std::vector<TypePtr> arg_types;
 			for (const auto &arg : Args)
 			{
-				auto varg = arg->GenIR(builder);
-				args.push_back(varg);
-				arg_types.push_back(varg->GetType());
+				auto ir_arg = arg->GenIR(builder);
+				args.push_back(ir_arg);
+				arg_types.push_back(ir_arg->GetType());
 			}
 
-			if (auto func = builder.FindConstructor(Type, arg_types))
+			if (const auto func = builder.FindConstructor(Type, arg_types))
 			{
 				init = GenCall(builder, func->AsValue(builder), instance, args);
 				if (!init)

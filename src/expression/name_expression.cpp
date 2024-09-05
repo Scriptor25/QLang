@@ -2,11 +2,13 @@
 #include <QLang/Context.hpp>
 #include <QLang/Expression.hpp>
 #include <QLang/Type.hpp>
+#include <QLang/Value.hpp>
 #include <iostream>
+#include <utility>
 
 QLang::NameExpression::NameExpression(
-	const SourceLocation &where, const std::string &name)
-	: Expression(where), Name(name)
+	const SourceLocation &where, std::string name)
+	: Expression(where), Name(std::move(name))
 {
 }
 
@@ -23,8 +25,9 @@ QLang::ValuePtr QLang::NameExpression::GenIR(Builder &builder) const
 
 		if (Name == "self")
 		{
-			auto self = builder["self"]->GetType();
-			if (auto func = builder.FindConstructor(self, builder.GetArgs()))
+			const auto self = builder["self"]->GetType();
+			if (const auto func
+				= builder.FindConstructor(self, builder.GetArgs()))
 				return func->AsValue(builder);
 
 			std::cerr << "at " << Where << ": no constructor for type " << self
@@ -39,8 +42,8 @@ QLang::ValuePtr QLang::NameExpression::GenIR(Builder &builder) const
 		{
 			if (sym->GetType()->IsFunctionPointer())
 			{
-				auto type = FunctionType::FromPtr(sym->GetType());
-				if (type->GetParamCount() == builder.GetArgCount()
+				if (const auto type = FunctionType::FromPtr(sym->GetType());
+					type->GetParamCount() == builder.GetArgCount()
 					|| (type->IsVarArg()
 						&& type->GetParamCount() < builder.GetArgCount()))
 				{
@@ -52,11 +55,12 @@ QLang::ValuePtr QLang::NameExpression::GenIR(Builder &builder) const
 			}
 		}
 
-		if (auto self = builder.GetContext().GetType(Name))
-			if (auto func = builder.FindConstructor(self, builder.GetArgs()))
+		if (const auto self = builder.GetContext().GetType(Name))
+			if (const auto func
+				= builder.FindConstructor(self, builder.GetArgs()))
 				return func->AsValue(builder);
 
-		if (auto func = builder.FindFunction(Name, {}, builder.GetArgs()))
+		if (const auto func = builder.FindFunction(Name, {}, builder.GetArgs()))
 			return func->AsValue(builder);
 
 		std::cerr << "at " << Where << ": no function with name '" << Name

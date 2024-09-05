@@ -50,8 +50,8 @@ QLang::LValuePtr QLang::LValue::Alloca(
 	Builder &builder, const TypePtr &type, llvm::Value *value,
 	const std::string &name)
 {
-	auto bb = builder.IRBuilder().GetInsertBlock();
-	auto ir_type = type->GenIR(builder);
+	const auto bb = builder.IRBuilder().GetInsertBlock();
+	const auto ir_type = type->GenIR(builder);
 
 	builder.IRBuilder().SetInsertPointPastAllocas(bb->getParent());
 	auto ptr = builder.IRBuilder().CreateAlloca(ir_type, nullptr, name);

@@ -4,7 +4,7 @@
 
 QLang::ValuePtr QLang::GenDeref(Builder &builder, const ValuePtr &value)
 {
-	if (auto type = PointerType::From(value->GetType()))
+	if (const auto type = PointerType::From(value->GetType()))
 		return LValue::Create(builder, type->GetBase(), value->Get());
 	return {};
 }

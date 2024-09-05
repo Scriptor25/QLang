@@ -5,17 +5,19 @@
 #include <QLang/Token.hpp>
 #include <iostream>
 #include <stdexcept>
+#include <utility>
 
 QLang::Parser::Parser(
-	Builder &builder, std::istream &stream, const SourceLocation &where,
+	Builder &builder, std::istream &stream, SourceLocation where,
 	Callback callback)
-	: m_Builder(builder), m_Context(builder.GetContext()), m_Stream(stream),
-	  m_Where(where), m_Callback(callback)
+	: m_Builder(builder), m_Context(builder.GetContext()),
+	  m_Callback(std::move(callback)), m_Stream(stream),
+	  m_Where(std::move(where))
 {
 	Next();
 }
 
-QLang::Builder &QLang::Parser::GetBuilder() { return m_Builder; }
+QLang::Builder &QLang::Parser::GetBuilder() const { return m_Builder; }
 
 QLang::Callback QLang::Parser::GetCallback() { return m_Callback; }
 
@@ -25,7 +27,7 @@ void QLang::Parser::Parse()
 	{
 		auto ptr = ParseStatement();
 		if (!ptr) continue;
-		m_Callback(std::move(ptr));
+		m_Callback(ptr);
 	}
 }
 
@@ -33,9 +35,12 @@ QLang::Token &QLang::Parser::Next() { return m_Token = NextToken(); }
 
 bool QLang::Parser::AtEof() const { return m_Token.Type == TokenType_Eof; }
 
-bool QLang::Parser::At(TokenType type) { return m_Token.Type == type; }
+bool QLang::Parser::At(const TokenType type) const
+{
+	return m_Token.Type == type;
+}
 
-bool QLang::Parser::At(const std::string &value)
+bool QLang::Parser::At(const std::string &value) const
 {
 	return m_Token.Value == value;
 }

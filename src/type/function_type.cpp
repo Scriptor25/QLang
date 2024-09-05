@@ -3,6 +3,7 @@
 #include <QLang/Type.hpp>
 #include <llvm/IR/DerivedTypes.h>
 #include <memory>
+#include <utility>
 
 QLang::FunctionTypePtr QLang::FunctionType::From(const TypePtr &type)
 {
@@ -49,14 +50,15 @@ QLang::FunctionTypePtr QLang::FunctionType::Get(
 	if (!ref)
 		ref = std::make_shared<FunctionType>(
 			ctx, name, mode, result, self, params, vararg);
-	return FunctionType::From(ref);
+	return From(ref);
 }
 
 QLang::FunctionType::FunctionType(
-	Context &ctx, const std::string &name, FnMode mode, const TypePtr &result,
-	const TypePtr &self, const std::vector<TypePtr> &params, bool vararg)
-	: Type(ctx, name, TypeId_Function, 0), m_Mode(mode), m_Result(result),
-	  m_Self(self), m_Params(params), m_VarArg(vararg)
+	Context &ctx, const std::string &name, const FnMode mode, TypePtr result,
+	TypePtr self, const std::vector<TypePtr> &params, const bool vararg)
+	: Type(ctx, name, TypeId_Function, 0), m_Mode(mode),
+	  m_Result(std::move(result)), m_Self(std::move(self)), m_Params(params),
+	  m_VarArg(vararg)
 {
 }
 
@@ -76,7 +78,7 @@ QLang::TypePtr QLang::FunctionType::GetSelf() const { return m_Self; }
 
 size_t QLang::FunctionType::GetParamCount() const { return m_Params.size(); }
 
-QLang::TypePtr QLang::FunctionType::GetParam(size_t i) const
+QLang::TypePtr QLang::FunctionType::GetParam(const size_t i) const
 {
 	return m_Params[i];
 }

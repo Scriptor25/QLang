@@ -1,11 +1,12 @@
 #include <QLang/Builder.hpp>
 #include <QLang/Operator.hpp>
 #include <QLang/Type.hpp>
+#include <QLang/Value.hpp>
 
 QLang::ValuePtr QLang::GenInc(Builder &builder, const ValuePtr &value)
 {
-	auto type = value->GetType();
-	auto ir_ty = type->GenIR(builder);
+	const auto type = value->GetType();
+	const auto ir_ty = type->GenIR(builder);
 
 	llvm::Value *result;
 	switch (type->GetId())

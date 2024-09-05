@@ -1,6 +1,7 @@
 #include <QLang/Builder.hpp>
 #include <QLang/Context.hpp>
 #include <QLang/Type.hpp>
+#include <utility>
 
 QLang::ReferenceTypePtr QLang::ReferenceType::From(const TypePtr &type)
 {
@@ -13,12 +14,12 @@ QLang::ReferenceTypePtr QLang::ReferenceType::Get(const TypePtr &base)
 	auto name = base->GetName() + '&';
 	auto &ref = ctx.GetType(name);
 	if (!ref) ref = std::make_shared<ReferenceType>(ctx, name, base);
-	return ReferenceType::From(ref);
+	return From(ref);
 }
 
 QLang::ReferenceType::ReferenceType(
-	Context &ctx, const std::string &name, const TypePtr &base)
-	: Type(ctx, name, TypeId_Reference, 64), m_Base(base)
+	Context &ctx, const std::string &name, TypePtr base)
+	: Type(ctx, name, TypeId_Reference, 64), m_Base(std::move(base))
 {
 }
 

@@ -9,7 +9,7 @@ namespace QLang
 {
 	struct Expression : Statement
 	{
-		Expression(const SourceLocation &);
+		explicit Expression(const SourceLocation &);
 		void GenIRVoid(Builder &) const override;
 
 		virtual ValuePtr GenIR(Builder &) const = 0;
@@ -20,7 +20,7 @@ namespace QLang
 		BinaryExpression(const SourceLocation &, const std::string &operator_,
 						 StatementPtr lhs, StatementPtr rhs);
 
-		BinaryExpression(const SourceLocation &, const std::string &operator_,
+		BinaryExpression(const SourceLocation &, std::string operator_,
 						 ExpressionPtr lhs, ExpressionPtr rhs);
 
 		std::ostream &Print(std::ostream &) const override;
@@ -52,7 +52,7 @@ namespace QLang
 			const SourceLocation &, const TypePtr &dst, StatementPtr src);
 
 		CastExpression(
-			const SourceLocation &, const TypePtr &dst, ExpressionPtr src);
+			const SourceLocation &, TypePtr dst, ExpressionPtr src);
 
 		std::ostream &Print(std::ostream &) const override;
 		ValuePtr GenIR(Builder &) const override;
@@ -93,7 +93,7 @@ namespace QLang
 
 	struct ConstStringExpression : Expression
 	{
-		ConstStringExpression(const SourceLocation &, const std::string &value);
+		ConstStringExpression(const SourceLocation &, std::string value);
 
 		std::ostream &Print(std::ostream &) const override;
 		ValuePtr GenIR(Builder &) const override;
@@ -103,7 +103,7 @@ namespace QLang
 
 	struct NameExpression : Expression
 	{
-		NameExpression(const SourceLocation &, const std::string &name);
+		NameExpression(const SourceLocation &, std::string name);
 
 		std::ostream &Print(std::ostream &) const override;
 		ValuePtr GenIR(Builder &) const override;
@@ -132,7 +132,7 @@ namespace QLang
 		UnaryExpression(const SourceLocation &, const std::string &operator_,
 						StatementPtr operand, bool post);
 
-		UnaryExpression(const SourceLocation &, const std::string &operator_,
+		UnaryExpression(const SourceLocation &, std::string operator_,
 						ExpressionPtr operand, bool post);
 
 		std::ostream &Print(std::ostream &) const override;

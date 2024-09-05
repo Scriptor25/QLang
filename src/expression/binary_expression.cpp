@@ -5,6 +5,7 @@
 #include <QLang/Value.hpp>
 #include <iostream>
 #include <memory>
+#include <utility>
 
 QLang::BinaryExpression::BinaryExpression(
 	const SourceLocation &where, const std::string &operator_, StatementPtr lhs,
@@ -15,9 +16,9 @@ QLang::BinaryExpression::BinaryExpression(
 }
 
 QLang::BinaryExpression::BinaryExpression(
-	const SourceLocation &where, const std::string &operator_,
-	ExpressionPtr lhs, ExpressionPtr rhs)
-	: Expression(where), Operator(operator_), LHS(std::move(lhs)),
+	const SourceLocation &where, std::string operator_, ExpressionPtr lhs,
+	ExpressionPtr rhs)
+	: Expression(where), Operator(std::move(operator_)), LHS(std::move(lhs)),
 	  RHS(std::move(rhs))
 {
 }
@@ -30,7 +31,7 @@ std::ostream &QLang::BinaryExpression::Print(std::ostream &stream) const
 
 QLang::ValuePtr QLang::BinaryExpression::GenIR(Builder &builder) const
 {
-	auto bkp = builder.IsCallee();
+	const auto bkp = builder.IsCallee();
 	builder.ClearCallee();
 
 	auto lhs = LHS->GenIR(builder);
@@ -71,7 +72,7 @@ QLang::ValuePtr QLang::BinaryExpression::GenIR(Builder &builder) const
 	auto self = LValue::From(lhs);
 
 	if (self)
-		if (auto func = builder.FindFunction(
+		if (const auto func = builder.FindFunction(
 				"operator" + Operator, lhs->GetType(), { rhs->GetType() }))
 		{
 			if (auto result
@@ -81,7 +82,7 @@ QLang::ValuePtr QLang::BinaryExpression::GenIR(Builder &builder) const
 			return {};
 		}
 
-	if (auto func = builder.FindFunction(
+	if (const auto func = builder.FindFunction(
 			"operator" + Operator, {}, { lhs->GetType(), rhs->GetType() }))
 	{
 		if (auto result
@@ -129,7 +130,7 @@ QLang::ValuePtr QLang::BinaryExpression::GenIR(Builder &builder) const
 		assign = true;
 	}
 
-	auto higher = Type::HigherOrder(lhs->GetType(), rhs->GetType());
+	const auto higher = Type::HigherOrder(lhs->GetType(), rhs->GetType());
 	if (!higher)
 	{
 		std::cerr << "    at " << Where << std::endl;

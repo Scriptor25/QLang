@@ -3,19 +3,20 @@
 #include <QLang/Operator.hpp>
 #include <QLang/Value.hpp>
 #include <iostream>
+#include <utility>
 
 QLang::UnaryExpression::UnaryExpression(
 	const SourceLocation &where, const std::string &operator_,
-	StatementPtr operand, bool post)
+	StatementPtr operand, const bool post)
 	: UnaryExpression(where, operator_, dyn_cast<Expression>(operand), post)
 {
 }
 
 QLang::UnaryExpression::UnaryExpression(
-	const SourceLocation &where, const std::string &operator_,
-	ExpressionPtr operand, bool post)
-	: Expression(where), Operator(operator_), Operand(std::move(operand)),
-	  Post(post)
+	const SourceLocation &where, std::string operator_, ExpressionPtr operand,
+	const bool post)
+	: Expression(where), Operator(std::move(operator_)),
+	  Operand(std::move(operand)), Post(post)
 {
 }
 
@@ -35,10 +36,11 @@ QLang::ValuePtr QLang::UnaryExpression::GenIR(Builder &builder) const
 	}
 
 	auto self = LValue::From(operand);
-	auto func_name = "operator" + Operator + (Post ? "^" : "");
+	const auto func_name = "operator" + Operator + (Post ? "^" : "");
 
 	if (self)
-		if (auto func = builder.FindFunction(func_name, self->GetType(), {}))
+		if (const auto func
+			= builder.FindFunction(func_name, self->GetType(), {}))
 		{
 			if (auto result
 				= GenCall(builder, func->AsValue(builder), self, {}))
@@ -47,7 +49,8 @@ QLang::ValuePtr QLang::UnaryExpression::GenIR(Builder &builder) const
 			return {};
 		}
 
-	if (auto func = builder.FindFunction(func_name, {}, { operand->GetType() }))
+	if (const auto func
+		= builder.FindFunction(func_name, {}, { operand->GetType() }))
 	{
 		if (auto result
 			= GenCall(builder, func->AsValue(builder), {}, { operand }))
@@ -57,7 +60,7 @@ QLang::ValuePtr QLang::UnaryExpression::GenIR(Builder &builder) const
 	}
 
 	ValuePtr result;
-	bool assign;
+	bool assign = false;
 
 	if (Operator == "++")
 	{
@@ -69,31 +72,11 @@ QLang::ValuePtr QLang::UnaryExpression::GenIR(Builder &builder) const
 		result = GenDec(builder, operand);
 		assign = true;
 	}
-	else if (Operator == "!")
-	{
-		result = GenLNot(builder, operand);
-		assign = false;
-	}
-	else if (Operator == "~")
-	{
-		result = GenNot(builder, operand);
-		assign = false;
-	}
-	else if (Operator == "-")
-	{
-		result = GenNeg(builder, operand);
-		assign = false;
-	}
-	else if (Operator == "&")
-	{
-		result = GenRef(builder, operand);
-		assign = false;
-	}
-	else if (Operator == "*")
-	{
-		result = GenDeref(builder, operand);
-		assign = false;
-	}
+	else if (Operator == "!") { result = GenLNot(builder, operand); }
+	else if (Operator == "~") { result = GenNot(builder, operand); }
+	else if (Operator == "-") { result = GenNeg(builder, operand); }
+	else if (Operator == "&") { result = GenRef(builder, operand); }
+	else if (Operator == "*") { result = GenDeref(builder, operand); }
 
 	if (!result)
 	{
@@ -112,7 +95,7 @@ QLang::ValuePtr QLang::UnaryExpression::GenIR(Builder &builder) const
 
 		if (Post)
 		{
-			auto pre = self->Get();
+			const auto pre = self->Get();
 			self->Set(result->Get());
 			return RValue::Create(builder, self->GetType(), pre);
 		}

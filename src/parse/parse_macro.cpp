@@ -1,17 +1,15 @@
 #include <QLang/Context.hpp>
 #include <QLang/Parser.hpp>
-#include <QLang/QLang.hpp>
-#include <QLang/Statement.hpp>
 #include <string>
 #include <vector>
 
 void QLang::Parser::ParseMacro()
 {
 	Expect("macro");
-	auto name = Expect(TokenType_Name).Value;
+	const auto name = Expect(TokenType_Name).Value;
 
 	std::vector<std::string> params;
-	bool is_callee = !NextIfAt("=") && NextIfAt("(");
+	const bool is_callee = !NextIfAt("=") && NextIfAt("(");
 
 	if (is_callee)
 		while (!NextIfAt(")"))
@@ -20,12 +18,13 @@ void QLang::Parser::ParseMacro()
 			if (!At(")")) Expect(",");
 		}
 
-	auto &ref = m_Context.GetMacro(name);
-	ref.Where = m_Token.Where;
-	ref.Name = name;
-	ref.Params = params;
-	ref.IsCallee = is_callee;
-	ref.Value = m_Token.Value;
+	auto &[_where, _name, _params, _is_callee, _value]
+		= m_Context.GetMacro(name);
+	_where = m_Token.Where;
+	_name = name;
+	_params = params;
+	_is_callee = is_callee;
+	_value = m_Token.Value;
 
 	while (m_C >= 0 && m_C != '\n')
 	{
@@ -34,10 +33,10 @@ void QLang::Parser::ParseMacro()
 			m_C = Get();
 			if (m_C == '\n') NewLine();
 			else
-				ref.Value += '\\';
+				_value += '\\';
 		}
 
-		ref.Value += static_cast<char>(m_C);
+		_value += static_cast<char>(m_C);
 		m_C = Get();
 	}
 	m_C = Get();

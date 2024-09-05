@@ -9,7 +9,7 @@ namespace QLang
 {
 	struct Statement
 	{
-		explicit Statement(const SourceLocation &);
+		explicit Statement(SourceLocation );
 		virtual ~Statement();
 
 		virtual std::ostream &Print(std::ostream &) const = 0;
@@ -39,13 +39,13 @@ namespace QLang
 	{
 		DefFnStatement(
 			const SourceLocation &, bool is_extern, FnMode mode,
-			const TypePtr &result, const TypePtr &self, const std::string &name,
+			TypePtr result, TypePtr self, std::string name,
 			const std::vector<Param> &params, bool vararg, StatementPtr body);
 
 		std::ostream &Print(std::ostream &) const override;
 		void GenIRVoid(Builder &) const override;
 
-		std::string GenName() const;
+		[[nodiscard]] std::string GenName() const;
 
 		bool IsExtern;
 		FnMode Mode;
@@ -68,12 +68,12 @@ namespace QLang
 			const std::string &name, std::vector<StatementPtr> args);
 
 		DefVarStatement(
-			const SourceLocation &, bool is_extern, const TypePtr &type,
-			const std::string &name, ExpressionPtr init);
+			const SourceLocation &, bool is_extern, TypePtr type,
+			std::string name, ExpressionPtr init);
 
 		DefVarStatement(
-			const SourceLocation &, bool is_extern, const TypePtr &type,
-			const std::string &name, std::vector<ExpressionPtr> args);
+			const SourceLocation &, bool is_extern, TypePtr type,
+			std::string name, std::vector<ExpressionPtr> args);
 
 		std::ostream &Print(std::ostream &) const override;
 		void GenIRVoid(Builder &) const override;

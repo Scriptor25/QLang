@@ -22,15 +22,15 @@ QLang::Linker::Linker()
 
 llvm::LLVMContext &QLang::Linker::IRContext() const { return *m_IRContext; }
 
-void QLang::Linker::Link(Builder &builder)
+void QLang::Linker::Link(Builder &builder) const
 {
 	auto &module = builder.IRModulePtr();
-	if (llvm::verifyModule(*module, &llvm::errs())) return;
+	if (verifyModule(*module, &llvm::errs())) return;
 
 	llvm::Linker::linkModules(*m_IRModule, std::move(module));
 }
 
-void QLang::Linker::EmitObject(const std::string &filename)
+void QLang::Linker::EmitObject(const std::string &filename) const
 {
 	llvm::InitializeAllTargetInfos();
 	llvm::InitializeAllTargets();
@@ -38,10 +38,10 @@ void QLang::Linker::EmitObject(const std::string &filename)
 	llvm::InitializeAllAsmParsers();
 	llvm::InitializeAllAsmPrinters();
 
-	auto triple = llvm::sys::getDefaultTargetTriple();
+	const auto triple = llvm::sys::getDefaultTargetTriple();
 
 	std::string err;
-	auto target = llvm::TargetRegistry::lookupTarget(triple, err);
+	const auto target = llvm::TargetRegistry::lookupTarget(triple, err);
 
 	if (!target)
 	{
@@ -49,11 +49,11 @@ void QLang::Linker::EmitObject(const std::string &filename)
 		return;
 	}
 
-	auto cpu = "generic";
-	auto features = "";
+	const auto cpu = "generic";
+	const auto features = "";
 
-	llvm::TargetOptions opt;
-	auto machine = target->createTargetMachine(
+	const llvm::TargetOptions opt;
+	const auto machine = target->createTargetMachine(
 		triple, cpu, features, opt, llvm::Reloc::PIC_);
 
 	m_IRModule->setDataLayout(machine->createDataLayout());

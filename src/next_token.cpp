@@ -1,5 +1,6 @@
 #include <QLang/Parser.hpp>
 #include <QLang/Token.hpp>
+#include <istream>
 
 static int is_oct_digit(const int c) { return 0x30 <= c && c <= 0x37; }
 

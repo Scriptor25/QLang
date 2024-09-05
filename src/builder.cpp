@@ -2,6 +2,7 @@
 #include <QLang/Expression.hpp>
 #include <QLang/Operator.hpp>
 #include <QLang/Type.hpp>
+#include <QLang/Value.hpp>
 #include <llvm/IR/Value.h>
 #include <llvm/Passes/PassBuilder.h>
 #include <llvm/Support/raw_ostream.h>
@@ -15,11 +16,11 @@
 
 QLang::Builder::Builder(
 	Context &context, llvm::LLVMContext &ir_context,
-	const std::string &modulename)
+	const std::string &module_name)
 	: m_Context(context), m_IRContext(ir_context)
 {
 	m_IRBuilder = std::make_unique<llvm::IRBuilder<>>(m_IRContext);
-	m_IRModule = std::make_unique<llvm::Module>(modulename, m_IRContext);
+	m_IRModule = std::make_unique<llvm::Module>(module_name, m_IRContext);
 
 	m_FPM = std::make_unique<llvm::FunctionPassManager>();
 	m_LAM = std::make_unique<llvm::LoopAnalysisManager>();
@@ -57,9 +58,12 @@ std::unique_ptr<llvm::Module> &QLang::Builder::IRModulePtr()
 	return m_IRModule;
 }
 
-void QLang::Builder::Optimize(llvm::Function *fn) { m_FPM->run(*fn, *m_FAM); }
+void QLang::Builder::Optimize(llvm::Function *fn) const
+{
+	m_FPM->run(*fn, *m_FAM);
+}
 
-void QLang::Builder::Print() { m_IRModule->print(llvm::errs(), nullptr); }
+void QLang::Builder::Print() const { m_IRModule->print(llvm::errs(), nullptr); }
 
 void QLang::Builder::StackPush() { m_Stack.push_back(m_Values); }
 
@@ -79,24 +83,24 @@ QLang::LValuePtr QLang::Builder::CreateInstance(
 {
 	auto instance = LValue::Alloca(*this, type, nullptr, name);
 
-	auto ir_type = type->GenIR(*this);
-	auto null_value = llvm::Constant::getNullValue(ir_type);
+	const auto ir_type = type->GenIR(*this);
+	const auto null_value = llvm::Constant::getNullValue(ir_type);
 	instance->Set(null_value);
 
-	if (auto struct_type = StructType::From(type))
+	if (const auto struct_type = StructType::From(type))
 	{
 		for (size_t i = 0; i < struct_type->GetElementCount(); ++i)
 		{
-			const auto &element = struct_type->GetElement(i);
-			if (!element.Init) continue;
+			const auto &[Type, Name, Init] = struct_type->GetElement(i);
+			if (!Init) continue;
 
-			auto init = element.Init->GenIR(*this);
+			auto init = Init->GenIR(*this);
 			if (!init) return {};
-			init = GenCast(*this, init, element.Type);
+			init = GenCast(*this, init, Type);
 			if (!init) return {};
 
-			auto gep = m_IRBuilder->CreateStructGEP(
-				ir_type, instance->GetPtr(), i, element.Name);
+			const auto gep = m_IRBuilder->CreateStructGEP(
+				ir_type, instance->GetPtr(), i, Name);
 			m_IRBuilder->CreateStore(init->Get(), gep);
 		}
 	}
@@ -109,13 +113,13 @@ void QLang::Builder::ClearLocalDtors() { m_LocalDtors.clear(); }
 
 void QLang::Builder::CreateLocalDtor(const LValuePtr &value)
 {
-	if (auto func = FindDestructor(value->GetType()))
+	if (const auto func = FindDestructor(value->GetType()))
 	{
 		m_LocalDtors.push_back({ func, value });
 		return;
 	}
 
-	if (auto str_ty = StructType::From(value->GetType()))
+	if (const auto str_ty = StructType::From(value->GetType()))
 	{
 		for (size_t i = 0; i < str_ty->GetElementCount(); ++i)
 		{
@@ -131,7 +135,7 @@ void QLang::Builder::RemoveLocalDtor(const ValuePtr &value)
 	{
 		if (m_LocalDtors[i].Self == value)
 		{
-			m_LocalDtors.erase(m_LocalDtors.begin() + i);
+			m_LocalDtors.erase(m_LocalDtors.begin() + static_cast<long>(i));
 			break;
 		}
 	}
@@ -139,8 +143,8 @@ void QLang::Builder::RemoveLocalDtor(const ValuePtr &value)
 
 void QLang::Builder::GenLocalDtors()
 {
-	for (auto &call : m_LocalDtors)
-		GenCall(*this, call.Callee->AsValue(*this), call.Self, {});
+	for (auto &[Callee, Self] : m_LocalDtors)
+		GenCall(*this, Callee->AsValue(*this), Self, {});
 }
 
 QLang::Function &QLang::Builder::GetFunction(
@@ -166,8 +170,9 @@ QLang::Function *QLang::Builder::FindFunction(
 		size_t error = 0;
 		for (size_t i = 0; i < fn_type->GetParamCount(); ++i)
 		{
-			auto diff = Type::TypeDiff(*this, fn_type->GetParam(i), args[i]);
-			if (diff == size_t(-1))
+			const auto diff
+				= Type::TypeDiff(*this, fn_type->GetParam(i), args[i]);
+			if (diff == static_cast<size_t>(-1))
 			{
 				error = -1;
 				break;
@@ -276,7 +281,7 @@ QLang::PointerTypePtr QLang::Builder::GetInt8PtrTy() const
 	return PointerType::Get(GetInt8Ty());
 }
 
-bool QLang::Builder::IsCallee() { return m_IsCallee; }
+bool QLang::Builder::IsCallee() const { return m_IsCallee; }
 
 void QLang::Builder::SetCallee() { m_IsCallee = true; }
 
@@ -284,7 +289,7 @@ void QLang::Builder::ClearCallee() { m_IsCallee = false; }
 
 QLang::ValuePtr &QLang::Builder::Self() { return m_Self; }
 
-size_t QLang::Builder::GetArgCount() { return m_Args.size(); }
+size_t QLang::Builder::GetArgCount() const { return m_Args.size(); }
 
 QLang::TypePtr &QLang::Builder::GetArg(size_t i) { return m_Args[i]; }
 

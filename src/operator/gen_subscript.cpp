@@ -7,20 +7,20 @@
 QLang::ValuePtr QLang::GenSubscript(
 	Builder &builder, const ValuePtr &array, const ValuePtr &index)
 {
-	if (auto type = PointerType::From(array->GetType()))
+	if (const auto type = PointerType::From(array->GetType()))
 	{
-		auto ir_type = type->GetBase()->GenIR(builder);
-		auto gep = builder.IRBuilder().CreateGEP(
+		const auto ir_type = type->GetBase()->GenIR(builder);
+		const auto gep = builder.IRBuilder().CreateGEP(
 			ir_type, array->Get(), { index->Get() });
 		return LValue::Create(builder, type->GetBase(), gep);
 	}
 
-	if (auto type = ArrayType::From(array->GetType()))
+	if (const auto type = ArrayType::From(array->GetType()))
 	{
-		auto larray = LValue::From(array);
-		auto ir_type = type->GenIR(builder);
-		auto gep = builder.IRBuilder().CreateGEP(
-			ir_type, larray->GetPtr(),
+		const auto l_array = LValue::From(array);
+		const auto ir_type = type->GenIR(builder);
+		const auto gep = builder.IRBuilder().CreateGEP(
+			ir_type, l_array->GetPtr(),
 			{ builder.IRBuilder().getInt64(0), index->Get() });
 		return LValue::Create(builder, type->GetBase(), gep);
 	}

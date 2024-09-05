@@ -19,11 +19,10 @@ QLang::TypePtr QLang::Parser::ParseType()
 			std::vector<StructElement> elements;
 			while (!NextIfAt("}"))
 			{
-				auto &element = elements.emplace_back();
-				element.Type = ParseType();
-				element.Name = Expect(TokenType_Name).Value;
-				if (NextIfAt("="))
-					element.Init = dyn_cast<Expression>(ParseBinary());
+				auto &[_type, _name, _init] = elements.emplace_back();
+				_type = ParseType();
+				_name = Expect(TokenType_Name).Value;
+				if (NextIfAt("=")) _init = dyn_cast<Expression>(ParseBinary());
 				if (!At("}")) Expect(",");
 			}
 
@@ -48,13 +47,11 @@ QLang::TypePtr QLang::Parser::ParseType()
 			base = PointerType::Get(base);
 			continue;
 		}
-
 		if (NextIfAt("&"))
 		{
 			base = ReferenceType::Get(base);
 			continue;
 		}
-
 		if (NextIfAt("["))
 		{
 			auto length_expr = dyn_cast<ConstIntExpression>(ParseOperand());
@@ -63,7 +60,6 @@ QLang::TypePtr QLang::Parser::ParseType()
 			base = ArrayType::Get(base, length);
 			continue;
 		}
-
 		if (NextIfAt("("))
 		{
 			FnMode mode = FnMode_Func;

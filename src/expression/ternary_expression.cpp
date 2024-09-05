@@ -31,13 +31,14 @@ std::ostream &QLang::TernaryExpression::Print(std::ostream &stream) const
 
 QLang::ValuePtr QLang::TernaryExpression::GenIR(Builder &builder) const
 {
-	auto bkp = builder.IRBuilder().GetInsertBlock();
-	auto parent = bkp->getParent();
+	const auto bkp = builder.IRBuilder().GetInsertBlock();
+	const auto parent = bkp->getParent();
 	auto then = llvm::BasicBlock::Create(builder.IRContext(), "then", parent);
 	auto else_ = llvm::BasicBlock::Create(builder.IRContext(), "else", parent);
-	auto end = llvm::BasicBlock::Create(builder.IRContext(), "end", parent);
+	const auto end
+		= llvm::BasicBlock::Create(builder.IRContext(), "end", parent);
 
-	auto if_ = If->GenIR(builder);
+	const auto if_ = If->GenIR(builder);
 	if (!if_)
 	{
 		std::cerr << "    at " << Where << std::endl;
@@ -49,8 +50,8 @@ QLang::ValuePtr QLang::TernaryExpression::GenIR(Builder &builder) const
 		return {};
 	}
 
-	auto condition = builder.IRBuilder().CreateIsNotNull(if_->Get());
-	auto br = builder.IRBuilder().CreateCondBr(condition, then, else_);
+	const auto condition = builder.IRBuilder().CreateIsNotNull(if_->Get());
+	const auto br = builder.IRBuilder().CreateCondBr(condition, then, else_);
 
 	builder.IRBuilder().SetInsertPoint(then);
 	auto then_value = Then->GenIR(builder);
@@ -66,7 +67,7 @@ QLang::ValuePtr QLang::TernaryExpression::GenIR(Builder &builder) const
 		return {};
 	}
 	then = builder.IRBuilder().GetInsertBlock();
-	auto then_br = builder.IRBuilder().CreateBr(end);
+	const auto then_br = builder.IRBuilder().CreateBr(end);
 
 	builder.IRBuilder().SetInsertPoint(else_);
 	auto else_value = Else->GenIR(builder);
@@ -83,9 +84,10 @@ QLang::ValuePtr QLang::TernaryExpression::GenIR(Builder &builder) const
 		return {};
 	}
 	else_ = builder.IRBuilder().GetInsertBlock();
-	auto else_br = builder.IRBuilder().CreateBr(end);
+	const auto else_br = builder.IRBuilder().CreateBr(end);
 
-	auto type = Type::HigherOrder(then_value->GetType(), else_value->GetType());
+	const auto type
+		= Type::HigherOrder(then_value->GetType(), else_value->GetType());
 	if (!type)
 	{
 		std::cerr << "    at " << Where << std::endl;
@@ -142,8 +144,8 @@ QLang::ValuePtr QLang::TernaryExpression::GenIR(Builder &builder) const
 	}
 
 	builder.IRBuilder().SetInsertPoint(end);
-	auto ir_type = type->GenIR(builder);
-	auto phi = builder.IRBuilder().CreatePHI(ir_type, 2);
+	const auto ir_type = type->GenIR(builder);
+	const auto phi = builder.IRBuilder().CreatePHI(ir_type, 2);
 	phi->addIncoming(then_value->Get(), then);
 	phi->addIncoming(else_value->Get(), else_);
 	return RValue::Create(builder, type, phi);

@@ -16,11 +16,12 @@ QLang::ArrayTypePtr QLang::ArrayType::Get(const TypePtr &base, uint64_t length)
 	auto name = base->GetName() + '[' + std::to_string(length) + ']';
 	auto &ref = ctx.GetType(name);
 	if (!ref) ref = std::make_shared<ArrayType>(ctx, name, base, length);
-	return ArrayType::From(ref);
+	return From(ref);
 }
 
 QLang::ArrayType::ArrayType(
-	Context &ctx, const std::string &name, const TypePtr &base, uint64_t length)
+	Context &ctx, const std::string &name, const TypePtr &base,
+	const uint64_t length)
 	: Type(ctx, name, TypeId_Array, base->GetSize() * length), m_Base(base),
 	  m_Length(length)
 {

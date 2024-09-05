@@ -12,7 +12,7 @@ QLang::CompoundStatement::CompoundStatement(
 std::ostream &QLang::CompoundStatement::Print(std::ostream &stream) const
 {
 	static size_t depth = 0;
-	static std::function<std::string()> indent = []()
+	static std::function indent = []
 	{
 		std::string str;
 		for (size_t i = 0; i < depth; ++i) str += ' ';

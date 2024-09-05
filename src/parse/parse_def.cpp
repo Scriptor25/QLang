@@ -11,7 +11,6 @@
 QLang::StatementPtr QLang::Parser::ParseDef()
 {
 	auto where = Expect("def").Where;
-
 	bool is_extern = NextIfAt("ext");
 
 	FnMode mode;
@@ -89,16 +88,14 @@ QLang::StatementPtr QLang::Parser::ParseDef()
 				break;
 			}
 
-			auto &param = params.emplace_back();
-
-			param.Type = ParseType();
-			if (!param.Type)
+			auto &[_type, _name] = params.emplace_back();
+			_type = ParseType();
+			if (!_type)
 			{
 				std::cerr << "    at " << where << std::endl;
 				return {};
 			}
-
-			if (At(TokenType_Name)) param.Name = Skip().Value;
+			if (At(TokenType_Name)) _name = Skip().Value;
 			if (!At(")")) Expect(",");
 		}
 

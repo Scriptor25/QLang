@@ -34,7 +34,7 @@ std::ostream &QLang::CallExpression::Print(std::ostream &stream) const
 
 QLang::ValuePtr QLang::CallExpression::GenIR(Builder &builder) const
 {
-	auto bkp = builder.GetArgs();
+	const auto bkp = builder.GetArgs();
 
 	builder.GetArgs().resize(Args.size());
 	builder.ClearCallee();
@@ -54,7 +54,7 @@ QLang::ValuePtr QLang::CallExpression::GenIR(Builder &builder) const
 	}
 
 	builder.SetCallee();
-	auto callee = Callee->GenIR(builder);
+	const auto callee = Callee->GenIR(builder);
 	builder.GetArgs() = bkp;
 	if (!callee)
 	{
@@ -62,7 +62,7 @@ QLang::ValuePtr QLang::CallExpression::GenIR(Builder &builder) const
 		return {};
 	}
 
-	auto type = FunctionType::FromPtr(callee->GetType());
+	const auto type = FunctionType::FromPtr(callee->GetType());
 	if (!type)
 	{
 		std::cerr << "at " << Where
@@ -90,7 +90,7 @@ QLang::ValuePtr QLang::CallExpression::GenIR(Builder &builder) const
 		return {};
 	}
 
-	if (auto p = dynamic_cast<NameExpression *>(Callee.get());
+	if (const auto p = dynamic_cast<NameExpression *>(Callee.get());
 		p && p->Name == "self")
 	{
 		auto super = LValue::From(builder["self"]);

@@ -4,19 +4,18 @@
 #include <QLang/SourceLocation.hpp>
 #include <QLang/Token.hpp>
 #include <functional>
-#include <istream>
 
 namespace QLang
 {
-	typedef std::function<void(StatementPtr)> Callback;
+	typedef std::function<void(const StatementPtr &)> Callback;
 
 	class Parser
 	{
 	public:
-		Parser(Builder &, std::istream &, const SourceLocation &where,
-			   Callback callback);
+		Parser(
+			Builder &, std::istream &, SourceLocation where, Callback callback);
 
-		Builder &GetBuilder();
+		[[nodiscard]] Builder &GetBuilder() const;
 		Callback GetCallback();
 
 		void Parse();
@@ -29,9 +28,9 @@ namespace QLang
 		Token NextToken();
 
 		Token &Next();
-		bool AtEof() const;
-		bool At(TokenType);
-		bool At(const std::string &);
+		[[nodiscard]] bool AtEof() const;
+		[[nodiscard]] bool At(TokenType) const;
+		[[nodiscard]] bool At(const std::string &) const;
 		bool NextIfAt(TokenType);
 		bool NextIfAt(const std::string &);
 		Token Skip();
@@ -60,7 +59,6 @@ namespace QLang
 		StatementPtr ParseMember(StatementPtr);
 		StatementPtr ParseUnary(StatementPtr);
 
-	private:
 		Builder &m_Builder;
 		Context &m_Context;
 		Callback m_Callback;

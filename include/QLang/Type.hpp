@@ -27,27 +27,26 @@ namespace QLang
 		static size_t TypeDiff(Builder &, TypePtr, TypePtr);
 		static TypePtr HigherOrder(const TypePtr &, const TypePtr &);
 
-	public:
 		virtual ~Type();
 		virtual llvm::Type *GenIR(Builder &) const;
 
-		Type(Context &, const std::string &name, TypeId id, size_t size);
+		Type(Context &, std::string name, TypeId id, size_t size);
 
-		Context &GetCtx() const;
-		std::string GetName() const;
-		TypeId GetId() const;
-		size_t GetSize() const;
+		[[nodiscard]] Context &GetCtx() const;
+		[[nodiscard]] std::string GetName() const;
+		[[nodiscard]] TypeId GetId() const;
+		[[nodiscard]] size_t GetSize() const;
 
-		bool IsVoid() const;
-		bool IsInt() const;
-		bool IsFloat() const;
-		bool IsPointer() const;
-		bool IsReference() const;
-		bool IsArray() const;
-		bool IsStruct() const;
-		bool IsFunction() const;
+		[[nodiscard]] bool IsVoid() const;
+		[[nodiscard]] bool IsInt() const;
+		[[nodiscard]] bool IsFloat() const;
+		[[nodiscard]] bool IsPointer() const;
+		[[nodiscard]] bool IsReference() const;
+		[[nodiscard]] bool IsArray() const;
+		[[nodiscard]] bool IsStruct() const;
+		[[nodiscard]] bool IsFunction() const;
 
-		bool IsFunctionPointer() const;
+		[[nodiscard]] bool IsFunctionPointer() const;
 
 	private:
 		Context &m_Ctx;
@@ -62,12 +61,11 @@ namespace QLang
 		static PointerTypePtr From(const TypePtr &);
 		static PointerTypePtr Get(const TypePtr &base);
 
-	public:
-		PointerType(Context &, const std::string &name, const TypePtr &base);
+		PointerType(Context &, const std::string &name, TypePtr base);
 
 		llvm::PointerType *GenIR(Builder &) const override;
 
-		TypePtr GetBase() const;
+		[[nodiscard]] TypePtr GetBase() const;
 
 	private:
 		TypePtr m_Base;
@@ -79,12 +77,11 @@ namespace QLang
 		static ReferenceTypePtr From(const TypePtr &);
 		static ReferenceTypePtr Get(const TypePtr &base);
 
-	public:
-		ReferenceType(Context &, const std::string &name, const TypePtr &base);
+		ReferenceType(Context &, const std::string &name, TypePtr base);
 
 		llvm::Type *GenIR(Builder &) const override;
 
-		TypePtr GetBase() const;
+		[[nodiscard]] TypePtr GetBase() const;
 
 	private:
 		TypePtr m_Base;
@@ -96,14 +93,13 @@ namespace QLang
 		static ArrayTypePtr From(const TypePtr &);
 		static ArrayTypePtr Get(const TypePtr &base, uint64_t length);
 
-	public:
 		ArrayType(Context &, const std::string &name, const TypePtr &base,
 				  uint64_t length);
 
 		llvm::ArrayType *GenIR(Builder &) const override;
 
-		TypePtr GetBase() const;
-		uint64_t GetLength() const;
+		[[nodiscard]] TypePtr GetBase() const;
+		[[nodiscard]] uint64_t GetLength() const;
 
 	private:
 		TypePtr m_Base;
@@ -125,15 +121,13 @@ namespace QLang
 		static StructTypePtr Get(
 			const std::string &name, std::vector<StructElement> &elements);
 
-	public:
-		StructType(
-			Context &, const std::string &name, const std::string &struct_name,
-			size_t size, std::vector<StructElement> &elements);
+		StructType(Context &, const std::string &name, std::string struct_name,
+				   size_t size, std::vector<StructElement> &elements);
 
 		llvm::StructType *GenIR(Builder &) const override;
 
-		size_t GetElementCount() const;
-		const StructElement &GetElement(size_t index) const;
+		[[nodiscard]] size_t GetElementCount() const;
+		[[nodiscard]] const StructElement &GetElement(size_t index) const;
 
 	private:
 		std::string m_StructName;
@@ -156,20 +150,18 @@ namespace QLang
 			FnMode mode, const TypePtr &result, const TypePtr &self,
 			const std::vector<TypePtr> &params, bool vararg);
 
-	public:
 		FunctionType(
-			Context &, const std::string &name, FnMode mode,
-			const TypePtr &result, const TypePtr &self,
-			const std::vector<TypePtr> &params, bool vararg);
+			Context &, const std::string &name, FnMode mode, TypePtr result,
+			TypePtr self, const std::vector<TypePtr> &params, bool vararg);
 
 		llvm::FunctionType *GenIR(Builder &) const override;
 
-		FnMode GetMode() const;
-		TypePtr GetResult() const;
-		TypePtr GetSelf() const;
-		size_t GetParamCount() const;
-		TypePtr GetParam(size_t i) const;
-		bool IsVarArg() const;
+		[[nodiscard]] FnMode GetMode() const;
+		[[nodiscard]] TypePtr GetResult() const;
+		[[nodiscard]] TypePtr GetSelf() const;
+		[[nodiscard]] size_t GetParamCount() const;
+		[[nodiscard]] TypePtr GetParam(size_t i) const;
+		[[nodiscard]] bool IsVarArg() const;
 
 	private:
 		FnMode m_Mode;

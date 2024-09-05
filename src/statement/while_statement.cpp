@@ -23,16 +23,19 @@ std::ostream &QLang::WhileStatement::Print(std::ostream &stream) const
 
 void QLang::WhileStatement::GenIRVoid(Builder &builder) const
 {
-	auto bkp = builder.IRBuilder().GetInsertBlock();
-	auto parent = bkp->getParent();
-	auto head = llvm::BasicBlock::Create(builder.IRContext(), "head", parent);
-	auto loop = llvm::BasicBlock::Create(builder.IRContext(), "loop", parent);
-	auto end = llvm::BasicBlock::Create(builder.IRContext(), "end", parent);
+	const auto bkp = builder.IRBuilder().GetInsertBlock();
+	const auto parent = bkp->getParent();
+	const auto head
+		= llvm::BasicBlock::Create(builder.IRContext(), "head", parent);
+	const auto loop
+		= llvm::BasicBlock::Create(builder.IRContext(), "loop", parent);
+	const auto end
+		= llvm::BasicBlock::Create(builder.IRContext(), "end", parent);
 
-	auto br = builder.IRBuilder().CreateBr(head);
+	const auto br = builder.IRBuilder().CreateBr(head);
 
 	builder.IRBuilder().SetInsertPoint(head);
-	auto while_ = While->GenIR(builder);
+	const auto while_ = While->GenIR(builder);
 	if (!while_)
 	{
 		std::cerr << "    at " << Where << std::endl;
@@ -45,7 +48,7 @@ void QLang::WhileStatement::GenIRVoid(Builder &builder) const
 		return;
 	}
 
-	auto condition = builder.IRBuilder().CreateIsNotNull(while_->Get());
+	const auto condition = builder.IRBuilder().CreateIsNotNull(while_->Get());
 	builder.IRBuilder().CreateCondBr(condition, loop, end);
 
 	builder.IRBuilder().SetInsertPoint(loop);

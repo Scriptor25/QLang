@@ -2,6 +2,7 @@
 #include <QLang/Context.hpp>
 #include <QLang/Type.hpp>
 #include <iostream>
+#include <utility>
 
 std::ostream &QLang::operator<<(std::ostream &stream, const TypePtr &ptr)
 {
@@ -39,8 +40,8 @@ size_t QLang::Type::TypeDiff(Builder &builder, TypePtr p, TypePtr a)
 
 	if (p->m_Id == a->m_Id)
 	{
-		auto as = p->m_Size;
-		auto bs = a->m_Size;
+		const auto as = p->m_Size;
+		const auto bs = a->m_Size;
 		return as > bs ? as - bs : bs - as;
 	}
 
@@ -70,10 +71,10 @@ QLang::TypePtr QLang::Type::HigherOrder(const TypePtr &a, const TypePtr &b)
 	case TypeId_Float:
 		switch (b->m_Id)
 		{
-		case TypeId_Int: return a;
 		case TypeId_Float:
 			if (a->m_Size > b->m_Size) return a;
 			return b;
+		case TypeId_Int:
 		case TypeId_Pointer: return a;
 		default: break;
 		}
@@ -81,9 +82,9 @@ QLang::TypePtr QLang::Type::HigherOrder(const TypePtr &a, const TypePtr &b)
 	case TypeId_Pointer:
 		switch (b->m_Id)
 		{
-		case TypeId_Int: return a;
+		case TypeId_Int:
 		case TypeId_Float: return a;
-		case TypeId_Pointer: return Type::Get(a->m_Ctx, "i64");
+		case TypeId_Pointer: return Get(a->m_Ctx, "i64");
 		default: break;
 		}
 		break;
@@ -117,8 +118,9 @@ llvm::Type *QLang::Type::GenIR(Builder &builder) const
 	return nullptr;
 }
 
-QLang::Type::Type(Context &ctx, const std::string &name, TypeId id, size_t size)
-	: m_Ctx(ctx), m_Name(name), m_Id(id), m_Size(size)
+QLang::Type::Type(
+	Context &ctx, std::string name, const TypeId id, const size_t size)
+	: m_Ctx(ctx), m_Name(std::move(name)), m_Id(id), m_Size(size)
 {
 }
 

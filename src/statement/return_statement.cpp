@@ -40,7 +40,7 @@ void QLang::ReturnStatement::GenIRVoid(Builder &builder) const
 
 	if (builder.GetResult()->IsReference())
 	{
-		if (auto ref = LValue::From(value))
+		if (const auto ref = LValue::From(value))
 		{
 			builder.IRBuilder().CreateRet(ref->GetPtr());
 			return;

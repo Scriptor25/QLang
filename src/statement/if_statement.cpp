@@ -2,6 +2,7 @@
 #include <QLang/Expression.hpp>
 #include <QLang/QLang.hpp>
 #include <QLang/Statement.hpp>
+#include <QLang/Value.hpp>
 #include <iostream>
 #include <llvm/IR/BasicBlock.h>
 
@@ -29,13 +30,13 @@ std::ostream &QLang::IfStatement::Print(std::ostream &stream) const
 
 void QLang::IfStatement::GenIRVoid(Builder &builder) const
 {
-	auto bkp = builder.IRBuilder().GetInsertBlock();
-	auto parent = bkp->getParent();
+	const auto bkp = builder.IRBuilder().GetInsertBlock();
+	const auto parent = bkp->getParent();
 	auto then = llvm::BasicBlock::Create(builder.IRContext(), "then", parent);
 	auto else_
 		= Else ? llvm::BasicBlock::Create(builder.IRContext(), "else", parent)
 			   : llvm::BasicBlock::Create(builder.IRContext(), "end", parent);
-	auto end
+	const auto end
 		= Else ? llvm::BasicBlock::Create(builder.IRContext(), "end", parent)
 			   : else_;
 
@@ -51,7 +52,7 @@ void QLang::IfStatement::GenIRVoid(Builder &builder) const
 		return;
 	}
 
-	auto condition = builder.IRBuilder().CreateIsNotNull(if_->Get());
+	const auto condition = builder.IRBuilder().CreateIsNotNull(if_->Get());
 	builder.IRBuilder().CreateCondBr(condition, then, else_);
 
 	builder.IRBuilder().SetInsertPoint(then);

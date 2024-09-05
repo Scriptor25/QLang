@@ -6,7 +6,7 @@
 QLang::ValuePtr QLang::GenAnd(
 	Builder &builder, const ValuePtr &lhs, const ValuePtr &rhs)
 {
-	auto type = lhs->GetType();
+	const auto type = lhs->GetType();
 
 	llvm::Value *value;
 	switch (type->GetId())

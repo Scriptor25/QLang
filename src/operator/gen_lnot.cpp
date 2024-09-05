@@ -4,6 +4,6 @@
 
 QLang::ValuePtr QLang::GenLNot(Builder &builder, const ValuePtr &value)
 {
-	auto result = builder.IRBuilder().CreateIsNull(value->Get());
+	const auto result = builder.IRBuilder().CreateIsNull(value->Get());
 	return RValue::Create(builder, builder.GetInt1Ty(), result);
 }

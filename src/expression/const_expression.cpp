@@ -1,13 +1,13 @@
 #include <QLang/Builder.hpp>
 #include <QLang/Expression.hpp>
-#include <QLang/Type.hpp>
 #include <QLang/Value.hpp>
 #include <iostream>
 #include <string>
+#include <utility>
 
-static std::string unescape(int c)
+static std::string unescape(const int c)
 {
-	if (c >= 0x20) return std::string(1, c);
+	if (c >= 0x20) return { 1, static_cast<char>(c) };
 	switch (c)
 	{
 	case 0x07: return "\\a";
@@ -27,12 +27,12 @@ static std::string unescape(int c)
 static std::string unescape(const std::string &str)
 {
 	std::string s;
-	for (int c : str) s += unescape(c);
+	for (const char c : str) s += unescape(c);
 	return s;
 }
 
 QLang::ConstCharExpression::ConstCharExpression(
-	const SourceLocation &where, char value)
+	const SourceLocation &where, const char value)
 	: Expression(where), Value(value)
 {
 }
@@ -49,7 +49,7 @@ QLang::ValuePtr QLang::ConstCharExpression::GenIR(Builder &builder) const
 }
 
 QLang::ConstFloatExpression::ConstFloatExpression(
-	const SourceLocation &where, double value)
+	const SourceLocation &where, const double value)
 	: Expression(where), Value(value)
 {
 }
@@ -61,13 +61,13 @@ std::ostream &QLang::ConstFloatExpression::Print(std::ostream &stream) const
 
 QLang::ValuePtr QLang::ConstFloatExpression::GenIR(Builder &builder) const
 {
-	auto value
+	const auto value
 		= llvm::ConstantFP::get(builder.IRBuilder().getDoubleTy(), Value);
 	return RValue::Create(builder, builder.GetFloat64Ty(), value);
 }
 
 QLang::ConstIntExpression::ConstIntExpression(
-	const SourceLocation &where, uint64_t value)
+	const SourceLocation &where, const uint64_t value)
 	: Expression(where), Value(value)
 {
 }
@@ -84,8 +84,8 @@ QLang::ValuePtr QLang::ConstIntExpression::GenIR(Builder &builder) const
 }
 
 QLang::ConstStringExpression::ConstStringExpression(
-	const SourceLocation &where, const std::string &value)
-	: Expression(where), Value(value)
+	const SourceLocation &where, std::string value)
+	: Expression(where), Value(std::move(value))
 {
 }
 

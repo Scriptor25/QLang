@@ -1,7 +1,8 @@
 #include <QLang/Statement.hpp>
 #include <iostream>
+#include <utility>
 
-QLang::Statement::Statement(const SourceLocation &where) : Where(where) {}
+QLang::Statement::Statement(SourceLocation where) : Where(std::move(where)) {}
 
 QLang::Statement::~Statement() = default;
 

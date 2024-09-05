@@ -4,7 +4,7 @@
 #include <QLang/QLang.hpp>
 #include <sstream>
 
-QLang::StatementPtr QLang::Macro::Resolve(Parser &parser)
+QLang::StatementPtr QLang::Macro::Resolve(Parser &parser) const
 {
 	std::stringstream stream(Value);
 	Parser p(parser.GetBuilder(), stream, Where, parser.GetCallback());
@@ -12,16 +12,17 @@ QLang::StatementPtr QLang::Macro::Resolve(Parser &parser)
 }
 
 QLang::StatementPtr QLang::Macro::Resolve(
-	Parser &parser, std::vector<ExpressionPtr> &args)
+	Parser &parser, std::vector<ExpressionPtr> &args) const
 {
 	std::vector<StatementPtr> stmt_args;
+	stmt_args.reserve(args.size());
 	for (auto &arg : args)
 		stmt_args.push_back(dyn_cast<Statement>(std::move(arg)));
 	return Resolve(parser, stmt_args);
 }
 
 QLang::StatementPtr QLang::Macro::Resolve(
-	Parser &parser, std::vector<StatementPtr> &args)
+	Parser &parser, std::vector<StatementPtr> &args) const
 {
 	std::string value = Value;
 

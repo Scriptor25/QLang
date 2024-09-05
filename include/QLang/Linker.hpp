@@ -12,10 +12,10 @@ namespace QLang
 	public:
 		Linker();
 
-		llvm::LLVMContext &IRContext() const;
+		[[nodiscard]] llvm::LLVMContext &IRContext() const;
 
-		void Link(Builder &builder);
-		void EmitObject(const std::string &filename);
+		void Link(Builder &builder) const;
+		void EmitObject(const std::string &filename) const;
 
 	private:
 		std::unique_ptr<llvm::LLVMContext> m_IRContext;

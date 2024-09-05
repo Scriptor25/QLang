@@ -1,5 +1,4 @@
 #include <QLang/Builder.hpp>
-#include <QLang/Function.hpp>
 #include <QLang/Operator.hpp>
 #include <QLang/Statement.hpp>
 #include <QLang/Type.hpp>
@@ -9,14 +8,15 @@
 #include <llvm/IR/Verifier.h>
 #include <llvm/Support/raw_ostream.h>
 #include <string>
+#include <utility>
 
 QLang::DefFnStatement::DefFnStatement(
-	const SourceLocation &where, bool is_extern, FnMode mode,
-	const TypePtr &result, const TypePtr &self, const std::string &name,
-	const std::vector<Param> &params, bool vararg, StatementPtr body)
-	: Statement(where), IsExtern(is_extern), Mode(mode), Result(result),
-	  Self(self), Name(name), Params(params), VarArg(vararg),
-	  Body(std::move(body))
+	const SourceLocation &where, const bool is_extern, const FnMode mode,
+	TypePtr result, TypePtr self, std::string name,
+	const std::vector<Param> &params, const bool vararg, StatementPtr body)
+	: Statement(where), IsExtern(is_extern), Mode(mode),
+	  Result(std::move(result)), Self(std::move(self)), Name(std::move(name)),
+	  Params(params), VarArg(vararg), Body(std::move(body))
 {
 }
 
@@ -51,39 +51,44 @@ std::ostream &QLang::DefFnStatement::Print(std::ostream &stream) const
 void QLang::DefFnStatement::GenIRVoid(Builder &builder) const
 {
 	std::vector<TypePtr> param_types;
-	for (const auto &param : Params) param_types.push_back(param.Type);
-	auto type = FunctionType::Get(Mode, Result, Self, param_types, VarArg);
+	param_types.reserve(Params.size());
+	for (const auto &[param_type, param_name] : Params)
+		param_types.push_back(param_type);
+	const auto type
+		= FunctionType::Get(Mode, Result, Self, param_types, VarArg);
 
-	auto &ref = builder.GetFunction(Name, type);
-	if (!ref.IR)
+	auto &[func_name, func_type, func_ir, func_ir_type]
+		= builder.GetFunction(Name, type);
+	if (!func_ir)
 	{
-		ref.Name = Name;
-		ref.Type = type;
-		ref.IRType = type->GenIR(builder);
-		ref.IR = llvm::Function::Create(
-			ref.IRType, llvm::GlobalValue::ExternalLinkage, GenName(),
+		func_name = Name;
+		func_type = type;
+		func_ir_type = type->GenIR(builder);
+		func_ir = llvm::Function::Create(
+			func_ir_type, llvm::GlobalValue::ExternalLinkage, GenName(),
 			builder.IRModule());
 	}
 
 	if (!Body) return;
-	if (!ref.IR->empty())
+	if (!func_ir->empty())
 	{
 		std::cerr << "at " << Where << ": cannot redefine function"
 				  << std::endl;
 		return;
 	}
 
-	auto bb = llvm::BasicBlock::Create(builder.IRContext(), "entry", ref.IR);
+	const auto bb
+		= llvm::BasicBlock::Create(builder.IRContext(), "entry", func_ir);
 	builder.IRBuilder().SetInsertPoint(bb);
 
 	builder.StackPush();
 	builder.GetResult() = type->GetResult();
 	builder.ClearLocalDtors();
 
-	unsigned off = Self ? 1 : 0;
+	const unsigned off = Self ? 1 : 0;
 	if (off)
 	{
-		auto arg = ref.IR->getArg(0);
+		const auto arg = func_ir->getArg(0);
 		arg->setName("self");
 		builder["self"] = LValue::Create(builder, Self, arg);
 	}
@@ -92,10 +97,10 @@ void QLang::DefFnStatement::GenIRVoid(Builder &builder) const
 	{
 		auto &[arg_type, arg_name] = Params[i];
 
-		auto arg = ref.IR->getArg(i + off);
+		const auto arg = func_ir->getArg(i + off);
 		arg->setName(arg_name);
 
-		if (auto aty = ReferenceType::From(arg_type))
+		if (const auto aty = ReferenceType::From(arg_type))
 			builder[arg_name] = LValue::Create(builder, aty->GetBase(), arg);
 		else
 		{
@@ -108,16 +113,16 @@ void QLang::DefFnStatement::GenIRVoid(Builder &builder) const
 	builder.StackPop();
 
 	if (type->GetResult()->IsVoid())
-		for (auto &block : *ref.IR)
+		for (auto &block : *func_ir)
 		{
 			if (block.getTerminator()) continue;
 			builder.IRBuilder().SetInsertPoint(&block);
 			builder.IRBuilder().CreateRetVoid();
 		}
 
-	for (auto &block : *ref.IR)
+	for (auto &block : *func_ir)
 	{
-		auto terminator = block.getTerminator();
+		const auto terminator = block.getTerminator();
 		if (!terminator || !terminator->willReturn()) continue;
 
 		builder.IRBuilder().SetInsertPoint(terminator);
@@ -126,14 +131,14 @@ void QLang::DefFnStatement::GenIRVoid(Builder &builder) const
 
 	builder.IRBuilder().ClearInsertionPoint();
 
-	if (llvm::verifyFunction(*ref.IR, &llvm::errs()))
+	if (verifyFunction(*func_ir, &llvm::errs()))
 	{
-		ref.IR->print(llvm::errs());
-		ref.IR->erase(ref.IR->begin(), ref.IR->end());
+		func_ir->print(llvm::errs());
+		func_ir->erase(func_ir->begin(), func_ir->end());
 		return;
 	}
 
-	builder.Optimize(ref.IR);
+	builder.Optimize(func_ir);
 }
 
 std::string QLang::DefFnStatement::GenName() const
@@ -157,14 +162,14 @@ std::string QLang::DefFnStatement::GenName() const
 	}
 
 	name += ';' + std::to_string(Params.size());
-	for (auto &p : Params)
+	for (const auto &[param_type, param_name] : Params)
 	{
 		name += ';';
-		name += p.Type->GetName();
+		name += param_type->GetName();
 	}
 	if (VarArg) name += ";?";
 
-	auto hash = std::hash<std::string>()(name);
+	const auto hash = std::hash<std::string>()(name);
 
 	char buf[256];
 	sprintf(buf, "%s__%016lX", Name.c_str(), hash);

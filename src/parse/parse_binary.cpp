@@ -43,20 +43,19 @@ static int get_precedence(const std::string &op)
 }
 
 QLang::StatementPtr QLang::Parser::ParseBinary(
-	StatementPtr lhs, size_t min_prec)
+	StatementPtr lhs, const size_t min_pre)
 {
-	while (At(TokenType_Operator) && get_precedence(m_Token.Value) >= min_prec)
+	while (At(TokenType_Operator) && get_precedence(m_Token.Value) >= min_pre)
 	{
 		auto [Where, Type, Value] = Skip();
-		auto prec = get_precedence(Value);
+		const auto pre = get_precedence(Value);
 
 		auto rhs = ParseOperand();
 		if (!rhs) return {};
-		while (At(TokenType_Operator) && get_precedence(m_Token.Value) > prec)
+		while (At(TokenType_Operator) && get_precedence(m_Token.Value) > pre)
 		{
-			auto next_prec = get_precedence(m_Token.Value);
-			rhs = ParseBinary(
-				std::move(rhs), prec + 1 /*(next_prec > prec ? 1 : 0)*/);
+			const auto next_pre = get_precedence(m_Token.Value);
+			rhs = ParseBinary(std::move(rhs), pre + (next_pre > pre ? 1 : 0));
 			if (!rhs) return {};
 		}
 

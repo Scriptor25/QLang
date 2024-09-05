@@ -1,10 +1,11 @@
 #include <QLang/Builder.hpp>
 #include <QLang/Operator.hpp>
 #include <QLang/Type.hpp>
+#include <QLang/Value.hpp>
 
 QLang::ValuePtr QLang::GenNot(Builder &builder, const ValuePtr &value)
 {
-	auto type = value->GetType();
+	const auto type = value->GetType();
 
 	llvm::Value *result;
 	switch (type->GetId())

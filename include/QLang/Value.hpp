@@ -31,10 +31,9 @@ namespace QLang
 		static RValuePtr Create(
 			Builder &, const TypePtr &type, llvm::Value *value);
 
-	public:
 		RValue(Builder &, const TypePtr &type, llvm::Value *value);
 
-		llvm::Value *Get() const override;
+		[[nodiscard]] llvm::Value *Get() const override;
 
 	private:
 		llvm::Value *m_Value;
@@ -50,12 +49,10 @@ namespace QLang
 			Builder &, const TypePtr &type, llvm::Value *value = nullptr,
 			const std::string &name = "");
 
-	public:
 		LValue(Builder &, const TypePtr &type, llvm::Value *ptr);
 
-		llvm::Value *Get() const override;
-
-		llvm::Value *GetPtr() const;
+		[[nodiscard]] llvm::Value *Get() const override;
+		[[nodiscard]] llvm::Value *GetPtr() const;
 		void Set(llvm::Value *value) const;
 
 	private:
