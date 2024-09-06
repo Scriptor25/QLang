@@ -24,7 +24,7 @@ QLang::StatementPtr QLang::Parser::ParseCall(StatementPtr callee)
 				_is_callee)
 			{
 				auto statement
-					= m_Context.GetMacro(name->Name).Resolve(*this, args);
+					= m_Context.GetMacro(name->Name).Expand(*this, args);
 				return statement;
 			}
 		}

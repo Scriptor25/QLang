@@ -100,3 +100,11 @@ QLang::ValuePtr QLang::CallExpression::GenIR(Builder &builder) const
 
 	return result;
 }
+
+QLang::ExpressionPtr QLang::CallExpression::Compress()
+{
+	if (auto callee = Callee->Compress()) Callee = std::move(callee);
+	for (auto &arg : Args)
+		if (auto _arg = arg->Compress()) arg = std::move(_arg);
+	return {};
+}

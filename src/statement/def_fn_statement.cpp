@@ -83,7 +83,7 @@ void QLang::DefFnStatement::GenIRVoid(Builder &builder) const
 
 	builder.StackPush();
 	builder.GetResult() = type->GetResult();
-	builder.ClearLocalDtors();
+	builder.ClearLocalDestructors();
 
 	const unsigned off = Self ? 1 : 0;
 	if (off)
@@ -126,7 +126,7 @@ void QLang::DefFnStatement::GenIRVoid(Builder &builder) const
 		if (!terminator || !terminator->willReturn()) continue;
 
 		builder.IRBuilder().SetInsertPoint(terminator);
-		builder.GenLocalDtors();
+		builder.GenLocalDestructors();
 	}
 
 	builder.IRBuilder().ClearInsertionPoint();

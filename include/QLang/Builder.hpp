@@ -47,10 +47,10 @@ namespace QLang
 			const TypePtr &type, const std::string &name = "");
 
 		// Local destructors
-		void ClearLocalDtors();
-		void CreateLocalDtor(const LValuePtr &value);
+		void ClearLocalDestructors();
+		void CreateLocalDestructors(const LValuePtr &value);
 		void RemoveLocalDtor(const ValuePtr &value);
-		void GenLocalDtors();
+		void GenLocalDestructors();
 
 		// Function Utility
 		Function &GetFunction(

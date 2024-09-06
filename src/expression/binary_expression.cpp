@@ -23,6 +23,11 @@ QLang::BinaryExpression::BinaryExpression(
 {
 }
 
+bool QLang::BinaryExpression::IsConstant() const
+{
+	return LHS->IsConstant() && RHS->IsConstant();
+}
+
 std::ostream &QLang::BinaryExpression::Print(std::ostream &stream) const
 {
 	if (Operator == "[]") return stream << LHS << '[' << RHS << ']';
@@ -200,3 +205,5 @@ QLang::ValuePtr QLang::BinaryExpression::GenIR(Builder &builder) const
 
 	return result;
 }
+
+QLang::ExpressionPtr QLang::BinaryExpression::Compress() { return {}; }

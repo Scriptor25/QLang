@@ -40,7 +40,7 @@ void QLang::IfStatement::GenIRVoid(Builder &builder) const
 		= Else ? llvm::BasicBlock::Create(builder.IRContext(), "end", parent)
 			   : else_;
 
-	auto if_ = If->GenIR(builder);
+	const auto if_ = If->GenIR(builder);
 	if (!if_)
 	{
 		std::cerr << "    at " << Where << std::endl;

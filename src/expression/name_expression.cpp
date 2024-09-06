@@ -77,3 +77,5 @@ QLang::ValuePtr QLang::NameExpression::GenIR(Builder &builder) const
 			  << std::endl;
 	return {};
 }
+
+QLang::ExpressionPtr QLang::NameExpression::Compress() { return {}; }

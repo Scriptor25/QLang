@@ -1,3 +1,5 @@
+include "stdio.qh"
+include "string.qh"
 include "time.qh"
 
 macro theta_spacing 0.035
@@ -16,14 +18,9 @@ macro clamp(x, min, max) min(#max#, max(#min#, #x#))
 
 def ext f64 cos(f64)
 def ext f64 sin(f64)
-def ext void* malloc(i64)
-def ext void* memset(void*, i64, i64)
-def ext void free(void*)
-def ext i32 printf(i8*, ?)
-def ext i32 putchar(i8)
 
-def i8* output
-def f64* zbuffer
+def i8[screen_width * screen_height] output
+def f64[screen_width * screen_height] z_buffer
 
 def void render_frame(f64 A, f64 B) {
     def f64 cosA = cos(A)
@@ -32,38 +29,38 @@ def void render_frame(f64 A, f64 B) {
     def f64 sinB = sin(B)
 
     memset(output, 0x20, screen_width * screen_height)
-    memset(zbuffer, 0x00, screen_width * screen_height * 8)
+    memset(z_buffer, 0x00, screen_width * screen_height * 8)
 
     def f64 theta = 0
     while theta < 2 * pi {
-        def f64 costheta = cos(theta)
-        def f64 sintheta = sin(theta)
+        def f64 cos_theta = cos(theta)
+        def f64 sin_theta = sin(theta)
 
         def f64 phi = 0
         while phi < 2 * pi {
-            def f64 cosphi = cos(phi)
-            def f64 sinphi = sin(phi)
+            def f64 cos_phi = cos(phi)
+            def f64 sin_phi = sin(phi)
 
-            def f64 circlex = R2 + R1 * costheta
-            def f64 circley = R1 * sintheta
+            def f64 circle_x = R2 + R1 * cos_theta
+            def f64 circle_y = R1 * sin_theta
 
-            def f64 x = circlex * (cosB * cosphi + sinA * sinB * sinphi) - circley * cosA * sinB
-            def f64 y = circlex * (sinB * cosphi - sinA * cosB * sinphi) + circley * cosA * cosB
-            def f64 z = K2 + cosA * circlex * sinphi + circley * sinA
+            def f64 x = circle_x * (cosB * cos_phi + sinA * sinB * sin_phi) - circle_y * cosA * sinB
+            def f64 y = circle_x * (sinB * cos_phi - sinA * cosB * sin_phi) + circle_y * cosA * cosB
+            def f64 z = K2 + cosA * circle_x * sin_phi + circle_y * sinA
             def f64 ooz = 1 / z
 
             def i32 xp = screen_width * 0.5 + K1 * ooz * x
             def i32 yp = screen_height * 0.5 - K1 * ooz * y * 0.5
 
             if (xp >= 0 && xp < screen_width && yp >= 0 && yp < screen_height) {
-                def f64 L = cosphi * costheta * sinB - cosA * costheta * sinphi - sinA * sintheta + cosB * (cosA * sintheta - costheta * sinA * sinphi)
+                def f64 L = cos_phi * cos_theta * sinB - cosA * cos_theta * sin_phi - sinA * sin_theta + cosB * (cosA * sin_theta - cos_theta * sinA * sin_phi)
 
                 if L > 0 {
                     def i64 idx = xp + yp * screen_width
-                    if (ooz > zbuffer[idx]) {
-                        zbuffer[idx] = ooz
-                        def i64 lidx = clamp(L * 8, 0, 11)
-                        output[idx] = ".,-~:;=!*#$@"[lidx]
+                    if (ooz > z_buffer[idx]) {
+                        z_buffer[idx] = ooz
+                        def i64 luminance_index = clamp(L * 8, 0, 11)
+                        output[idx] = ".,-~:;=!*#$@"[luminance_index]
                     }
                 }
             }
@@ -83,9 +80,6 @@ def void render_frame(f64 A, f64 B) {
 }
 
 def ext i32 main() {
-    output = malloc(screen_width * screen_height)
-    zbuffer = malloc(screen_width * screen_height * 8)
-
     def f64 a = 0
     def f64 b = 0
     while 1 {
@@ -94,8 +88,5 @@ def ext i32 main() {
         while (clock() - t) < (CLOCKS_PER_SEC * 0.02) {
         }
     }
-    
-    free(output)
-    free(zbuffer)
     return 0
 }

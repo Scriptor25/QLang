@@ -9,10 +9,10 @@ namespace QLang
 {
 	struct Macro
 	{
-		StatementPtr Resolve(Parser &parser) const;
-		StatementPtr Resolve(
+		StatementPtr Expand(Parser &parser) const;
+		StatementPtr Expand(
 			Parser &parser, std::vector<ExpressionPtr> &args) const;
-		StatementPtr Resolve(
+		StatementPtr Expand(
 			Parser &parser, std::vector<StatementPtr> &args) const;
 
 		SourceLocation Where;

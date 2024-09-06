@@ -150,3 +150,11 @@ QLang::ValuePtr QLang::TernaryExpression::GenIR(Builder &builder) const
 	phi->addIncoming(else_value->Get(), else_);
 	return RValue::Create(builder, type, phi);
 }
+
+QLang::ExpressionPtr QLang::TernaryExpression::Compress()
+{
+	if (auto if_ = If->Compress()) If = std::move(if_);
+	if (auto then = Then->Compress()) Then = std::move(then);
+	if (auto else_ = Else->Compress()) Else = std::move(else_);
+	return {};
+}

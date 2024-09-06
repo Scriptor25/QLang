@@ -105,13 +105,13 @@ QLang::LValuePtr QLang::Builder::CreateInstance(
 		}
 	}
 
-	CreateLocalDtor(instance);
+	CreateLocalDestructors(instance);
 	return instance;
 }
 
-void QLang::Builder::ClearLocalDtors() { m_LocalDtors.clear(); }
+void QLang::Builder::ClearLocalDestructors() { m_LocalDtors.clear(); }
 
-void QLang::Builder::CreateLocalDtor(const LValuePtr &value)
+void QLang::Builder::CreateLocalDestructors(const LValuePtr &value)
 {
 	if (const auto func = FindDestructor(value->GetType()))
 	{
@@ -124,7 +124,7 @@ void QLang::Builder::CreateLocalDtor(const LValuePtr &value)
 		for (size_t i = 0; i < str_ty->GetElementCount(); ++i)
 		{
 			auto member = GenMember(*this, value, i);
-			CreateLocalDtor(member);
+			CreateLocalDestructors(member);
 		}
 	}
 }
@@ -141,7 +141,7 @@ void QLang::Builder::RemoveLocalDtor(const ValuePtr &value)
 	}
 }
 
-void QLang::Builder::GenLocalDtors()
+void QLang::Builder::GenLocalDestructors()
 {
 	for (auto &[Callee, Self] : m_LocalDtors)
 		GenCall(*this, Callee->AsValue(*this), Self, {});

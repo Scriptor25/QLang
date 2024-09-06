@@ -44,7 +44,7 @@ QLang::StatementPtr QLang::Parser::ParsePrimary()
 	{
 		auto [Where, Type, Value] = Skip();
 		if (m_Context.HasMacro(Value) && !m_Context.GetMacro(Value).IsCallee)
-			return m_Context.GetMacro(Value).Resolve(*this);
+			return m_Context.GetMacro(Value).Expand(*this);
 		return std::make_unique<NameExpression>(Where, Value);
 	}
 

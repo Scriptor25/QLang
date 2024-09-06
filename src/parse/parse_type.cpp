@@ -54,8 +54,9 @@ QLang::TypePtr QLang::Parser::ParseType()
 		}
 		if (NextIfAt("["))
 		{
-			auto length_expr = dyn_cast<ConstIntExpression>(ParseOperand());
-			auto length = length_expr->Value;
+			const auto length_expr
+				= dyn_cast<ConstIntExpression>(ParseBinary());
+			const auto length = length_expr->Value;
 			Expect("]");
 			base = ArrayType::Get(base, length);
 			continue;

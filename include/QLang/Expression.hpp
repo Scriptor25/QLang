@@ -1,7 +1,6 @@
 #pragma once
 
 #include <QLang/QLang.hpp>
-#include <QLang/SourceLocation.hpp>
 #include <QLang/Statement.hpp>
 #include <vector>
 
@@ -12,8 +11,14 @@ namespace QLang
 		explicit Expression(const SourceLocation &);
 		void GenIRVoid(Builder &) const override;
 
+		[[nodiscard]] virtual bool IsConstant() const;
+
 		virtual ValuePtr GenIR(Builder &) const = 0;
+		virtual ExpressionPtr Compress() = 0;
 	};
+
+	ExpressionPtr Compress(StatementPtr);
+	ExpressionPtr Compress(ExpressionPtr);
 
 	struct BinaryExpression : Expression
 	{
@@ -23,8 +28,11 @@ namespace QLang
 		BinaryExpression(const SourceLocation &, std::string operator_,
 						 ExpressionPtr lhs, ExpressionPtr rhs);
 
+		[[nodiscard]] bool IsConstant() const override;
+
 		std::ostream &Print(std::ostream &) const override;
 		ValuePtr GenIR(Builder &) const override;
+		ExpressionPtr Compress() override;
 
 		std::string Operator;
 		ExpressionPtr LHS;
@@ -41,6 +49,7 @@ namespace QLang
 
 		std::ostream &Print(std::ostream &) const override;
 		ValuePtr GenIR(Builder &) const override;
+		ExpressionPtr Compress() override;
 
 		ExpressionPtr Callee;
 		std::vector<ExpressionPtr> Args;
@@ -51,11 +60,13 @@ namespace QLang
 		CastExpression(
 			const SourceLocation &, const TypePtr &dst, StatementPtr src);
 
-		CastExpression(
-			const SourceLocation &, TypePtr dst, ExpressionPtr src);
+		CastExpression(const SourceLocation &, TypePtr dst, ExpressionPtr src);
+
+		[[nodiscard]] bool IsConstant() const override;
 
 		std::ostream &Print(std::ostream &) const override;
 		ValuePtr GenIR(Builder &) const override;
+		ExpressionPtr Compress() override;
 
 		TypePtr Dst;
 		ExpressionPtr Src;
@@ -65,8 +76,11 @@ namespace QLang
 	{
 		ConstCharExpression(const SourceLocation &, char value);
 
+		[[nodiscard]] bool IsConstant() const override;
+
 		std::ostream &Print(std::ostream &) const override;
 		ValuePtr GenIR(Builder &) const override;
+		ExpressionPtr Compress() override;
 
 		char Value;
 	};
@@ -75,8 +89,11 @@ namespace QLang
 	{
 		ConstFloatExpression(const SourceLocation &, double value);
 
+		[[nodiscard]] bool IsConstant() const override;
+
 		std::ostream &Print(std::ostream &) const override;
 		ValuePtr GenIR(Builder &) const override;
+		ExpressionPtr Compress() override;
 
 		double Value;
 	};
@@ -85,8 +102,11 @@ namespace QLang
 	{
 		ConstIntExpression(const SourceLocation &, uint64_t value);
 
+		[[nodiscard]] bool IsConstant() const override;
+
 		std::ostream &Print(std::ostream &) const override;
 		ValuePtr GenIR(Builder &) const override;
+		ExpressionPtr Compress() override;
 
 		uint64_t Value;
 	};
@@ -95,8 +115,11 @@ namespace QLang
 	{
 		ConstStringExpression(const SourceLocation &, std::string value);
 
+		[[nodiscard]] bool IsConstant() const override;
+
 		std::ostream &Print(std::ostream &) const override;
 		ValuePtr GenIR(Builder &) const override;
+		ExpressionPtr Compress() override;
 
 		std::string Value;
 	};
@@ -107,6 +130,7 @@ namespace QLang
 
 		std::ostream &Print(std::ostream &) const override;
 		ValuePtr GenIR(Builder &) const override;
+		ExpressionPtr Compress() override;
 
 		std::string Name;
 	};
@@ -119,8 +143,11 @@ namespace QLang
 		TernaryExpression(const SourceLocation &, ExpressionPtr if_,
 						  ExpressionPtr then, ExpressionPtr else_);
 
+		[[nodiscard]] bool IsConstant() const override;
+
 		std::ostream &Print(std::ostream &) const override;
 		ValuePtr GenIR(Builder &) const override;
+		ExpressionPtr Compress() override;
 
 		ExpressionPtr If;
 		ExpressionPtr Then;
@@ -135,8 +162,11 @@ namespace QLang
 		UnaryExpression(const SourceLocation &, std::string operator_,
 						ExpressionPtr operand, bool post);
 
+		[[nodiscard]] bool IsConstant() const override;
+
 		std::ostream &Print(std::ostream &) const override;
 		ValuePtr GenIR(Builder &) const override;
+		ExpressionPtr Compress() override;
 
 		std::string Operator;
 		ExpressionPtr Operand;
