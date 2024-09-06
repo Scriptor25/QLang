@@ -52,8 +52,7 @@ void QLang::DefFnStatement::GenIRVoid(Builder &builder) const
 {
 	std::vector<TypePtr> param_types;
 	param_types.reserve(Params.size());
-	for (const auto &[param_type, param_name] : Params)
-		param_types.push_back(param_type);
+	for (const auto &[_type, _name] : Params) param_types.push_back(_type);
 	const auto type
 		= FunctionType::Get(Mode, Result, Self, param_types, VarArg);
 
@@ -95,18 +94,16 @@ void QLang::DefFnStatement::GenIRVoid(Builder &builder) const
 
 	for (size_t i = 0; i < Params.size(); ++i)
 	{
-		auto &[arg_type, arg_name] = Params[i];
+		auto &[_type, _name] = Params[i];
 
 		const auto arg = func_ir->getArg(i + off);
-		arg->setName(arg_name);
+		arg->setName(_name);
 
-		if (const auto aty = ReferenceType::From(arg_type))
-			builder[arg_name] = LValue::Create(builder, aty->GetBase(), arg);
-		else
+		if (const auto aty = ReferenceType::From(_type))
 		{
-			builder[arg_name]
-				= LValue::Alloca(builder, arg_type, arg, arg_name);
+			builder[_name] = LValue::Create(builder, aty->GetBase(), arg);
 		}
+		else { builder[_name] = LValue::Alloca(builder, _type, arg, _name); }
 	}
 
 	Body->GenIRVoid(builder);

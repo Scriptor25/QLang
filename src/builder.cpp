@@ -91,16 +91,16 @@ QLang::LValuePtr QLang::Builder::CreateInstance(
 	{
 		for (size_t i = 0; i < struct_type->GetElementCount(); ++i)
 		{
-			const auto &[Type, Name, Init] = struct_type->GetElement(i);
-			if (!Init) continue;
+			const auto &[_type, _name, _init] = struct_type->GetElement(i);
+			if (!_init) continue;
 
-			auto init = Init->GenIR(*this);
+			auto init = _init->GenIR(*this);
 			if (!init) return {};
-			init = GenCast(*this, init, Type);
+			init = GenCast(*this, init, _type);
 			if (!init) return {};
 
 			const auto gep = m_IRBuilder->CreateStructGEP(
-				ir_type, instance->GetPtr(), i, Name);
+				ir_type, instance->GetPtr(), i, _name);
 			m_IRBuilder->CreateStore(init->Get(), gep);
 		}
 	}
@@ -131,20 +131,19 @@ void QLang::Builder::CreateLocalDestructors(const LValuePtr &value)
 
 void QLang::Builder::RemoveLocalDtor(const ValuePtr &value)
 {
-	for (size_t i = 0; i < m_LocalDtors.size(); ++i)
-	{
+	for (long i = 0; i < m_LocalDtors.size(); ++i)
 		if (m_LocalDtors[i].Self == value)
 		{
-			m_LocalDtors.erase(m_LocalDtors.begin() + static_cast<long>(i));
-			break;
+			m_LocalDtors.erase(m_LocalDtors.begin() + i);
+			return;
 		}
-	}
 }
 
 void QLang::Builder::GenLocalDestructors()
 {
-	for (auto &[Callee, Self] : m_LocalDtors)
-		GenCall(*this, Callee->AsValue(*this), Self, {});
+	for (auto &[_callee, _self] : m_LocalDtors)
+		GenCall(*this, _callee->AsValue(*this), _self, {});
+	m_LocalDtors.clear();
 }
 
 QLang::Function &QLang::Builder::GetFunction(
