@@ -9,68 +9,78 @@
 #include <string>
 #include <vector>
 
-int main(int argc, const char **argv)
+int main(int argc, const char** argv)
 {
-	std::vector<std::string> input_filenames;
-	std::vector<std::string> include_dirs;
-	std::string output_filename = "a.out";
+    std::vector<std::string> input_filenames;
+    std::vector<std::string> include_dirs;
+    std::string output_filename = "a.out";
+    bool emit_ast = false;
+    bool emit_ir = false;
 
-	for (size_t i = 1; i < argc; ++i)
-	{
-		std::string arg(argv[i]);
+    for (size_t i = 1; i < argc; ++i)
+    {
+        std::string arg(argv[i]);
 
-		if (arg == "-o")
-		{
-			output_filename = argv[++i];
-			continue;
-		}
+        if (arg == "-o")
+        {
+            output_filename = argv[++i];
+            continue;
+        }
+        if (arg == "-I")
+        {
+            include_dirs.emplace_back(argv[++i]);
+            continue;
+        }
+        if (arg == "-ea")
+        {
+            emit_ast = true;
+            continue;
+        }
+        if (arg == "-ei")
+        {
+            emit_ir = true;
+            continue;
+        }
 
-		if (arg == "-I")
-		{
-			include_dirs.emplace_back(argv[++i]);
-			continue;
-		}
+        input_filenames.push_back(arg);
+    }
 
-		input_filenames.push_back(arg);
-	}
+    if (input_filenames.empty())
+    {
+        std::cerr << "no input files provided" << std::endl;
+        return 1;
+    }
 
-	if (input_filenames.empty())
-	{
-		std::cerr << "no input files provided" << std::endl;
-		return 1;
-	}
+    QLang::Linker linker;
 
-	QLang::Linker linker;
+    for (const auto& filename : input_filenames)
+    {
+        std::ifstream stream(filename);
+        if (!stream)
+            continue;
 
-	for (const auto &filename : input_filenames)
-	{
-		std::ifstream stream(filename);
-		if (!stream) continue;
+        std::string module_name =
+            std::filesystem::path(filename).replace_extension().filename().string();
 
-		std::string module_name
-			= std::filesystem::path(filename)
-				  .replace_extension()
-				  .filename()
-				  .string();
+        QLang::Context context;
+        for (const auto& dir : include_dirs)
+            context.AddIncludeDir(dir);
 
-		QLang::Context context;
-		for (const auto &dir : include_dirs) context.AddIncludeDir(dir);
+        QLang::Builder builder(context, linker.IRContext(), module_name);
+        QLang::Parser parser(builder, stream, {.Filename = filename},
+                             [&](const QLang::StatementPtr& ptr)
+                             {
+                                 if (emit_ast)
+                                     std::cerr << ptr << std::endl;
+                                 ptr->GenIRVoid(builder);
+                             });
 
-		QLang::Builder builder(context, linker.IRContext(), module_name);
-		QLang::Parser parser(
-			builder, stream, { .Filename = filename },
-			[&](const QLang::StatementPtr &ptr)
-			{
-				std::cerr << ptr << std::endl;
-				ptr->GenIRVoid(builder);
-			});
+        parser.Parse();
+        stream.close();
 
-		parser.Parse();
-		stream.close();
+        linker.Link(builder);
+    }
 
-		builder.Print();
-		linker.Link(builder);
-	}
-
-	linker.EmitObject(output_filename);
+    if (emit_ir) linker.Print();
+    linker.EmitObject(output_filename);
 }

@@ -16,66 +16,71 @@
 
 QLang::Linker::Linker()
 {
-	m_IRContext = std::make_unique<llvm::LLVMContext>();
-	m_IRModule = std::make_unique<llvm::Module>("module", *m_IRContext);
+    m_IRContext = std::make_unique<llvm::LLVMContext>();
+    m_IRModule = std::make_unique<llvm::Module>("module", *m_IRContext);
 }
 
-llvm::LLVMContext &QLang::Linker::IRContext() const { return *m_IRContext; }
+llvm::LLVMContext& QLang::Linker::IRContext() const { return *m_IRContext; }
 
-void QLang::Linker::Link(Builder &builder) const
+void QLang::Linker::Print() const
 {
-	auto &module = builder.IRModulePtr();
-	if (verifyModule(*module, &llvm::errs())) return;
-
-	llvm::Linker::linkModules(*m_IRModule, std::move(module));
+    m_IRModule->print(llvm::errs(), nullptr);
 }
 
-void QLang::Linker::EmitObject(const std::string &filename) const
+void QLang::Linker::Link(Builder& builder) const
 {
-	llvm::InitializeAllTargetInfos();
-	llvm::InitializeAllTargets();
-	llvm::InitializeAllTargetMCs();
-	llvm::InitializeAllAsmParsers();
-	llvm::InitializeAllAsmPrinters();
+    auto& module = builder.IRModulePtr();
+    if (verifyModule(*module, &llvm::errs())) return;
 
-	const auto triple = llvm::sys::getDefaultTargetTriple();
+    llvm::Linker::linkModules(*m_IRModule, std::move(module));
+}
 
-	std::string err;
-	const auto target = llvm::TargetRegistry::lookupTarget(triple, err);
+void QLang::Linker::EmitObject(const std::string& filename) const
+{
+    llvm::InitializeAllTargetInfos();
+    llvm::InitializeAllTargets();
+    llvm::InitializeAllTargetMCs();
+    llvm::InitializeAllAsmParsers();
+    llvm::InitializeAllAsmPrinters();
 
-	if (!target)
-	{
-		llvm::errs() << err;
-		return;
-	}
+    const auto triple = llvm::sys::getDefaultTargetTriple();
 
-	const auto cpu = "generic";
-	const auto features = "";
+    std::string err;
+    const auto target = llvm::TargetRegistry::lookupTarget(triple, err);
 
-	const llvm::TargetOptions opt;
-	const auto machine = target->createTargetMachine(
-		triple, cpu, features, opt, llvm::Reloc::PIC_);
+    if (!target)
+    {
+        llvm::errs() << err;
+        return;
+    }
 
-	m_IRModule->setDataLayout(machine->createDataLayout());
-	m_IRModule->setTargetTriple(triple);
+    const auto cpu = "generic";
+    const auto features = "";
 
-	std::error_code ec;
-	llvm::raw_fd_ostream dest(filename, ec, llvm::sys::fs::OF_None);
+    const llvm::TargetOptions opt;
+    const auto machine = target->createTargetMachine(
+        triple, cpu, features, opt, llvm::Reloc::PIC_);
 
-	if (ec)
-	{
-		llvm::errs() << "could not open file: " << ec.message();
-		return;
-	}
+    m_IRModule->setDataLayout(machine->createDataLayout());
+    m_IRModule->setTargetTriple(triple);
 
-	llvm::legacy::PassManager pass;
-	if (machine->addPassesToEmitFile(
-			pass, dest, nullptr, llvm::CodeGenFileType::ObjectFile))
-	{
-		llvm::errs() << "machine cannot emit filetype";
-		return;
-	}
+    std::error_code ec;
+    llvm::raw_fd_ostream dest(filename, ec, llvm::sys::fs::OF_None);
 
-	pass.run(*m_IRModule);
-	dest.flush();
+    if (ec)
+    {
+        llvm::errs() << "could not open file: " << ec.message();
+        return;
+    }
+
+    llvm::legacy::PassManager pass;
+    if (machine->addPassesToEmitFile(
+        pass, dest, nullptr, llvm::CodeGenFileType::ObjectFile))
+    {
+        llvm::errs() << "machine cannot emit filetype";
+        return;
+    }
+
+    pass.run(*m_IRModule);
+    dest.flush();
 }

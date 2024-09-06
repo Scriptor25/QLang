@@ -11,9 +11,9 @@ message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
 message(STATUS "Using LLVMConfig.cmake in: ${LLVM_DIR}")
 
 execute_process(
-    COMMAND ${LLVM_TOOLS_BINARY_DIR}/llvm-config --libs core orcjit native
-    OUTPUT_VARIABLE LLVM_LIBS
-    OUTPUT_STRIP_TRAILING_WHITESPACE
+        COMMAND ${LLVM_TOOLS_BINARY_DIR}/llvm-config --libs core orcjit native
+        OUTPUT_VARIABLE LLVM_LIBS
+        OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
 message(STATUS "Using LLVM Libs: ${LLVM_LIBS}")
@@ -30,3 +30,6 @@ target_include_directories(qlang PRIVATE "q/include")
 target_link_libraries(qlang PRIVATE q)
 
 install(TARGETS q qlang)
+
+file(GLOB std_headers "example/std/*.qh")
+install(FILES ${std_headers} DESTINATION ${CMAKE_INSTALL_PREFIX}/include/q)

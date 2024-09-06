@@ -1,8 +1,8 @@
-;; Macros
+; Macros ;
 macro CLOCKS_PER_SEC 1000000
-macro NULL = (cast(void*)0)
+macro NULL = (cast(void*) 0)
 
-;; Types
+; Types ;
 use tm as struct tm {
     i32 tm_sec,
     i32 tm_min,
@@ -15,13 +15,13 @@ use tm as struct tm {
     i32 tm_isdst
 }
 
-;; Time manipulation
+; Time manipulation ;
 def ext i64 clock()
 def ext f64 difftime(i64 end, i64 beginning)
 def ext i64 mktime(tm* timeptr)
 def ext i64 time(i64* timer)
 
-;; Conversion
+; Conversion ;
 def ext i8* asctime(tm* timeptr)
 def ext i8* ctime(i64* timer)
 def ext tm* gmtime(i64* timer)

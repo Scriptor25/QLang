@@ -7,18 +7,20 @@
 
 namespace QLang
 {
-	class Linker
-	{
-	public:
-		Linker();
+    class Linker
+    {
+    public:
+        Linker();
 
-		[[nodiscard]] llvm::LLVMContext &IRContext() const;
+        [[nodiscard]] llvm::LLVMContext& IRContext() const;
 
-		void Link(Builder &builder) const;
-		void EmitObject(const std::string &filename) const;
+        void Print() const;
 
-	private:
-		std::unique_ptr<llvm::LLVMContext> m_IRContext;
-		std::unique_ptr<llvm::Module> m_IRModule;
-	};
+        void Link(Builder& builder) const;
+        void EmitObject(const std::string& filename) const;
+
+    private:
+        std::unique_ptr<llvm::LLVMContext> m_IRContext;
+        std::unique_ptr<llvm::Module> m_IRModule;
+    };
 }

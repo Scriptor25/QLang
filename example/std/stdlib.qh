@@ -1,8 +1,8 @@
-;; Macros
-macro NULL 0
+; Macros ;
+macro NULL = (cast(void*) 0)
 macro RAND_MAX 32767
 
-;; Types
+; Types ;
 use div_t as struct div_t {
     i32 quot,
     i32 rem
@@ -16,7 +16,7 @@ use lldiv_t as struct lldiv_t {
     i64 rem
 }
 
-;; String conversion
+; String conversion ;
 def ext f64 atof(i8* str)
 def ext i32 atoi(i8* str)
 def ext i64 atol(i8* str)
@@ -29,17 +29,17 @@ def ext i64 strtoll(i8* str, i8** endptr, i32 base)
 def ext i64 strtoul(i8* str, i8** endptr, i32 base)
 def ext i64 strtoull(i8* str, i8** endptr, i32 base)
 
-;; Pseudo-random sequence generation
+; Pseudo-random sequence generation ;
 def ext void rand()
 def ext void srand(i32 seed)
 
-;; Dynamic memory management
+; Dynamic memory management ;
 def ext void* calloc(i64 num, i64 size)
 def ext void free(void* ptr)
 def ext void* malloc(i64 size)
 def ext void* realloc(void* ptr, i64 size)
 
-;; Environment
+; Environment ;
 def ext void abort()
 def ext i32 atexit(void()* func)
 def ext i32 at_quick_exit(void()* func)
@@ -49,11 +49,11 @@ def ext void quick_exit(i32 status)
 def ext i32 system(i8* command)
 def ext void _Exit(i32 status)
 
-;; Searching and sorting
+; Searching and sorting ;
 def ext void* bsearch(void* key, void* base, i64 num, i64 size, i32(void*, void*)* compar)
 def ext void qsort(void* base, i64 num, i64 size, i32(void*, void*)* compar)
 
-;; Integer arithmetics
+; Integer arithmetics ;
 def ext i32 abs(i32 n)
 def ext div_t div(i32 numer, i32 denom)
 def ext i64 labs(i64 n)
@@ -61,11 +61,11 @@ def ext ldiv_t ldiv(i64 numer, i64 denom)
 def ext i64 llabs(i64 n)
 def ext lldiv_t lldiv(i64 numer, i64 denom)
 
-;; Multibyte characters
+; Multibyte characters ;
 def ext i32 mblen(i8* pmb, i64 max)
 def ext i32 mbtowc(i32* pwc, i8* pmb, i64 max)
 def ext i32 wctomb(i8* pmb, i32 wc)
 
-;; Multibyte strings
+; Multibyte strings ;
 def ext i64 mbstowcs(i32* dest, i8* src, i64 max)
 def ext i64 wcstombs(i8* dest, i32* src, i64 max)
