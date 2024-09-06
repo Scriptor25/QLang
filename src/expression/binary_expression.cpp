@@ -1,19 +1,23 @@
+#include <iostream>
+#include <memory>
+#include <utility>
 #include <QLang/Builder.hpp>
 #include <QLang/Expression.hpp>
 #include <QLang/Operator.hpp>
 #include <QLang/QLang.hpp>
 #include <QLang/Value.hpp>
-#include <iostream>
-#include <memory>
-#include <utility>
 
-QLang::BinaryExpression::BinaryExpression(const SourceLocation& where, const std::string& operator_, StatementPtr lhs,
+QLang::BinaryExpression::BinaryExpression(const SourceLocation& where,
+                                          const std::string& operator_,
+                                          StatementPtr lhs,
                                           StatementPtr rhs)
     : BinaryExpression(where, operator_, dyn_cast<Expression>(lhs), dyn_cast<Expression>(rhs))
 {
 }
 
-QLang::BinaryExpression::BinaryExpression(const SourceLocation& where, std::string operator_, ExpressionPtr lhs,
+QLang::BinaryExpression::BinaryExpression(const SourceLocation& where,
+                                          std::string operator_,
+                                          ExpressionPtr lhs,
                                           ExpressionPtr rhs)
     : Expression(where), Operator(std::move(operator_)), LHS(std::move(lhs)), RHS(std::move(rhs))
 {
@@ -89,8 +93,7 @@ QLang::ValuePtr QLang::BinaryExpression::GenIR(Builder& builder) const
     {
         if (!self)
         {
-            std::cerr << "at " << Where << ": lhs must be a lvalue here"
-                << std::endl;
+            std::cerr << "at " << Where << ": lhs must be a lvalue here" << std::endl;
             return {};
         }
 
@@ -116,8 +119,7 @@ QLang::ValuePtr QLang::BinaryExpression::GenIR(Builder& builder) const
     bool assign = false;
     ValuePtr result;
 
-    if (!(op == "==" || op == "!=" || op == "<=" || op == ">=")
-        && op.back() == '=')
+    if (!(op == "==" || op == "!=" || op == "<=" || op == ">=") && op.back() == '=')
     {
         op.pop_back();
         assign = true;
@@ -175,8 +177,7 @@ QLang::ValuePtr QLang::BinaryExpression::GenIR(Builder& builder) const
     {
         if (!self)
         {
-            std::cerr << "at " << Where << ": lhs must be a lvalue here"
-                << std::endl;
+            std::cerr << "at " << Where << ": lhs must be a lvalue here" << std::endl;
             return {};
         }
 

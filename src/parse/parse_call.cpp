@@ -1,37 +1,34 @@
+#include <vector>
 #include <QLang/Context.hpp>
 #include <QLang/Expression.hpp>
 #include <QLang/Parser.hpp>
 #include <QLang/QLang.hpp>
-#include <vector>
 
 QLang::StatementPtr QLang::Parser::ParseCall(StatementPtr callee)
 {
-	auto where = Expect("(").Where;
+    auto where = Expect("(").Where;
 
-	std::vector<StatementPtr> args;
-	while (!NextIfAt(")"))
-	{
-		args.push_back(ParseBinary());
-		if (!At(")")) Expect(",");
-	}
+    std::vector<StatementPtr> args;
+    while (!NextIfAt(")"))
+    {
+        args.push_back(ParseBinary());
+        if (!At(")")) Expect(",");
+    }
 
-	if (auto name = dyn_cast<NameExpression>(callee))
-	{
-		if (m_Context.HasMacro(name->Name))
-		{
-			if (auto &[_where, _name, _params, _is_callee, _value]
-				= m_Context.GetMacro(name->Name);
-				_is_callee)
-			{
-				auto statement
-					= m_Context.GetMacro(name->Name).Expand(*this, args);
-				return statement;
-			}
-		}
+    if (auto name = dyn_cast<NameExpression>(callee))
+    {
+        if (m_Context.HasMacro(name->Name))
+        {
+            if (auto& [_where, _name, _params, _is_callee, _value] = m_Context.GetMacro(name->Name);
+                _is_callee)
+            {
+                auto statement = m_Context.GetMacro(name->Name).Expand(*this, args);
+                return statement;
+            }
+        }
 
-		callee = std::move(name);
-	}
+        callee = std::move(name);
+    }
 
-	return std::make_unique<CallExpression>(
-		where, std::move(callee), std::move(args));
+    return std::make_unique<CallExpression>(where, std::move(callee), std::move(args));
 }

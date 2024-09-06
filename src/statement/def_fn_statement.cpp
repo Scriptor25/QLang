@@ -1,22 +1,33 @@
+#include <iostream>
+#include <string>
+#include <utility>
+#include <llvm/IR/BasicBlock.h>
+#include <llvm/IR/Verifier.h>
+#include <llvm/Support/raw_ostream.h>
 #include <QLang/Builder.hpp>
 #include <QLang/Operator.hpp>
 #include <QLang/Statement.hpp>
 #include <QLang/Type.hpp>
 #include <QLang/Value.hpp>
-#include <iostream>
-#include <llvm/IR/BasicBlock.h>
-#include <llvm/IR/Verifier.h>
-#include <llvm/Support/raw_ostream.h>
-#include <string>
-#include <utility>
 
-QLang::DefFnStatement::DefFnStatement(
-    const SourceLocation& where, const bool is_extern, const FnMode mode,
-    TypePtr result, TypePtr self, std::string name,
-    const std::vector<Param>& params, const bool vararg, StatementPtr body)
-    : Statement(where), IsExtern(is_extern), Mode(mode),
-      Result(std::move(result)), Self(std::move(self)), Name(std::move(name)),
-      Params(params), VarArg(vararg), Body(std::move(body))
+QLang::DefFnStatement::DefFnStatement(const SourceLocation& where,
+                                      const bool is_extern,
+                                      const FnMode mode,
+                                      TypePtr result,
+                                      TypePtr self,
+                                      std::string name,
+                                      const std::vector<Param>& params,
+                                      const bool vararg,
+                                      StatementPtr body)
+    : Statement(where),
+      IsExtern(is_extern),
+      Mode(mode),
+      Result(std::move(result)),
+      Self(std::move(self)),
+      Name(std::move(name)),
+      Params(params),
+      VarArg(vararg),
+      Body(std::move(body))
 {
 }
 
@@ -53,31 +64,26 @@ void QLang::DefFnStatement::GenIRVoid(Builder& builder) const
     std::vector<TypePtr> param_types;
     param_types.reserve(Params.size());
     for (const auto& [_type, _name] : Params) param_types.push_back(_type);
-    const auto type
-        = FunctionType::Get(Mode, Result, Self, param_types, VarArg);
+    const auto type = FunctionType::Get(Mode, Result, Self, param_types, VarArg);
 
-    auto& [func_name, func_type, func_ir, func_ir_type]
-        = builder.GetFunction(Name, type);
+    auto& [func_name, func_type, func_ir, func_ir_type] = builder.GetFunction(Name, type);
     if (!func_ir)
     {
         func_name = Name;
         func_type = type;
         func_ir_type = type->GenIR(builder);
-        func_ir = llvm::Function::Create(
-            func_ir_type, llvm::GlobalValue::ExternalLinkage, GenName(),
-            builder.IRModule());
+        func_ir = llvm::Function::Create(func_ir_type, llvm::GlobalValue::ExternalLinkage, GenName(),
+                                         builder.IRModule());
     }
 
     if (!Body) return;
     if (!func_ir->empty())
     {
-        std::cerr << "at " << Where << ": cannot redefine function"
-            << std::endl;
+        std::cerr << "at " << Where << ": cannot redefine function" << std::endl;
         return;
     }
 
-    const auto bb
-        = llvm::BasicBlock::Create(builder.IRContext(), "entry", func_ir);
+    const auto bb = llvm::BasicBlock::Create(builder.IRContext(), "entry", func_ir);
     builder.IRBuilder().SetInsertPoint(bb);
 
     builder.StackPush();

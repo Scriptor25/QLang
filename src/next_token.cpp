@@ -6,15 +6,32 @@ static int is_oct_digit(const int c) { return 0x30 <= c && c <= 0x37; }
 
 static int is_operator(const int c)
 {
-    return c == '+' || c == '-' || c == '*' || c == '/' || c == '%' || c == '&'
-        || c == '|' || c == '^' || c == '=' || c == '<' || c == '>'
-        || c == '!' || c == '~' || c == '?';
+    return c == '+'
+        || c == '-'
+        || c == '*'
+        || c == '/'
+        || c == '%'
+        || c == '&'
+        || c == '|'
+        || c == '^'
+        || c == '='
+        || c == '<'
+        || c == '>'
+        || c == '!'
+        || c == '~'
+        || c == '?';
 }
 
 static int is_compound_operator(const int c)
 {
-    return c == '+' || c == '-' || c == '&' || c == '|' || c == '^' || c == '='
-        || c == '<' || c == '>';
+    return c == '+'
+        || c == '-'
+        || c == '&'
+        || c == '|'
+        || c == '^'
+        || c == '='
+        || c == '<'
+        || c == '>';
 }
 
 int QLang::Parser::Get()
@@ -36,19 +53,26 @@ void QLang::Parser::Escape()
     m_C = Get();
     switch (m_C)
     {
-    case 'a': m_C = 0x07;
+    case 'a':
+        m_C = 0x07;
         break;
-    case 'b': m_C = 0x08;
+    case 'b':
+        m_C = 0x08;
         break;
-    case 't': m_C = 0x09;
+    case 't':
+        m_C = 0x09;
         break;
-    case 'n': m_C = 0x0A;
+    case 'n':
+        m_C = 0x0A;
         break;
-    case 'v': m_C = 0x0B;
+    case 'v':
+        m_C = 0x0B;
         break;
-    case 'f': m_C = 0x0C;
+    case 'f':
+        m_C = 0x0C;
         break;
-    case 'r': m_C = 0x0D;
+    case 'r':
+        m_C = 0x0D;
         break;
     case 'x':
         {
@@ -132,10 +156,12 @@ QLang::Token QLang::Parser::NextToken()
                 state = State_Radix;
                 break;
 
-            case '\r': m_Where.Column = 0;
+            case '\r':
+                m_Where.Column = 0;
                 break;
 
-            case '\n': NewLine();
+            case '\n':
+                NewLine();
                 break;
 
             default:
@@ -195,7 +221,8 @@ QLang::Token QLang::Parser::NextToken()
             break;
 
         case State_MLComment:
-            if (m_C == ';' || m_C < 0) state = State_Normal;
+            if (m_C == ';' || m_C < 0)
+                state = State_Normal;
             else if (m_C == '\n')
                 NewLine();
             break;
@@ -276,10 +303,7 @@ QLang::Token QLang::Parser::NextToken()
                 value += static_cast<char>(m_C);
                 break;
             }
-            return {
-                where, is_float ? TokenType_Float : TokenType_DecInt,
-                value
-            };
+            return {where, is_float ? TokenType_Float : TokenType_DecInt, value};
 
         case State_Hex:
             if (isxdigit(m_C) || m_C == 'u')

@@ -1,10 +1,10 @@
+#include <iostream>
+#include <vector>
 #include <QLang/Expression.hpp>
 #include <QLang/Parser.hpp>
 #include <QLang/QLang.hpp>
 #include <QLang/Token.hpp>
 #include <QLang/Type.hpp>
-#include <iostream>
-#include <vector>
 
 QLang::TypePtr QLang::Parser::ParseType()
 {
@@ -54,8 +54,7 @@ QLang::TypePtr QLang::Parser::ParseType()
         }
         if (NextIfAt("["))
         {
-            const auto length_expr
-                = dyn_cast<ConstIntExpression>(Compress(ParseBinary()));
+            const auto length_expr = dyn_cast<ConstIntExpression>(Compress(ParseBinary()));
             const auto length = length_expr->Value;
             Expect("]");
             base = ArrayType::Get(base, length);

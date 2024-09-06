@@ -1,18 +1,18 @@
-#include <QLang/Builder.hpp>
-#include <QLang/Linker.hpp>
-#include <llvm/IR/LLVMContext.h>
+#include <memory>
 #include <llvm/IR/LegacyPassManager.h>
+#include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Verifier.h>
 #include <llvm/Linker/Linker.h>
 #include <llvm/MC/TargetRegistry.h>
 #include <llvm/Support/CodeGen.h>
 #include <llvm/Support/FileSystem.h>
-#include <llvm/Support/TargetSelect.h>
 #include <llvm/Support/raw_ostream.h>
+#include <llvm/Support/TargetSelect.h>
 #include <llvm/Target/TargetMachine.h>
 #include <llvm/Target/TargetOptions.h>
 #include <llvm/TargetParser/Host.h>
-#include <memory>
+#include <QLang/Builder.hpp>
+#include <QLang/Linker.hpp>
 
 QLang::Linker::Linker()
 {
@@ -58,8 +58,7 @@ void QLang::Linker::EmitObject(const std::string& filename) const
     const auto features = "";
 
     const llvm::TargetOptions opt;
-    const auto machine = target->createTargetMachine(
-        triple, cpu, features, opt, llvm::Reloc::PIC_);
+    const auto machine = target->createTargetMachine(triple, cpu, features, opt, llvm::Reloc::PIC_);
 
     m_IRModule->setDataLayout(machine->createDataLayout());
     m_IRModule->setTargetTriple(triple);

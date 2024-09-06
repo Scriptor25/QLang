@@ -4,5 +4,5 @@
 
 QLang::RValuePtr QLang::Function::AsValue(Builder& builder) const
 {
-	return RValue::Create(builder, PointerType::Get(Type), IR);
+    return RValue::Create(builder, PointerType::Get(Type), IR);
 }

@@ -3,19 +3,19 @@
 #include <QLang/Type.hpp>
 #include <QLang/Value.hpp>
 
-QLang::ValuePtr QLang::GenNot(Builder &builder, const ValuePtr &value)
+QLang::ValuePtr QLang::GenNot(Builder& builder, const ValuePtr& value)
 {
-	const auto type = value->GetType();
+    const auto type = value->GetType();
 
-	llvm::Value *result;
-	switch (type->GetId())
-	{
-	case TypeId_Int:
-		result = builder.IRBuilder().CreateNot(value->Get());
-		break;
+    llvm::Value* result;
+    switch (type->GetId())
+    {
+    case TypeId_Int:
+        result = builder.IRBuilder().CreateNot(value->Get());
+        break;
 
-	default: return {};
-	}
+    default: return {};
+    }
 
-	return RValue::Create(builder, type, result);
+    return RValue::Create(builder, type, result);
 }

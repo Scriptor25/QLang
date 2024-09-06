@@ -3,25 +3,23 @@
 #include <QLang/Type.hpp>
 #include <QLang/Value.hpp>
 
-QLang::ValuePtr QLang::GenDec(Builder &builder, const ValuePtr &value)
+QLang::ValuePtr QLang::GenDec(Builder& builder, const ValuePtr& value)
 {
-	const auto type = value->GetType();
-	const auto ir_ty = type->GenIR(builder);
+    const auto type = value->GetType();
+    const auto ir_ty = type->GenIR(builder);
 
-	llvm::Value *result;
-	switch (type->GetId())
-	{
-	case TypeId_Int:
-		result = builder.IRBuilder().CreateSub(
-			value->Get(), llvm::ConstantInt::get(ir_ty, 1, true));
-		break;
-	case TypeId_Float:
-		result = builder.IRBuilder().CreateFSub(
-			value->Get(), llvm::ConstantFP::get(ir_ty, 1.0));
-		break;
+    llvm::Value* result;
+    switch (type->GetId())
+    {
+    case TypeId_Int:
+        result = builder.IRBuilder().CreateSub(value->Get(), llvm::ConstantInt::get(ir_ty, 1, true));
+        break;
+    case TypeId_Float:
+        result = builder.IRBuilder().CreateFSub(value->Get(), llvm::ConstantFP::get(ir_ty, 1.0));
+        break;
 
-	default: return {};
-	}
+    default: return {};
+    }
 
-	return RValue::Create(builder, type, result);
+    return RValue::Create(builder, type, result);
 }

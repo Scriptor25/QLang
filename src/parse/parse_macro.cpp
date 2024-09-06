@@ -1,8 +1,7 @@
-#include <iostream>
-#include <QLang/Context.hpp>
-#include <QLang/Parser.hpp>
 #include <string>
 #include <vector>
+#include <QLang/Context.hpp>
+#include <QLang/Parser.hpp>
 
 void QLang::Parser::ParseMacro()
 {
@@ -19,8 +18,7 @@ void QLang::Parser::ParseMacro()
             if (!At(")")) Expect(",");
         }
 
-    auto& [_where, _name, _params, _is_callee, _value]
-        = m_Context.GetMacro(name);
+    auto& [_where, _name, _params, _is_callee, _value] = m_Context.GetMacro(name);
     _where = m_Token.Where;
     _name = name;
     _params = params;
@@ -33,8 +31,7 @@ void QLang::Parser::ParseMacro()
         {
             m_C = Get();
             if (m_C == '\n') NewLine();
-            else
-                _value += '\\';
+            else _value += '\\';
         }
 
         _value += static_cast<char>(m_C);

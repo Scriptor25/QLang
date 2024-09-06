@@ -3,10 +3,10 @@
 
 void QLang::Parser::ParseUse()
 {
-	Expect("use");
-	const auto name = Expect(TokenType_Name).Value;
-	Expect("as");
-	const auto type = ParseType();
+    Expect("use");
+    const auto name = Expect(TokenType_Name).Value;
+    Expect("as");
+    const auto type = ParseType();
 
-	m_Context.GetType(name) = type;
+    m_Context.GetType(name) = type;
 }

@@ -1,31 +1,30 @@
+#include <utility>
 #include <QLang/Builder.hpp>
 #include <QLang/Context.hpp>
 #include <QLang/Type.hpp>
-#include <utility>
 
-QLang::ReferenceTypePtr QLang::ReferenceType::From(const TypePtr &type)
+QLang::ReferenceTypePtr QLang::ReferenceType::From(const TypePtr& type)
 {
-	return std::dynamic_pointer_cast<ReferenceType>(type);
+    return std::dynamic_pointer_cast<ReferenceType>(type);
 }
 
-QLang::ReferenceTypePtr QLang::ReferenceType::Get(const TypePtr &base)
+QLang::ReferenceTypePtr QLang::ReferenceType::Get(const TypePtr& base)
 {
-	auto &ctx = base->GetCtx();
-	auto name = base->GetName() + '&';
-	auto &ref = ctx.GetType(name);
-	if (!ref) ref = std::make_shared<ReferenceType>(ctx, name, base);
-	return From(ref);
+    auto& ctx = base->GetCtx();
+    auto name = base->GetName() + '&';
+    auto& ref = ctx.GetType(name);
+    if (!ref) ref = std::make_shared<ReferenceType>(ctx, name, base);
+    return From(ref);
 }
 
-QLang::ReferenceType::ReferenceType(
-	Context &ctx, const std::string &name, TypePtr base)
-	: Type(ctx, name, TypeId_Reference, 64), m_Base(std::move(base))
+QLang::ReferenceType::ReferenceType(Context& ctx, const std::string& name, TypePtr base)
+    : Type(ctx, name, TypeId_Reference, 64), m_Base(std::move(base))
 {
 }
 
-llvm::Type *QLang::ReferenceType::GenIR(Builder &builder) const
+llvm::Type* QLang::ReferenceType::GenIR(Builder& builder) const
 {
-	return builder.IRBuilder().getPtrTy();
+    return builder.IRBuilder().getPtrTy();
 }
 
 QLang::TypePtr QLang::ReferenceType::GetBase() const { return m_Base; }

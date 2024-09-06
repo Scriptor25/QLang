@@ -3,20 +3,19 @@
 #include <QLang/Type.hpp>
 #include <QLang/Value.hpp>
 
-QLang::ValuePtr QLang::GenAnd(
-	Builder &builder, const ValuePtr &lhs, const ValuePtr &rhs)
+QLang::ValuePtr QLang::GenAnd(Builder& builder, const ValuePtr& lhs, const ValuePtr& rhs)
 {
-	const auto type = lhs->GetType();
+    const auto type = lhs->GetType();
 
-	llvm::Value *value;
-	switch (type->GetId())
-	{
-	case TypeId_Int:
-		value = builder.IRBuilder().CreateAnd(lhs->Get(), rhs->Get());
-		break;
+    llvm::Value* value;
+    switch (type->GetId())
+    {
+    case TypeId_Int:
+        value = builder.IRBuilder().CreateAnd(lhs->Get(), rhs->Get());
+        break;
 
-	default: return {};
-	}
+    default: return {};
+    }
 
-	return RValue::Create(builder, type, value);
+    return RValue::Create(builder, type, value);
 }

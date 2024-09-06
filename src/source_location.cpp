@@ -2,9 +2,7 @@
 #include <QLang/SourceLocation.hpp>
 #include <iostream>
 
-std::ostream &QLang::operator<<(
-	std::ostream &stream, const SourceLocation &where)
+std::ostream& QLang::operator<<(std::ostream& stream, const SourceLocation& where)
 {
-	return stream << where.Filename << ":(" << where.Row << ',' << where.Column
-				  << ')';
+    return stream << where.Filename << ":(" << where.Row << ',' << where.Column << ')';
 }

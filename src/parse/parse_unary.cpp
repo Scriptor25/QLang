@@ -1,11 +1,10 @@
+#include <memory>
 #include <QLang/Expression.hpp>
 #include <QLang/Parser.hpp>
-#include <memory>
 
 QLang::StatementPtr QLang::Parser::ParseUnary(StatementPtr operand)
 {
-	auto [Where, Type, Value] = Skip();
+    auto [Where, Type, Value] = Skip();
 
-	return std::make_unique<UnaryExpression>(
-		Where, Value, std::move(operand), true);
+    return std::make_unique<UnaryExpression>(Where, Value, std::move(operand), true);
 }
