@@ -1,5 +1,13 @@
+# clangd
 /.cache/
+
+# cmake
 /build/
+
+# qlang
 /a.out
 /a
-/fib
+
+# ide
+/.idea/
+/.vscode/
