@@ -62,8 +62,6 @@ namespace QLang
 
 		CastExpression(const SourceLocation &, TypePtr dst, ExpressionPtr src);
 
-		[[nodiscard]] bool IsConstant() const override;
-
 		std::ostream &Print(std::ostream &) const override;
 		ValuePtr GenIR(Builder &) const override;
 		ExpressionPtr Compress() override;

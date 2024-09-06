@@ -34,6 +34,13 @@ size_t QLang::Type::TypeDiff(Builder &builder, TypePtr p, TypePtr a)
 		return TypeDiff(builder, p, a);
 	}
 
+	if (p->IsPointer() && a->IsArray())
+	{
+		p = PointerType::From(p)->GetBase();
+		a = ArrayType::From(a)->GetBase();
+		return TypeDiff(builder, p, a);
+	}
+
 	if (p->IsArray() || a->IsArray() || p->IsReference() || a->IsReference()
 		|| p->IsStruct() || a->IsStruct() || p->IsFunction() || a->IsFunction())
 		return -1;

@@ -4,10 +4,6 @@
 # cmake
 /build/
 
-# qlang
-/a.out
-/a
-
 # ide
 /.idea/
 /.vscode/

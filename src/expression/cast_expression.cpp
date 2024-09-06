@@ -15,8 +15,6 @@ QLang::CastExpression::CastExpression(
 {
 }
 
-bool QLang::CastExpression::IsConstant() const { return Src->IsConstant(); }
-
 std::ostream &QLang::CastExpression::Print(std::ostream &stream) const
 {
 	return stream << "cast(" << Dst << ") (" << Src << ')';
@@ -33,4 +31,8 @@ QLang::ValuePtr QLang::CastExpression::GenIR(Builder &builder) const
 	return GenCast(builder, src, Dst);
 }
 
-QLang::ExpressionPtr QLang::CastExpression::Compress() { return {}; }
+QLang::ExpressionPtr QLang::CastExpression::Compress()
+{
+	if (auto src = Src->Compress()) Src = std::move(src);
+	return {};
+}

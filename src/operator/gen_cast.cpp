@@ -67,6 +67,10 @@ QLang::ValuePtr QLang::GenCast(
 		}
 		break;
 
+	case TypeId_Array:
+		if (dst_type->IsPointer()) result = LValue::From(src)->GetPtr();
+		break;
+
 	default: break;
 	}
 

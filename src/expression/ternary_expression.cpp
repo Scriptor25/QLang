@@ -24,6 +24,12 @@ QLang::TernaryExpression::TernaryExpression(
 {
 }
 
+bool QLang::TernaryExpression::IsConstant() const
+{
+	if (!If->IsConstant()) return false;
+	return Then->IsConstant() || Else->IsConstant();
+}
+
 std::ostream &QLang::TernaryExpression::Print(std::ostream &stream) const
 {
 	return stream << '(' << If << " ? " << Then << " : " << Else << ')';
@@ -156,5 +162,27 @@ QLang::ExpressionPtr QLang::TernaryExpression::Compress()
 	if (auto if_ = If->Compress()) If = std::move(if_);
 	if (auto then = Then->Compress()) Then = std::move(then);
 	if (auto else_ = Else->Compress()) Else = std::move(else_);
+	if (!IsConstant()) return {};
+
+	const auto if_char = dynamic_cast<ConstCharExpression *>(If.get());
+	const auto if_float = dynamic_cast<ConstFloatExpression *>(If.get());
+	const auto if_int = dynamic_cast<ConstIntExpression *>(If.get());
+	const auto if_string = dynamic_cast<ConstStringExpression *>(If.get());
+
+	int if_ = -1;
+	if (if_char) if_ = if_char->Value != 0;
+	if (if_float) if_ = if_float->Value != 0;
+	if (if_int) if_ = if_int->Value != 0;
+	if (if_string) if_ = 1;
+
+	if (if_ < 0) return {};
+
+	if (if_)
+	{
+		if (Then->IsConstant()) return std::move(Then);
+		return {};
+	}
+
+	if (Else->IsConstant()) return std::move(Else);
 	return {};
 }

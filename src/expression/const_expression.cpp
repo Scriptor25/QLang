@@ -37,6 +37,8 @@ QLang::ConstCharExpression::ConstCharExpression(
 {
 }
 
+bool QLang::ConstCharExpression::IsConstant() const { return true; }
+
 std::ostream &QLang::ConstCharExpression::Print(std::ostream &stream) const
 {
 	return stream << '\'' << unescape(Value) << '\'';
@@ -55,6 +57,8 @@ QLang::ConstFloatExpression::ConstFloatExpression(
 	: Expression(where), Value(value)
 {
 }
+
+bool QLang::ConstFloatExpression::IsConstant() const { return true; }
 
 std::ostream &QLang::ConstFloatExpression::Print(std::ostream &stream) const
 {
@@ -76,6 +80,8 @@ QLang::ConstIntExpression::ConstIntExpression(
 {
 }
 
+bool QLang::ConstIntExpression::IsConstant() const { return true; }
+
 std::ostream &QLang::ConstIntExpression::Print(std::ostream &stream) const
 {
 	return stream << Value;
@@ -94,6 +100,8 @@ QLang::ConstStringExpression::ConstStringExpression(
 	: Expression(where), Value(std::move(value))
 {
 }
+
+bool QLang::ConstStringExpression::IsConstant() const { return true; }
 
 std::ostream &QLang::ConstStringExpression::Print(std::ostream &stream) const
 {

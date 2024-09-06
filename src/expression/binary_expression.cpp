@@ -206,4 +206,176 @@ QLang::ValuePtr QLang::BinaryExpression::GenIR(Builder &builder) const
 	return result;
 }
 
-QLang::ExpressionPtr QLang::BinaryExpression::Compress() { return {}; }
+#define COMPUTE_IFC(WHERE, LHS, O, RHS)                                        \
+	do {                                                                       \
+		const auto lhs_int = dynamic_cast<ConstIntExpression *>((LHS).get());  \
+		const auto rhs_int = dynamic_cast<ConstIntExpression *>((RHS).get());  \
+		const auto lhs_float                                                   \
+			= dynamic_cast<ConstFloatExpression *>((LHS).get());               \
+		const auto rhs_float                                                   \
+			= dynamic_cast<ConstFloatExpression *>((RHS).get());               \
+		const auto lhs_char                                                    \
+			= dynamic_cast<ConstCharExpression *>((LHS).get());                \
+		const auto rhs_char                                                    \
+			= dynamic_cast<ConstCharExpression *>((RHS).get());                \
+                                                                               \
+		if (lhs_int)                                                           \
+		{                                                                      \
+			if (rhs_int)                                                       \
+				return std::make_unique<ConstIntExpression>(                   \
+					(WHERE), lhs_int->Value O rhs_int->Value);                 \
+			if (rhs_float)                                                     \
+				return std::make_unique<ConstFloatExpression>(                 \
+					(WHERE),                                                   \
+					static_cast<double>(lhs_int->Value) O rhs_float->Value);   \
+			if (rhs_char)                                                      \
+				return std::make_unique<ConstIntExpression>(                   \
+					(WHERE), lhs_int->Value O rhs_char->Value);                \
+			return {};                                                         \
+		}                                                                      \
+		if (lhs_float)                                                         \
+		{                                                                      \
+			if (rhs_int)                                                       \
+				return std::make_unique<ConstFloatExpression>(                 \
+					(WHERE),                                                   \
+					lhs_float->Value O static_cast<double>(rhs_int->Value));   \
+			if (rhs_float)                                                     \
+				return std::make_unique<ConstFloatExpression>(                 \
+					(WHERE), lhs_float->Value O rhs_float->Value);             \
+			if (rhs_char)                                                      \
+				return std::make_unique<ConstFloatExpression>(                 \
+					(WHERE), lhs_float->Value O rhs_char->Value);              \
+			return {};                                                         \
+		}                                                                      \
+		if (lhs_char)                                                          \
+		{                                                                      \
+			if (rhs_int)                                                       \
+				return std::make_unique<ConstIntExpression>(                   \
+					(WHERE), lhs_char->Value O rhs_int->Value);                \
+			if (rhs_float)                                                     \
+				return std::make_unique<ConstFloatExpression>(                 \
+					(WHERE), lhs_char->Value O rhs_float->Value);              \
+			if (rhs_char)                                                      \
+				return std::make_unique<ConstIntExpression>(                   \
+					(WHERE), lhs_char->Value O rhs_char->Value);               \
+			return {};                                                         \
+		}                                                                      \
+		return {};                                                             \
+	} while (0)
+
+#define COMPUTE_IC(WHERE, LHS, O, RHS)                                         \
+	do {                                                                       \
+		const auto lhs_int = dynamic_cast<ConstIntExpression *>((LHS).get());  \
+		const auto rhs_int = dynamic_cast<ConstIntExpression *>((RHS).get());  \
+		const auto lhs_char                                                    \
+			= dynamic_cast<ConstCharExpression *>((LHS).get());                \
+		const auto rhs_char                                                    \
+			= dynamic_cast<ConstCharExpression *>((RHS).get());                \
+                                                                               \
+		if (lhs_int)                                                           \
+		{                                                                      \
+			if (rhs_int)                                                       \
+				return std::make_unique<ConstIntExpression>(                   \
+					(WHERE), lhs_int->Value O rhs_int->Value);                 \
+			if (rhs_char)                                                      \
+				return std::make_unique<ConstIntExpression>(                   \
+					(WHERE), lhs_int->Value O rhs_char->Value);                \
+			return {};                                                         \
+		}                                                                      \
+		if (lhs_char)                                                          \
+		{                                                                      \
+			if (rhs_int)                                                       \
+				return std::make_unique<ConstIntExpression>(                   \
+					(WHERE), lhs_char->Value O rhs_int->Value);                \
+			if (rhs_char)                                                      \
+				return std::make_unique<ConstIntExpression>(                   \
+					(WHERE), lhs_char->Value O rhs_char->Value);               \
+			return {};                                                         \
+		}                                                                      \
+		return {};                                                             \
+	} while (0)
+
+#define COMPUTE_CMP(WHERE, LHS, O, RHS)                                        \
+	do {                                                                       \
+		const auto lhs_int = dynamic_cast<ConstIntExpression *>((LHS).get());  \
+		const auto rhs_int = dynamic_cast<ConstIntExpression *>((RHS).get());  \
+		const auto lhs_float                                                   \
+			= dynamic_cast<ConstFloatExpression *>((LHS).get());               \
+		const auto rhs_float                                                   \
+			= dynamic_cast<ConstFloatExpression *>((RHS).get());               \
+		const auto lhs_char                                                    \
+			= dynamic_cast<ConstCharExpression *>((LHS).get());                \
+		const auto rhs_char                                                    \
+			= dynamic_cast<ConstCharExpression *>((RHS).get());                \
+                                                                               \
+		if (lhs_int)                                                           \
+		{                                                                      \
+			if (rhs_int)                                                       \
+				return std::make_unique<ConstIntExpression>(                   \
+					(WHERE), lhs_int->Value O rhs_int->Value);                 \
+			if (rhs_float)                                                     \
+				return std::make_unique<ConstIntExpression>(                   \
+					(WHERE),                                                   \
+					static_cast<double>(lhs_int->Value) O rhs_float->Value);   \
+			if (rhs_char)                                                      \
+				return std::make_unique<ConstIntExpression>(                   \
+					(WHERE), lhs_int->Value O rhs_char->Value);                \
+			return {};                                                         \
+		}                                                                      \
+		if (lhs_float)                                                         \
+		{                                                                      \
+			if (rhs_int)                                                       \
+				return std::make_unique<ConstIntExpression>(                   \
+					(WHERE),                                                   \
+					lhs_float->Value O static_cast<double>(rhs_int->Value));   \
+			if (rhs_float)                                                     \
+				return std::make_unique<ConstIntExpression>(                   \
+					(WHERE), lhs_float->Value O rhs_float->Value);             \
+			if (rhs_char)                                                      \
+				return std::make_unique<ConstIntExpression>(                   \
+					(WHERE), lhs_float->Value O rhs_char->Value);              \
+			return {};                                                         \
+		}                                                                      \
+		if (lhs_char)                                                          \
+		{                                                                      \
+			if (rhs_int)                                                       \
+				return std::make_unique<ConstIntExpression>(                   \
+					(WHERE), lhs_char->Value O rhs_int->Value);                \
+			if (rhs_float)                                                     \
+				return std::make_unique<ConstIntExpression>(                   \
+					(WHERE), lhs_char->Value O rhs_float->Value);              \
+			if (rhs_char)                                                      \
+				return std::make_unique<ConstIntExpression>(                   \
+					(WHERE), lhs_char->Value O rhs_char->Value);               \
+			return {};                                                         \
+		}                                                                      \
+		return {};                                                             \
+	} while (0)
+
+QLang::ExpressionPtr QLang::BinaryExpression::Compress()
+{
+	if (auto lhs = LHS->Compress()) LHS = std::move(lhs);
+	if (auto rhs = RHS->Compress()) RHS = std::move(rhs);
+	if (!IsConstant()) return {};
+
+	if (Operator == "+") COMPUTE_IFC(Where, LHS, +, RHS);
+	if (Operator == "-") COMPUTE_IFC(Where, LHS, -, RHS);
+	if (Operator == "*") COMPUTE_IFC(Where, LHS, *, RHS);
+	if (Operator == "/") COMPUTE_IFC(Where, LHS, /, RHS);
+	if (Operator == "%") COMPUTE_IC(Where, LHS, %, RHS);
+	if (Operator == "&") COMPUTE_IC(Where, LHS, &, RHS);
+	if (Operator == "|") COMPUTE_IC(Where, LHS, |, RHS);
+	if (Operator == "^") COMPUTE_IC(Where, LHS, ^, RHS);
+	if (Operator == "==") COMPUTE_CMP(Where, LHS, ==, RHS);
+	if (Operator == "!=") COMPUTE_CMP(Where, LHS, !=, RHS);
+	if (Operator == "<=") COMPUTE_CMP(Where, LHS, <=, RHS);
+	if (Operator == ">=") COMPUTE_CMP(Where, LHS, >=, RHS);
+	if (Operator == "<") COMPUTE_CMP(Where, LHS, <, RHS);
+	if (Operator == ">") COMPUTE_CMP(Where, LHS, >, RHS);
+	if (Operator == "&&") COMPUTE_IC(Where, LHS, &&, RHS);
+	if (Operator == "||") COMPUTE_IC(Where, LHS, ||, RHS);
+	if (Operator == "<<") COMPUTE_IC(Where, LHS, <<, RHS);
+	if (Operator == ">>") COMPUTE_IC(Where, LHS, >>, RHS);
+
+	return {};
+}

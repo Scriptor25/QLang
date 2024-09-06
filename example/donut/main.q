@@ -2,15 +2,15 @@ include "stdio.qh"
 include "string.qh"
 include "time.qh"
 
-macro theta_spacing 0.035
-macro phi_spacing 0.01
+macro theta_spacing 0.07
+macro phi_spacing   0.02
 macro R1 1.0
 macro R2 2.0
 macro K1 = (screen_width * K2 * 3.0 / (8.0 * (R1 + R2)))
 macro K2 5.0
 macro pi 3.141596
-macro screen_width 80
-macro screen_height 40
+macro screen_width  40
+macro screen_height 20
 
 macro min(a, b) ((#a#) < (#b#) ? (#a#) : (#b#))
 macro max(a, b) ((#a#) > (#b#) ? (#a#) : (#b#))

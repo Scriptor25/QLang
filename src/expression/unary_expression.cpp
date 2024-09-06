@@ -20,6 +20,12 @@ QLang::UnaryExpression::UnaryExpression(
 {
 }
 
+bool QLang::UnaryExpression::IsConstant() const
+{
+	return (Operator == "!" || Operator == "-" || Operator == "~")
+		   && Operand->IsConstant();
+}
+
 std::ostream &QLang::UnaryExpression::Print(std::ostream &stream) const
 {
 	return stream << '(' << (Post ? "" : Operator) << Operand
@@ -105,4 +111,51 @@ QLang::ValuePtr QLang::UnaryExpression::GenIR(Builder &builder) const
 	}
 
 	return result;
+}
+
+QLang::ExpressionPtr QLang::UnaryExpression::Compress()
+{
+	if (auto operand = Operand->Compress()) Operand = std::move(operand);
+	if (!IsConstant()) return {};
+
+	const auto op_int = dynamic_cast<ConstIntExpression *>(Operand.get());
+	const auto op_float = dynamic_cast<ConstFloatExpression *>(Operand.get());
+	const auto op_char = dynamic_cast<ConstCharExpression *>(Operand.get());
+
+	if (Operator == "!")
+	{
+		bool result;
+		if (op_int) { result = op_int->Value == 0; }
+		else if (op_float) { result = op_float->Value == 0; }
+		else if (op_char) { result = op_char->Value == 0; }
+		else { return {}; }
+		return std::make_unique<ConstIntExpression>(Where, result);
+	}
+	if (Operator == "~")
+	{
+		uint64_t result;
+		if (op_int) { result = ~op_int->Value; }
+		else if (op_char) { result = ~op_char->Value; }
+		else { return {}; }
+		return std::make_unique<ConstIntExpression>(Where, result);
+	}
+	if (Operator == "-")
+	{
+		if (op_int)
+		{
+			return std::make_unique<ConstIntExpression>(Where, -op_int->Value);
+		}
+		if (op_float)
+		{
+			return std::make_unique<ConstFloatExpression>(
+				Where, -op_float->Value);
+		}
+		if (op_char)
+		{
+			return std::make_unique<ConstCharExpression>(
+				Where, -op_char->Value);
+		}
+		return {};
+	}
+	return {};
 }
