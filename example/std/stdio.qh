@@ -1,6 +1,6 @@
 ; Macros ;
 macro EOF -1
-macro NULL = (cast(void*) 0)
+macro NULL = ($(void*) 0)
 
 ; Types ;
 use FILE as struct FILE

@@ -7,65 +7,65 @@
 
 namespace QLang
 {
-	typedef std::function<void(const StatementPtr &)> Callback;
+    typedef std::function<void(const StatementPtr&)> Callback;
 
-	class Parser
-	{
-	public:
-		Parser(
-			Builder &, std::istream &, SourceLocation where, Callback callback);
+    class Parser
+    {
+    public:
+        Parser(Builder&, std::istream&, SourceLocation where, Callback callback);
 
-		[[nodiscard]] Builder &GetBuilder() const;
-		Callback GetCallback();
+        [[nodiscard]] Builder& GetBuilder() const;
+        Callback GetCallback();
 
-		void Parse();
-		StatementPtr ParseStatement();
+        void Parse();
+        StatementPtr ParseStatement();
 
-	private:
-		int Get();
-		void NewLine();
-		void Escape();
-		Token NextToken();
+    private:
+        int Get();
+        void NewLine();
+        void Escape();
+        Token NextToken();
 
-		Token &Next();
-		[[nodiscard]] bool AtEof() const;
-		[[nodiscard]] bool At(TokenType) const;
-		[[nodiscard]] bool At(const std::string &) const;
-		bool NextIfAt(TokenType);
-		bool NextIfAt(const std::string &);
-		Token Skip();
-		Token Expect(TokenType);
-		Token Expect(const std::string &);
+        Token& Next();
+        [[nodiscard]] bool AtEof() const;
+        [[nodiscard]] bool At(TokenType) const;
+        [[nodiscard]] bool At(const std::string&) const;
+        bool NextIfAt(TokenType);
+        bool NextIfAt(const std::string&);
+        Token Skip();
+        Token Expect(TokenType);
+        Token Expect(const std::string&);
 
-		TypePtr ParseType();
+        TypePtr ParseBaseType();
+        TypePtr ParseType();
 
-		void ParseUse();
-		void ParseInclude();
-		void ParseMacro();
+        void ParseUse();
+        void ParseInclude();
+        void ParseMacro();
 
-		StatementPtr ParseCompound();
-		StatementPtr ParseDef();
-		StatementPtr ParseIf();
-		StatementPtr ParseReturn();
-		StatementPtr ParseWhile();
+        StatementPtr ParseCompound();
+        StatementPtr ParseDef();
+        StatementPtr ParseIf();
+        StatementPtr ParseReturn();
+        StatementPtr ParseWhile();
 
-		StatementPtr ParseBinary();
-		StatementPtr ParseBinary(StatementPtr, size_t);
+        StatementPtr ParseBinary();
+        StatementPtr ParseBinary(StatementPtr, size_t);
 
-		StatementPtr ParseOperand();
-		StatementPtr ParsePrimary();
-		StatementPtr ParseCall(StatementPtr);
-		StatementPtr ParseIndex(StatementPtr);
-		StatementPtr ParseMember(StatementPtr);
-		StatementPtr ParseUnary(StatementPtr);
+        StatementPtr ParseOperand();
+        StatementPtr ParsePrimary();
+        StatementPtr ParseCall(StatementPtr);
+        StatementPtr ParseIndex(StatementPtr);
+        StatementPtr ParseMember(StatementPtr);
+        StatementPtr ParseUnary(StatementPtr);
 
-		Builder &m_Builder;
-		Context &m_Context;
-		Callback m_Callback;
+        Builder& m_Builder;
+        Context& m_Context;
+        Callback m_Callback;
 
-		std::istream &m_Stream;
-		SourceLocation m_Where;
-		int m_C = -1;
-		Token m_Token;
-	};
+        std::istream& m_Stream;
+        SourceLocation m_Where;
+        int m_C = -1;
+        Token m_Token;
+    };
 }

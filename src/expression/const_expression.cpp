@@ -50,7 +50,7 @@ QLang::ValuePtr QLang::ConstCharExpression::GenIR(Builder& builder) const
         builder, builder.GetInt8Ty(), builder.IRBuilder().getInt8(Value));
 }
 
-QLang::ExpressionPtr QLang::ConstCharExpression::Compress() { return {}; }
+QLang::ExpressionPtr QLang::ConstCharExpression::Collapse() { return {}; }
 
 QLang::ConstFloatExpression::ConstFloatExpression(
     const SourceLocation& where, const double value)
@@ -72,7 +72,7 @@ QLang::ValuePtr QLang::ConstFloatExpression::GenIR(Builder& builder) const
     return RValue::Create(builder, builder.GetFloat64Ty(), value);
 }
 
-QLang::ExpressionPtr QLang::ConstFloatExpression::Compress() { return {}; }
+QLang::ExpressionPtr QLang::ConstFloatExpression::Collapse() { return {}; }
 
 QLang::ConstIntExpression::ConstIntExpression(
     const SourceLocation& where, const uint64_t value)
@@ -93,7 +93,7 @@ QLang::ValuePtr QLang::ConstIntExpression::GenIR(Builder& builder) const
         builder, builder.GetInt64Ty(), builder.IRBuilder().getInt64(Value));
 }
 
-QLang::ExpressionPtr QLang::ConstIntExpression::Compress() { return {}; }
+QLang::ExpressionPtr QLang::ConstIntExpression::Collapse() { return {}; }
 
 QLang::ConstStringExpression::ConstStringExpression(
     const SourceLocation& where, std::string value)
@@ -115,4 +115,4 @@ QLang::ValuePtr QLang::ConstStringExpression::GenIR(Builder& builder) const
         builder.IRBuilder().CreateGlobalStringPtr(Value));
 }
 
-QLang::ExpressionPtr QLang::ConstStringExpression::Compress() { return {}; }
+QLang::ExpressionPtr QLang::ConstStringExpression::Collapse() { return {}; }

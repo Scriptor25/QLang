@@ -113,9 +113,9 @@ QLang::ValuePtr QLang::UnaryExpression::GenIR(Builder& builder) const
     return result;
 }
 
-QLang::ExpressionPtr QLang::UnaryExpression::Compress()
+QLang::ExpressionPtr QLang::UnaryExpression::Collapse()
 {
-    if (auto operand = Operand->Compress()) Operand = std::move(operand);
+    if (auto operand = Operand->Collapse()) Operand = std::move(operand);
     if (!IsConstant()) return {};
 
     const auto op_int = dynamic_cast<ConstIntExpression*>(Operand.get());

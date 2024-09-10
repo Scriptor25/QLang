@@ -1,5 +1,5 @@
 ; Macros ;
-macro NULL = (cast(void*) 0)
+macro NULL = ($(void*) 0)
 
 ; Copying ;
 def ext void* memcpy(void* destination, void* source, i64 num)

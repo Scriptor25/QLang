@@ -29,12 +29,6 @@ namespace QLang
 		std::vector<StatementPtr> List;
 	};
 
-	struct Param
-	{
-		TypePtr Type;
-		std::string Name;
-	};
-
 	struct DefFnStatement : Statement
 	{
 		DefFnStatement(

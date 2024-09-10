@@ -19,7 +19,10 @@ QLang::ArrayTypePtr QLang::ArrayType::Get(const TypePtr& base, uint64_t length)
     return From(ref);
 }
 
-QLang::ArrayType::ArrayType(Context& ctx, const std::string& name, const TypePtr& base, const uint64_t length)
+QLang::ArrayType::ArrayType(Context& ctx,
+                            const std::string& name,
+                            const TypePtr& base,
+                            const uint64_t length)
     : Type(ctx, name, TypeId_Array, base->GetSize() * length), m_Base(base), m_Length(length)
 {
 }

@@ -141,11 +141,11 @@ QLang::ValuePtr QLang::TernaryExpression::GenIR(Builder& builder) const
     return RValue::Create(builder, type, phi);
 }
 
-QLang::ExpressionPtr QLang::TernaryExpression::Compress()
+QLang::ExpressionPtr QLang::TernaryExpression::Collapse()
 {
-    if (auto if_ = If->Compress()) If = std::move(if_);
-    if (auto then = Then->Compress()) Then = std::move(then);
-    if (auto else_ = Else->Compress()) Else = std::move(else_);
+    if (auto if_ = If->Collapse()) If = std::move(if_);
+    if (auto then = Then->Collapse()) Then = std::move(then);
+    if (auto else_ = Else->Collapse()) Else = std::move(else_);
     if (!IsConstant()) return {};
 
     const auto if_char = dynamic_cast<ConstCharExpression*>(If.get());

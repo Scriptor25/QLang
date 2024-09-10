@@ -1,16 +1,16 @@
 #pragma once
 
-#include <QLang/Function.hpp>
-#include <QLang/QLang.hpp>
+#include <map>
+#include <memory>
+#include <string>
 #include <llvm/Analysis/CGSCCPassManager.h>
 #include <llvm/Analysis/LoopAnalysisManager.h>
 #include <llvm/IR/IRBuilder.h>
 #include <llvm/IR/Module.h>
 #include <llvm/IR/PassManager.h>
 #include <llvm/Passes/StandardInstrumentations.h>
-#include <map>
-#include <memory>
-#include <string>
+#include <QLang/Function.hpp>
+#include <QLang/QLang.hpp>
 
 namespace QLang
 {
@@ -18,6 +18,15 @@ namespace QLang
     {
         Function* Callee = nullptr;
         LValuePtr Self;
+    };
+
+    struct StackFrame
+    {
+        std::map<std::string, ValuePtr> Values;
+        std::vector<DtorCall> LocalDestructors;
+
+        ValuePtr Self;
+        TypePtr Result;
     };
 
     class Builder
@@ -33,18 +42,23 @@ namespace QLang
 
         std::unique_ptr<llvm::Module>& IRModulePtr();
 
-        void Optimize(llvm::Function*) const;
-
         void Print() const;
 
+        Function* CreateFunction(FnMode mode,
+                                 const TypePtr& result,
+                                 const TypePtr& self,
+                                 const std::string& name,
+                                 const std::string& ir_name,
+                                 const std::vector<Param>& params,
+                                 bool vararg, const Statement* body);
+
         // Value Stack Utility
-        void StackPush();
+        void StackPush(bool globalize = false);
         void StackPop();
         ValuePtr& operator[](const std::string& name);
 
         // Value Utility
-        LValuePtr CreateInstance(
-            const TypePtr& type, const std::string& name = "");
+        LValuePtr CreateInstance(const TypePtr& type, const std::string& name = "");
 
         // Local destructors
         void ClearLocalDestructors();
@@ -53,7 +67,7 @@ namespace QLang
         void GenLocalDestructors();
 
         // Function Utility
-        Function& GetFunction(const std::string& name, const FunctionTypePtr& type);
+        Function* GetFunction(const std::string& name, const FunctionTypePtr& type);
         Function* FindFunction(const std::string& name, const TypePtr& self, const std::vector<TypePtr>& args);
         Function* FindFunction(const std::string& name);
         Function* FindConstructor(const TypePtr& self, const std::vector<TypePtr>& args);
@@ -99,16 +113,12 @@ namespace QLang
         std::unique_ptr<llvm::PassInstrumentationCallbacks> m_PIC;
         std::unique_ptr<llvm::StandardInstrumentations> m_SI;
 
-        std::vector<std::map<std::string, ValuePtr>> m_Stack;
-        std::map<std::string, ValuePtr> m_Values;
-
-        std::vector<DtorCall> m_LocalDtors;
-
         std::map<std::string, std::map<FunctionTypePtr, Function>> m_Functions;
 
+        std::vector<StackFrame> m_Stack;
+        StackFrame m_Frame;
+
         bool m_IsCallee = false;
-        ValuePtr m_Self;
         std::vector<TypePtr> m_Args;
-        TypePtr m_Result;
     };
 }

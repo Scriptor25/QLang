@@ -6,64 +6,84 @@
 #include <QLang/Token.hpp>
 #include <QLang/Type.hpp>
 
-QLang::TypePtr QLang::Parser::ParseType()
+QLang::TypePtr QLang::Parser::ParseBaseType()
 {
-    TypePtr base;
-    if (NextIfAt("struct"))
-    {
-        std::string name;
-        if (At(TokenType_Name)) name = Skip().Value;
-        if (!NextIfAt("{")) { base = StructType::Get(m_Context, name); }
-        else
-        {
-            std::vector<StructElement> elements;
-            while (!NextIfAt("}"))
-            {
-                auto& [_type, _name, _init] = elements.emplace_back();
-                _type = ParseType();
-                _name = Expect(TokenType_Name).Value;
-                if (NextIfAt("=")) _init = dyn_cast<Expression>(ParseBinary());
-                if (!At("}")) Expect(",");
-            }
-
-            base = StructType::Get(name, elements);
-        }
-    }
-    else if (At(TokenType_Name))
+    if (At("struct"))
     {
         auto [Where, Type, Value] = Skip();
-        base = Type::Get(m_Context, Value);
-        if (!base)
+
+        std::string name;
+        if (At(TokenType_Name)) name = Skip().Value;
+        if (!NextIfAt("{"))
         {
-            std::cerr << "    at " << Where << std::endl;
-            return {};
+            if (name.empty())
+            {
+                std::cerr << "at " << Where << ": opaque struct cannot be anonymous" << std::endl;
+                return {};
+            }
+            return StructType::Get(m_Context, name);
         }
+        std::vector<StructElement> elements;
+        while (!NextIfAt("}"))
+        {
+            auto& [_type, _name, _init] = elements.emplace_back();
+            _type = ParseType();
+            _name = Expect(TokenType_Name).Value;
+            if (NextIfAt("=")) _init = dyn_cast<Expression>(ParseBinary());
+            if (!At("}")) Expect(",");
+        }
+
+        return StructType::Get(name, elements);
     }
 
-    while (true)
+    if (At(TokenType_Name))
+    {
+        auto [Where, Type, Value] = Skip();
+
+        if (auto base = Type::Get(m_Context, Value))
+            return base;
+
+        std::cerr << "    at " << Where << std::endl;
+        return {};
+    }
+
+    return {};
+}
+
+QLang::TypePtr QLang::Parser::ParseType()
+{
+    auto base = ParseBaseType();
+    if (!base)
+        return {};
+
+    while (base)
     {
         if (NextIfAt("*"))
         {
             base = PointerType::Get(base);
             continue;
         }
+
         if (NextIfAt("&"))
         {
             base = ReferenceType::Get(base);
             continue;
         }
+
         if (NextIfAt("["))
         {
-            const auto length_expr = dyn_cast<ConstIntExpression>(Compress(ParseBinary()));
+            const auto length_expr = dyn_cast<ConstIntExpression>(Collapse(ParseBinary()));
             const auto length = length_expr->Value;
             Expect("]");
             base = ArrayType::Get(base, length);
             continue;
         }
+
         if (NextIfAt("("))
         {
             FnMode mode = FnMode_Func;
             TypePtr self;
+
             if (NextIfAt("+"))
             {
                 mode = FnMode_Ctor;
@@ -95,6 +115,7 @@ QLang::TypePtr QLang::Parser::ParseType()
                     Expect(")");
                     break;
                 }
+
                 params.push_back(ParseType());
                 NextIfAt(TokenType_Name);
                 if (!At(")")) Expect(",");
@@ -106,4 +127,6 @@ QLang::TypePtr QLang::Parser::ParseType()
 
         return base;
     }
+
+    return {};
 }

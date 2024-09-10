@@ -1,6 +1,6 @@
 ; Macros ;
 macro CLOCKS_PER_SEC 1000000
-macro NULL = (cast(void*) 0)
+macro NULL = ($(void*) 0)
 
 ; Types ;
 use tm as struct tm {

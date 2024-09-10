@@ -6,168 +6,186 @@
 
 namespace QLang
 {
-	struct Expression : Statement
-	{
-		explicit Expression(const SourceLocation &);
-		void GenIRVoid(Builder &) const override;
+    struct Expression : Statement
+    {
+        explicit Expression(const SourceLocation&);
+        void GenIRVoid(Builder&) const override;
 
-		[[nodiscard]] virtual bool IsConstant() const;
+        [[nodiscard]] virtual bool IsConstant() const;
 
-		virtual ValuePtr GenIR(Builder &) const = 0;
-		virtual ExpressionPtr Compress() = 0;
-	};
+        virtual ValuePtr GenIR(Builder&) const = 0;
+        virtual ExpressionPtr Collapse() = 0;
+    };
 
-	ExpressionPtr Compress(StatementPtr);
-	ExpressionPtr Compress(ExpressionPtr);
+    ExpressionPtr Collapse(StatementPtr);
+    ExpressionPtr Collapse(ExpressionPtr);
 
-	struct BinaryExpression : Expression
-	{
-		BinaryExpression(const SourceLocation &, const std::string &operator_,
-						 StatementPtr lhs, StatementPtr rhs);
+    struct BinaryExpression : Expression
+    {
+        BinaryExpression(const SourceLocation&, const std::string& operator_,
+                         StatementPtr lhs, StatementPtr rhs);
 
-		BinaryExpression(const SourceLocation &, std::string operator_,
-						 ExpressionPtr lhs, ExpressionPtr rhs);
+        BinaryExpression(const SourceLocation&, std::string operator_,
+                         ExpressionPtr lhs, ExpressionPtr rhs);
 
-		[[nodiscard]] bool IsConstant() const override;
+        [[nodiscard]] bool IsConstant() const override;
 
-		std::ostream &Print(std::ostream &) const override;
-		ValuePtr GenIR(Builder &) const override;
-		ExpressionPtr Compress() override;
+        std::ostream& Print(std::ostream&) const override;
+        ValuePtr GenIR(Builder&) const override;
+        ExpressionPtr Collapse() override;
 
-		std::string Operator;
-		ExpressionPtr LHS;
-		ExpressionPtr RHS;
-	};
+        std::string Operator;
+        ExpressionPtr LHS;
+        ExpressionPtr RHS;
+    };
 
-	struct CallExpression : Expression
-	{
-		CallExpression(const SourceLocation &, StatementPtr callee,
-					   std::vector<StatementPtr> args);
+    struct CallExpression : Expression
+    {
+        CallExpression(const SourceLocation&, StatementPtr callee,
+                       std::vector<StatementPtr> args);
 
-		CallExpression(const SourceLocation &, ExpressionPtr callee,
-					   std::vector<ExpressionPtr> args);
+        CallExpression(const SourceLocation&, ExpressionPtr callee,
+                       std::vector<ExpressionPtr> args);
 
-		std::ostream &Print(std::ostream &) const override;
-		ValuePtr GenIR(Builder &) const override;
-		ExpressionPtr Compress() override;
+        std::ostream& Print(std::ostream&) const override;
+        ValuePtr GenIR(Builder&) const override;
+        ExpressionPtr Collapse() override;
 
-		ExpressionPtr Callee;
-		std::vector<ExpressionPtr> Args;
-	};
+        ExpressionPtr Callee;
+        std::vector<ExpressionPtr> Args;
+    };
 
-	struct CastExpression : Expression
-	{
-		CastExpression(
-			const SourceLocation &, const TypePtr &dst, StatementPtr src);
+    struct CastExpression : Expression
+    {
+        CastExpression(
+            const SourceLocation&, const TypePtr& dst, StatementPtr src);
 
-		CastExpression(const SourceLocation &, TypePtr dst, ExpressionPtr src);
+        CastExpression(const SourceLocation&, TypePtr dst, ExpressionPtr src);
 
-		std::ostream &Print(std::ostream &) const override;
-		ValuePtr GenIR(Builder &) const override;
-		ExpressionPtr Compress() override;
+        std::ostream& Print(std::ostream&) const override;
+        ValuePtr GenIR(Builder&) const override;
+        ExpressionPtr Collapse() override;
 
-		TypePtr Dst;
-		ExpressionPtr Src;
-	};
+        TypePtr Dst;
+        ExpressionPtr Src;
+    };
 
-	struct ConstCharExpression : Expression
-	{
-		ConstCharExpression(const SourceLocation &, char value);
+    struct ConstCharExpression : Expression
+    {
+        ConstCharExpression(const SourceLocation&, char value);
 
-		[[nodiscard]] bool IsConstant() const override;
+        [[nodiscard]] bool IsConstant() const override;
 
-		std::ostream &Print(std::ostream &) const override;
-		ValuePtr GenIR(Builder &) const override;
-		ExpressionPtr Compress() override;
+        std::ostream& Print(std::ostream&) const override;
+        ValuePtr GenIR(Builder&) const override;
+        ExpressionPtr Collapse() override;
 
-		char Value;
-	};
+        char Value;
+    };
 
-	struct ConstFloatExpression : Expression
-	{
-		ConstFloatExpression(const SourceLocation &, double value);
+    struct ConstFloatExpression : Expression
+    {
+        ConstFloatExpression(const SourceLocation&, double value);
 
-		[[nodiscard]] bool IsConstant() const override;
+        [[nodiscard]] bool IsConstant() const override;
 
-		std::ostream &Print(std::ostream &) const override;
-		ValuePtr GenIR(Builder &) const override;
-		ExpressionPtr Compress() override;
+        std::ostream& Print(std::ostream&) const override;
+        ValuePtr GenIR(Builder&) const override;
+        ExpressionPtr Collapse() override;
 
-		double Value;
-	};
+        double Value;
+    };
 
-	struct ConstIntExpression : Expression
-	{
-		ConstIntExpression(const SourceLocation &, uint64_t value);
+    struct ConstIntExpression : Expression
+    {
+        ConstIntExpression(const SourceLocation&, uint64_t value);
 
-		[[nodiscard]] bool IsConstant() const override;
+        [[nodiscard]] bool IsConstant() const override;
 
-		std::ostream &Print(std::ostream &) const override;
-		ValuePtr GenIR(Builder &) const override;
-		ExpressionPtr Compress() override;
+        std::ostream& Print(std::ostream&) const override;
+        ValuePtr GenIR(Builder&) const override;
+        ExpressionPtr Collapse() override;
 
-		uint64_t Value;
-	};
+        uint64_t Value;
+    };
 
-	struct ConstStringExpression : Expression
-	{
-		ConstStringExpression(const SourceLocation &, std::string value);
+    struct ConstStringExpression : Expression
+    {
+        ConstStringExpression(const SourceLocation&, std::string value);
 
-		[[nodiscard]] bool IsConstant() const override;
+        [[nodiscard]] bool IsConstant() const override;
 
-		std::ostream &Print(std::ostream &) const override;
-		ValuePtr GenIR(Builder &) const override;
-		ExpressionPtr Compress() override;
+        std::ostream& Print(std::ostream&) const override;
+        ValuePtr GenIR(Builder&) const override;
+        ExpressionPtr Collapse() override;
 
-		std::string Value;
-	};
+        std::string Value;
+    };
 
-	struct NameExpression : Expression
-	{
-		NameExpression(const SourceLocation &, std::string name);
+    struct FunctionExpression : Expression
+    {
+        FunctionExpression(const SourceLocation&,
+                           const std::vector<Param>& params,
+                           bool vararg,
+                           TypePtr result,
+                           StatementPtr body);
 
-		std::ostream &Print(std::ostream &) const override;
-		ValuePtr GenIR(Builder &) const override;
-		ExpressionPtr Compress() override;
+        std::ostream& Print(std::ostream&) const override;
+        ValuePtr GenIR(Builder&) const override;
+        ExpressionPtr Collapse() override;
 
-		std::string Name;
-	};
+        std::vector<Param> Params;
+        bool VarArg;
+        TypePtr Result;
+        StatementPtr Body;
+    };
 
-	struct TernaryExpression : Expression
-	{
-		TernaryExpression(const SourceLocation &, StatementPtr if_,
-						  StatementPtr then, StatementPtr else_);
+    struct NameExpression : Expression
+    {
+        NameExpression(const SourceLocation&, std::string name);
 
-		TernaryExpression(const SourceLocation &, ExpressionPtr if_,
-						  ExpressionPtr then, ExpressionPtr else_);
+        std::ostream& Print(std::ostream&) const override;
+        ValuePtr GenIR(Builder&) const override;
+        ExpressionPtr Collapse() override;
 
-		[[nodiscard]] bool IsConstant() const override;
+        std::string Name;
+    };
 
-		std::ostream &Print(std::ostream &) const override;
-		ValuePtr GenIR(Builder &) const override;
-		ExpressionPtr Compress() override;
+    struct TernaryExpression : Expression
+    {
+        TernaryExpression(const SourceLocation&, StatementPtr if_,
+                          StatementPtr then, StatementPtr else_);
 
-		ExpressionPtr If;
-		ExpressionPtr Then;
-		ExpressionPtr Else;
-	};
+        TernaryExpression(const SourceLocation&, ExpressionPtr if_,
+                          ExpressionPtr then, ExpressionPtr else_);
 
-	struct UnaryExpression : Expression
-	{
-		UnaryExpression(const SourceLocation &, const std::string &operator_,
-						StatementPtr operand, bool post);
+        [[nodiscard]] bool IsConstant() const override;
 
-		UnaryExpression(const SourceLocation &, std::string operator_,
-						ExpressionPtr operand, bool post);
+        std::ostream& Print(std::ostream&) const override;
+        ValuePtr GenIR(Builder&) const override;
+        ExpressionPtr Collapse() override;
 
-		[[nodiscard]] bool IsConstant() const override;
+        ExpressionPtr If;
+        ExpressionPtr Then;
+        ExpressionPtr Else;
+    };
 
-		std::ostream &Print(std::ostream &) const override;
-		ValuePtr GenIR(Builder &) const override;
-		ExpressionPtr Compress() override;
+    struct UnaryExpression : Expression
+    {
+        UnaryExpression(const SourceLocation&, const std::string& operator_,
+                        StatementPtr operand, bool post);
 
-		std::string Operator;
-		ExpressionPtr Operand;
-		bool Post;
-	};
+        UnaryExpression(const SourceLocation&, std::string operator_,
+                        ExpressionPtr operand, bool post);
+
+        [[nodiscard]] bool IsConstant() const override;
+
+        std::ostream& Print(std::ostream&) const override;
+        ValuePtr GenIR(Builder&) const override;
+        ExpressionPtr Collapse() override;
+
+        std::string Operator;
+        ExpressionPtr Operand;
+        bool Post;
+    };
 }

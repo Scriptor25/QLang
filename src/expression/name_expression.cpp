@@ -79,4 +79,4 @@ QLang::ValuePtr QLang::NameExpression::GenIR(Builder& builder) const
     return {};
 }
 
-QLang::ExpressionPtr QLang::NameExpression::Compress() { return {}; }
+QLang::ExpressionPtr QLang::NameExpression::Collapse() { return {}; }

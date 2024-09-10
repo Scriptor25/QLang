@@ -1,5 +1,5 @@
 ; Macros ;
-macro NULL = (cast(void*) 0)
+macro NULL = ($(void*) 0)
 macro RAND_MAX 32767
 
 ; Types ;

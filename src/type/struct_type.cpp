@@ -55,7 +55,9 @@ QLang::StructType::StructType(Context& ctx,
                               std::string struct_name,
                               const size_t size,
                               std::vector<StructElement>& elements)
-    : Type(ctx, name, TypeId_Struct, size), m_StructName(std::move(struct_name)), m_Elements(std::move(elements))
+    : Type(ctx, name, TypeId_Struct, size),
+      m_StructName(std::move(struct_name)),
+      m_Elements(std::move(elements))
 {
 }
 

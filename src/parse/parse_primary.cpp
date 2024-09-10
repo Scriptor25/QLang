@@ -22,7 +22,7 @@ QLang::StatementPtr QLang::Parser::ParsePrimary()
         return ptr;
     }
 
-    if (At("cast"))
+    if (At("$"))
     {
         auto [Where, Type, Value] = Skip();
         Expect("(");
@@ -30,6 +30,37 @@ QLang::StatementPtr QLang::Parser::ParsePrimary()
         Expect(")");
         auto src = ParseOperand();
         return std::make_unique<CastExpression>(Where, dst, std::move(src));
+    }
+
+    if (At("%"))
+    {
+        auto [Where, Type, Value] = Skip();
+
+        Expect("(");
+
+        std::vector<Param> params;
+        bool vararg = false;
+        while (!NextIfAt(")"))
+        {
+            if (NextIfAt("?"))
+            {
+                vararg = true;
+                Expect(")");
+                break;
+            }
+
+            auto& [_type, _name] = params.emplace_back();
+            _type = ParseType();
+            if (At(TokenType_Name)) _name = Skip().Value;
+            if (!At(")")) Expect(",");
+        }
+
+        auto result = Type::Get(m_Context, "void");
+        if (NextIfAt("->"))
+            result = ParseType();
+
+        auto body = ParseCompound();
+        return std::make_unique<FunctionExpression>(Where, params, vararg, result, std::move(body));
     }
 
     if (At(TokenType_Operator))

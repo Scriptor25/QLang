@@ -17,13 +17,13 @@ std::ostream& QLang::operator<<(std::ostream& stream, const ExpressionPtr& ptr)
     return ptr->Print(stream);
 }
 
-QLang::ExpressionPtr QLang::Compress(StatementPtr ptr)
+QLang::ExpressionPtr QLang::Collapse(StatementPtr ptr)
 {
-    return Compress(dyn_cast<Expression>(ptr));
+    return Collapse(dyn_cast<Expression>(ptr));
 }
 
-QLang::ExpressionPtr QLang::Compress(ExpressionPtr ptr)
+QLang::ExpressionPtr QLang::Collapse(ExpressionPtr ptr)
 {
-    if (auto result = ptr->Compress()) return result;
+    if (auto result = ptr->Collapse()) return result;
     return ptr;
 }

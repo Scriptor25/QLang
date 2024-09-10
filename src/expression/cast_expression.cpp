@@ -31,8 +31,8 @@ QLang::ValuePtr QLang::CastExpression::GenIR(Builder& builder) const
     return GenCast(builder, src, Dst);
 }
 
-QLang::ExpressionPtr QLang::CastExpression::Compress()
+QLang::ExpressionPtr QLang::CastExpression::Collapse()
 {
-    if (auto src = Src->Compress()) Src = std::move(src);
+    if (auto src = Src->Collapse()) Src = std::move(src);
     return {};
 }

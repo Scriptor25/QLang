@@ -12,7 +12,7 @@ std::ostream& QLang::operator<<(std::ostream& stream, const TypePtr& ptr)
 QLang::TypePtr QLang::Type::Get(Context& ctx, const std::string& name)
 {
     if (auto& ref = ctx.GetType(name)) return ref;
-    std::cerr << "no such type with name '" << name << "'" << std::endl;
+    std::cerr << "no such type '" << name << "'" << std::endl;
     return {};
 }
 

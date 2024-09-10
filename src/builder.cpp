@@ -56,24 +56,24 @@ std::unique_ptr<llvm::Module>& QLang::Builder::IRModulePtr()
     return m_IRModule;
 }
 
-void QLang::Builder::Optimize(llvm::Function* fn) const
-{
-    m_FPM->run(*fn, *m_FAM);
-}
-
 void QLang::Builder::Print() const { m_IRModule->print(llvm::errs(), nullptr); }
 
-void QLang::Builder::StackPush() { m_Stack.push_back(m_Values); }
+void QLang::Builder::StackPush(const bool globalize)
+{
+    m_Stack.push_back(m_Frame);
+    if (globalize)
+        m_Frame = m_Stack.front();
+}
 
 void QLang::Builder::StackPop()
 {
-    m_Values = m_Stack.back();
+    m_Frame = m_Stack.back();
     m_Stack.pop_back();
 }
 
 QLang::ValuePtr& QLang::Builder::operator[](const std::string& name)
 {
-    return m_Values[name];
+    return m_Frame.Values[name];
 }
 
 QLang::LValuePtr QLang::Builder::CreateInstance(const TypePtr& type, const std::string& name)
@@ -105,13 +105,13 @@ QLang::LValuePtr QLang::Builder::CreateInstance(const TypePtr& type, const std::
     return instance;
 }
 
-void QLang::Builder::ClearLocalDestructors() { m_LocalDtors.clear(); }
+void QLang::Builder::ClearLocalDestructors() { m_Frame.LocalDestructors.clear(); }
 
 void QLang::Builder::CreateLocalDestructors(const LValuePtr& value)
 {
     if (const auto func = FindDestructor(value->GetType()))
     {
-        m_LocalDtors.push_back({func, value});
+        m_Frame.LocalDestructors.push_back({func, value});
         return;
     }
 
@@ -125,24 +125,24 @@ void QLang::Builder::CreateLocalDestructors(const LValuePtr& value)
 
 void QLang::Builder::RemoveLocalDtor(const ValuePtr& value)
 {
-    for (long i = 0; i < m_LocalDtors.size(); ++i)
-        if (m_LocalDtors[i].Self == value)
+    for (long i = 0; i < m_Frame.LocalDestructors.size(); ++i)
+        if (m_Frame.LocalDestructors[i].Self == value)
         {
-            m_LocalDtors.erase(m_LocalDtors.begin() + i);
+            m_Frame.LocalDestructors.erase(m_Frame.LocalDestructors.begin() + i);
             return;
         }
 }
 
 void QLang::Builder::GenLocalDestructors()
 {
-    for (auto& [_callee, _self] : m_LocalDtors)
+    for (auto& [_callee, _self] : m_Frame.LocalDestructors)
         GenCall(*this, _callee->AsValue(*this), _self, {});
-    m_LocalDtors.clear();
+    ClearLocalDestructors();
 }
 
-QLang::Function& QLang::Builder::GetFunction(const std::string& name, const FunctionTypePtr& type)
+QLang::Function* QLang::Builder::GetFunction(const std::string& name, const FunctionTypePtr& type)
 {
-    return m_Functions[name][type];
+    return &m_Functions[name][type];
 }
 
 QLang::Function* QLang::Builder::FindFunction(const std::string& name,
@@ -281,7 +281,7 @@ void QLang::Builder::SetCallee() { m_IsCallee = true; }
 
 void QLang::Builder::ClearCallee() { m_IsCallee = false; }
 
-QLang::ValuePtr& QLang::Builder::Self() { return m_Self; }
+QLang::ValuePtr& QLang::Builder::Self() { return m_Frame.Self; }
 
 size_t QLang::Builder::GetArgCount() const { return m_Args.size(); }
 
@@ -289,4 +289,4 @@ QLang::TypePtr& QLang::Builder::GetArg(size_t i) { return m_Args[i]; }
 
 std::vector<QLang::TypePtr>& QLang::Builder::GetArgs() { return m_Args; }
 
-QLang::TypePtr& QLang::Builder::GetResult() { return m_Result; }
+QLang::TypePtr& QLang::Builder::GetResult() { return m_Frame.Result; }

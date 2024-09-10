@@ -31,6 +31,7 @@ bool QLang::BinaryExpression::IsConstant() const
 std::ostream& QLang::BinaryExpression::Print(std::ostream& stream) const
 {
     if (Operator == "[]") return stream << LHS << '[' << RHS << ']';
+    if (Operator == "." || Operator == "!") return stream << LHS << Operator << RHS;
     return stream << '(' << LHS << ' ' << Operator << ' ' << RHS << ')';
 }
 
@@ -305,10 +306,10 @@ QLang::ValuePtr QLang::BinaryExpression::GenIR(Builder& builder) const
 		return {};                                                                                                           \
 	} while (0)
 
-QLang::ExpressionPtr QLang::BinaryExpression::Compress()
+QLang::ExpressionPtr QLang::BinaryExpression::Collapse()
 {
-    if (auto lhs = LHS->Compress()) LHS = std::move(lhs);
-    if (auto rhs = RHS->Compress()) RHS = std::move(rhs);
+    if (auto lhs = LHS->Collapse()) LHS = std::move(lhs);
+    if (auto rhs = RHS->Collapse()) RHS = std::move(rhs);
     if (!IsConstant()) return {};
 
     if (Operator == "+")

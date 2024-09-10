@@ -61,87 +61,10 @@ std::ostream& QLang::DefFnStatement::Print(std::ostream& stream) const
 
 void QLang::DefFnStatement::GenIRVoid(Builder& builder) const
 {
-    std::vector<TypePtr> param_types;
-    param_types.reserve(Params.size());
-    for (const auto& [_type, _name] : Params) param_types.push_back(_type);
-    const auto type = FunctionType::Get(Mode, Result, Self, param_types, VarArg);
-
-    auto& [func_name, func_type, func_ir, func_ir_type] = builder.GetFunction(Name, type);
-    if (!func_ir)
-    {
-        func_name = Name;
-        func_type = type;
-        func_ir_type = type->GenIR(builder);
-        func_ir = llvm::Function::Create(func_ir_type, llvm::GlobalValue::ExternalLinkage, GenName(),
-                                         builder.IRModule());
-    }
-
-    if (!Body) return;
-    if (!func_ir->empty())
-    {
-        std::cerr << "at " << Where << ": cannot redefine function" << std::endl;
+    if (builder.CreateFunction(Mode, Result, Self, Name, GenName(), Params, VarArg, Body.get()))
         return;
-    }
 
-    const auto bb = llvm::BasicBlock::Create(builder.IRContext(), "entry", func_ir);
-    builder.IRBuilder().SetInsertPoint(bb);
-
-    builder.StackPush();
-    builder.GetResult() = type->GetResult();
-    builder.ClearLocalDestructors();
-
-    const unsigned off = Self ? 1 : 0;
-    if (off)
-    {
-        const auto arg = func_ir->getArg(0);
-        arg->setName("self");
-        builder["self"] = LValue::Create(builder, Self, arg);
-    }
-
-    for (size_t i = 0; i < Params.size(); ++i)
-    {
-        auto& [_type, _name] = Params[i];
-
-        const auto arg = func_ir->getArg(i + off);
-        arg->setName(_name);
-
-        if (const auto aty = ReferenceType::From(_type))
-        {
-            builder[_name] = LValue::Create(builder, aty->GetBase(), arg);
-        }
-        else { builder[_name] = LValue::Alloca(builder, _type, arg, _name); }
-    }
-
-    Body->GenIRVoid(builder);
-    builder.StackPop();
-
-    if (type->GetResult()->IsVoid())
-        for (auto& block : *func_ir)
-        {
-            if (block.getTerminator()) continue;
-            builder.IRBuilder().SetInsertPoint(&block);
-            builder.IRBuilder().CreateRetVoid();
-        }
-
-    for (auto& block : *func_ir)
-    {
-        const auto terminator = block.getTerminator();
-        if (!terminator || !llvm::dyn_cast<llvm::ReturnInst>(terminator)) continue;
-
-        builder.IRBuilder().SetInsertPoint(terminator);
-        builder.GenLocalDestructors();
-    }
-
-    builder.IRBuilder().ClearInsertionPoint();
-
-    if (verifyFunction(*func_ir, &llvm::errs()))
-    {
-        func_ir->print(llvm::errs());
-        func_ir->erase(func_ir->begin(), func_ir->end());
-        return;
-    }
-
-    builder.Optimize(func_ir);
+    std::cerr << "    at " << Where << std::endl;
 }
 
 std::string QLang::DefFnStatement::GenName() const

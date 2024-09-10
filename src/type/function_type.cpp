@@ -18,8 +18,7 @@ QLang::FunctionTypePtr QLang::FunctionType::FromPtr(const TypePtr& type)
 QLang::FunctionTypePtr QLang::FunctionType::Get(FnMode mode,
                                                 const TypePtr& result,
                                                 const TypePtr& self,
-                                                const std::vector<TypePtr>& params,
-                                                bool vararg)
+                                                const std::vector<TypePtr>& params, bool vararg)
 {
     std::string name;
     name += result->GetName();

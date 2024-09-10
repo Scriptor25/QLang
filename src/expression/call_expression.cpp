@@ -99,10 +99,10 @@ QLang::ValuePtr QLang::CallExpression::GenIR(Builder& builder) const
     return result;
 }
 
-QLang::ExpressionPtr QLang::CallExpression::Compress()
+QLang::ExpressionPtr QLang::CallExpression::Collapse()
 {
-    if (auto callee = Callee->Compress()) Callee = std::move(callee);
+    if (auto callee = Callee->Collapse()) Callee = std::move(callee);
     for (auto& arg : Args)
-        if (auto _arg = arg->Compress()) arg = std::move(_arg);
+        if (auto _arg = arg->Collapse()) arg = std::move(_arg);
     return {};
 }
