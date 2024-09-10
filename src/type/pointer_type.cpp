@@ -28,4 +28,9 @@ llvm::PointerType* QLang::PointerType::GenIR(Builder& builder) const
     return builder.IRBuilder().getPtrTy();
 }
 
+llvm::DIType* QLang::PointerType::GenDI(Builder& builder) const
+{
+    return builder.DIBuilder().createPointerType(m_Base->GenDI(builder), 64);
+}
+
 QLang::TypePtr QLang::PointerType::GetBase() const { return m_Base; }

@@ -53,21 +53,24 @@ int main(int argc, const char** argv)
 
     QLang::Linker linker;
 
-    for (const auto& filename : input_filenames)
+    for (const auto& input_filename : input_filenames)
     {
-        std::ifstream stream(filename);
+        std::ifstream stream(input_filename);
         if (!stream)
             continue;
 
-        std::string module_name =
-            std::filesystem::path(filename).replace_extension().filename().string();
+        std::string directory = std::filesystem::path(input_filename).parent_path().string();
+        std::string filename = std::filesystem::path(input_filename).filename().string();
+        std::string module_name = std::filesystem::path(input_filename).replace_extension().filename().string();
 
         QLang::Context context;
         for (const auto& dir : include_dirs)
             context.AddIncludeDir(dir);
 
-        QLang::Builder builder(context, linker.IRContext(), module_name);
-        QLang::Parser parser(builder, stream, {.Filename = filename},
+        QLang::Builder builder(context, linker.IRContext(), module_name, input_filename, directory);
+        QLang::Parser parser(builder,
+                             stream,
+                             {.Filename = input_filename},
                              [&](const QLang::StatementPtr& ptr)
                              {
                                  if (emit_ast)

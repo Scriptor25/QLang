@@ -1,7 +1,8 @@
-#include <QLang/Expression.hpp>
-#include <QLang/Operator.hpp>
 #include <iostream>
 #include <utility>
+#include <QLang/Builder.hpp>
+#include <QLang/Expression.hpp>
+#include <QLang/Operator.hpp>
 
 QLang::CastExpression::CastExpression(
     const SourceLocation& where, const TypePtr& dst, StatementPtr src)
@@ -22,6 +23,8 @@ std::ostream& QLang::CastExpression::Print(std::ostream& stream) const
 
 QLang::ValuePtr QLang::CastExpression::GenIR(Builder& builder) const
 {
+    builder.SetLoc(Where);
+
     const auto src = Src->GenIR(builder);
     if (!src)
     {

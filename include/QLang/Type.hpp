@@ -2,6 +2,7 @@
 
 #include <string>
 #include <vector>
+#include <llvm/IR/DebugInfo.h>
 #include <llvm/IR/DerivedTypes.h>
 #include <llvm/IR/Type.h>
 #include <QLang/QLang.hpp>
@@ -29,6 +30,7 @@ namespace QLang
 
         virtual ~Type();
         virtual llvm::Type* GenIR(Builder&) const;
+        virtual llvm::DIType* GenDI(Builder&) const;
 
         Type(Context&, std::string name, TypeId id, size_t size);
 
@@ -64,6 +66,7 @@ namespace QLang
         PointerType(Context&, const std::string& name, TypePtr base);
 
         llvm::PointerType* GenIR(Builder&) const override;
+        llvm::DIType* GenDI(Builder&) const override;
 
         [[nodiscard]] TypePtr GetBase() const;
 
@@ -80,6 +83,7 @@ namespace QLang
         ReferenceType(Context&, const std::string& name, TypePtr base);
 
         llvm::Type* GenIR(Builder&) const override;
+        llvm::DIType* GenDI(Builder&) const override;
 
         [[nodiscard]] TypePtr GetBase() const;
 
@@ -96,6 +100,7 @@ namespace QLang
         ArrayType(Context&, const std::string& name, const TypePtr& base, uint64_t length);
 
         llvm::ArrayType* GenIR(Builder&) const override;
+        llvm::DIType* GenDI(Builder&) const override;
 
         [[nodiscard]] TypePtr GetBase() const;
         [[nodiscard]] uint64_t GetLength() const;
@@ -126,6 +131,7 @@ namespace QLang
                    std::vector<StructElement>& elements);
 
         llvm::StructType* GenIR(Builder&) const override;
+        llvm::DIType* GenDI(Builder&) const override;
 
         [[nodiscard]] size_t GetElementCount() const;
         [[nodiscard]] const StructElement& GetElement(size_t index) const;
@@ -154,6 +160,7 @@ namespace QLang
                      bool vararg);
 
         llvm::FunctionType* GenIR(Builder&) const override;
+        llvm::DISubroutineType* GenDI(Builder&) const override;
 
         [[nodiscard]] FnMode GetMode() const;
         [[nodiscard]] TypePtr GetResult() const;

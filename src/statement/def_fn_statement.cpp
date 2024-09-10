@@ -2,13 +2,10 @@
 #include <string>
 #include <utility>
 #include <llvm/IR/BasicBlock.h>
-#include <llvm/IR/Verifier.h>
-#include <llvm/Support/raw_ostream.h>
 #include <QLang/Builder.hpp>
 #include <QLang/Operator.hpp>
 #include <QLang/Statement.hpp>
 #include <QLang/Type.hpp>
-#include <QLang/Value.hpp>
 
 QLang::DefFnStatement::DefFnStatement(const SourceLocation& where,
                                       const bool is_extern,
@@ -61,7 +58,7 @@ std::ostream& QLang::DefFnStatement::Print(std::ostream& stream) const
 
 void QLang::DefFnStatement::GenIRVoid(Builder& builder) const
 {
-    if (builder.CreateFunction(Mode, Result, Self, Name, GenName(), Params, VarArg, Body.get()))
+    if (builder.CreateFunction(Where, Mode, Result, Self, Name, GenName(), Params, VarArg, Body.get()))
         return;
 
     std::cerr << "    at " << Where << std::endl;

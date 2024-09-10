@@ -16,7 +16,7 @@ namespace QLang
 
         void Print() const;
 
-        void Link(Builder& builder) const;
+        void Link(Builder& builder);
         void EmitObject(const std::string& filename) const;
 
     private:

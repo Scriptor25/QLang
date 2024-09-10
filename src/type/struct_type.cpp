@@ -81,6 +81,11 @@ llvm::StructType* QLang::StructType::GenIR(Builder& builder) const
     return type;
 }
 
+llvm::DIType* QLang::StructType::GenDI(Builder& builder) const
+{
+    return {};
+}
+
 size_t QLang::StructType::GetElementCount() const { return m_Elements.size(); }
 
 const QLang::StructElement& QLang::StructType::GetElement(const size_t index) const

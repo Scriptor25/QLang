@@ -74,6 +74,8 @@ std::ostream& QLang::DefVarStatement::Print(std::ostream& stream) const
 
 void QLang::DefVarStatement::GenIRVoid(Builder& builder) const
 {
+    builder.SetLoc(Where);
+
     if (!builder.IRBuilder().GetInsertBlock())
     {
         if (!Init)

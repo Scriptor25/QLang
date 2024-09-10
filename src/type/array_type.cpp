@@ -32,6 +32,11 @@ llvm::ArrayType* QLang::ArrayType::GenIR(Builder& builder) const
     return llvm::ArrayType::get(m_Base->GenIR(builder), m_Length);
 }
 
+llvm::DIType* QLang::ArrayType::GenDI(Builder& builder) const
+{
+    return builder.DIBuilder().createArrayType(m_Length, 0, m_Base->GenDI(builder), {});
+}
+
 QLang::TypePtr QLang::ArrayType::GetBase() const { return m_Base; }
 
 uint64_t QLang::ArrayType::GetLength() const { return m_Length; }

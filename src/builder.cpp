@@ -14,11 +14,24 @@
 #include <QLang/Type.hpp>
 #include <QLang/Value.hpp>
 
-QLang::Builder::Builder(Context& context, llvm::LLVMContext& ir_context, const std::string& module_name)
+QLang::Builder::Builder(Context& context,
+                        llvm::LLVMContext& ir_context,
+                        const std::string& module_name,
+                        const std::string& filename,
+                        const std::string& directory)
     : m_Context(context), m_IRContext(ir_context)
 {
-    m_IRBuilder = std::make_unique<llvm::IRBuilder<>>(m_IRContext);
     m_IRModule = std::make_unique<llvm::Module>(module_name, m_IRContext);
+    m_IRBuilder = std::make_unique<llvm::IRBuilder<>>(m_IRContext);
+    m_DIBuilder = std::make_unique<llvm::DIBuilder>(*m_IRModule);
+
+    m_CU = m_DIBuilder->createCompileUnit(llvm::dwarf::DW_LANG_C,
+                                          m_DIBuilder->createFile(filename, directory),
+                                          "QLang",
+                                          true,
+                                          "",
+                                          0);
+    m_Frame.Scope = m_CU;
 
     m_FPM = std::make_unique<llvm::FunctionPassManager>();
     m_LAM = std::make_unique<llvm::LoopAnalysisManager>();
@@ -49,11 +62,31 @@ llvm::LLVMContext& QLang::Builder::IRContext() const { return m_IRContext; }
 
 llvm::IRBuilder<>& QLang::Builder::IRBuilder() const { return *m_IRBuilder; }
 
+llvm::DIBuilder& QLang::Builder::DIBuilder() const
+{
+    return *m_DIBuilder;
+}
+
+llvm::DIScope* QLang::Builder::Scope() const
+{
+    return m_Frame.Scope;
+}
+
 llvm::Module& QLang::Builder::IRModule() const { return *m_IRModule; }
 
 std::unique_ptr<llvm::Module>& QLang::Builder::IRModulePtr()
 {
     return m_IRModule;
+}
+
+void QLang::Builder::SetLoc(const SourceLocation& where) const
+{
+    IRBuilder().SetCurrentDebugLocation(where.GenDI(*this));
+}
+
+void QLang::Builder::Finalize() const
+{
+    m_DIBuilder->finalize();
 }
 
 void QLang::Builder::Print() const { m_IRModule->print(llvm::errs(), nullptr); }

@@ -17,7 +17,6 @@
 QLang::Linker::Linker()
 {
     m_IRContext = std::make_unique<llvm::LLVMContext>();
-    m_IRModule = std::make_unique<llvm::Module>("module", *m_IRContext);
 }
 
 llvm::LLVMContext& QLang::Linker::IRContext() const { return *m_IRContext; }
@@ -27,11 +26,21 @@ void QLang::Linker::Print() const
     m_IRModule->print(llvm::errs(), nullptr);
 }
 
-void QLang::Linker::Link(Builder& builder) const
+void QLang::Linker::Link(Builder& builder)
 {
+    builder.Finalize();
+
     auto& module = builder.IRModulePtr();
     if (verifyModule(*module, &llvm::errs())) return;
 
+    if (!m_IRModule)
+    {
+        m_IRModule = std::move(module);
+        return;
+    }
+
+    m_IRModule->setModuleIdentifier(m_IRModule->getModuleIdentifier() + "," + module->getModuleIdentifier());
+    m_IRModule->setSourceFileName(m_IRModule->getSourceFileName() + "," + module->getSourceFileName());
     llvm::Linker::linkModules(*m_IRModule, std::move(module));
 }
 

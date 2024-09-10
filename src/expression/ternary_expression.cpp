@@ -37,6 +37,8 @@ std::ostream& QLang::TernaryExpression::Print(std::ostream& stream) const
 
 QLang::ValuePtr QLang::TernaryExpression::GenIR(Builder& builder) const
 {
+    builder.SetLoc(Where);
+
     const auto bkp = builder.IRBuilder().GetInsertBlock();
     const auto parent = bkp->getParent();
     auto then = llvm::BasicBlock::Create(builder.IRContext(), "then", parent);

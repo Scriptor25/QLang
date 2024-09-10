@@ -34,6 +34,8 @@ std::ostream& QLang::UnaryExpression::Print(std::ostream& stream) const
 
 QLang::ValuePtr QLang::UnaryExpression::GenIR(Builder& builder) const
 {
+    builder.SetLoc(Where);
+
     auto operand = Operand->GenIR(builder);
     if (!operand)
     {

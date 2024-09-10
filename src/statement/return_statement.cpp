@@ -23,6 +23,8 @@ std::ostream& QLang::ReturnStatement::Print(std::ostream& stream) const
 
 void QLang::ReturnStatement::GenIRVoid(Builder& builder) const
 {
+    builder.SetLoc(Where);
+
     if (!Value)
     {
         builder.IRBuilder().CreateRetVoid();

@@ -21,6 +21,8 @@ std::ostream& QLang::WhileStatement::Print(std::ostream& stream) const
 
 void QLang::WhileStatement::GenIRVoid(Builder& builder) const
 {
+    builder.SetLoc(Where);
+
     const auto bkp = builder.IRBuilder().GetInsertBlock();
     const auto parent = bkp->getParent();
     const auto head = llvm::BasicBlock::Create(builder.IRContext(), "head", parent);

@@ -24,6 +24,8 @@ std::ostream& QLang::IfStatement::Print(std::ostream& stream) const
 
 void QLang::IfStatement::GenIRVoid(Builder& builder) const
 {
+    builder.SetLoc(Where);
+
     const auto bkp = builder.IRBuilder().GetInsertBlock();
     const auto parent = bkp->getParent();
     auto then = llvm::BasicBlock::Create(builder.IRContext(), "then", parent);

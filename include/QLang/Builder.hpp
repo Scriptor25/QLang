@@ -5,6 +5,7 @@
 #include <string>
 #include <llvm/Analysis/CGSCCPassManager.h>
 #include <llvm/Analysis/LoopAnalysisManager.h>
+#include <llvm/IR/DIBuilder.h>
 #include <llvm/IR/IRBuilder.h>
 #include <llvm/IR/Module.h>
 #include <llvm/IR/PassManager.h>
@@ -27,30 +28,44 @@ namespace QLang
 
         ValuePtr Self;
         TypePtr Result;
+
+        llvm::DIScope* Scope = nullptr;
     };
 
     class Builder
     {
     public:
-        Builder(Context&, llvm::LLVMContext&, const std::string& module_name);
+        Builder(Context&,
+                llvm::LLVMContext&,
+                const std::string& module_name,
+                const std::string& filename,
+                const std::string& directory);
 
         [[nodiscard]] Context& GetContext() const;
 
         [[nodiscard]] llvm::LLVMContext& IRContext() const;
-        [[nodiscard]] llvm::IRBuilder<>& IRBuilder() const;
         [[nodiscard]] llvm::Module& IRModule() const;
+        [[nodiscard]] llvm::IRBuilder<>& IRBuilder() const;
+        [[nodiscard]] llvm::DIBuilder& DIBuilder() const;
+
+        [[nodiscard]] llvm::DIScope* Scope() const;
 
         std::unique_ptr<llvm::Module>& IRModulePtr();
 
+        void SetLoc(const SourceLocation&) const;
+
+        void Finalize() const;
         void Print() const;
 
-        Function* CreateFunction(FnMode mode,
+        Function* CreateFunction(const SourceLocation& where,
+                                 FnMode mode,
                                  const TypePtr& result,
                                  const TypePtr& self,
                                  const std::string& name,
                                  const std::string& ir_name,
                                  const std::vector<Param>& params,
-                                 bool vararg, const Statement* body);
+                                 bool vararg,
+                                 const Statement* body);
 
         // Value Stack Utility
         void StackPush(bool globalize = false);
@@ -102,8 +117,11 @@ namespace QLang
         Context& m_Context;
 
         llvm::LLVMContext& m_IRContext;
-        std::unique_ptr<llvm::IRBuilder<>> m_IRBuilder;
         std::unique_ptr<llvm::Module> m_IRModule;
+        std::unique_ptr<llvm::IRBuilder<>> m_IRBuilder;
+        std::unique_ptr<llvm::DIBuilder> m_DIBuilder;
+
+        llvm::DICompileUnit* m_CU;
 
         std::unique_ptr<llvm::FunctionPassManager> m_FPM;
         std::unique_ptr<llvm::LoopAnalysisManager> m_LAM;

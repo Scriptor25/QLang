@@ -5,13 +5,15 @@
 #include <QLang/Type.hpp>
 #include <QLang/Value.hpp>
 
-QLang::Function* QLang::Builder::CreateFunction(const FnMode mode,
+QLang::Function* QLang::Builder::CreateFunction(const SourceLocation& where,
+                                                const FnMode mode,
                                                 const TypePtr& result,
                                                 const TypePtr& self,
                                                 const std::string& name,
                                                 const std::string& ir_name,
                                                 const std::vector<Param>& params,
-                                                const bool vararg, const Statement* body)
+                                                const bool vararg,
+                                                const Statement* body)
 {
     std::vector<TypePtr> param_types(params.size());
     for (size_t i = 0; i < params.size(); ++i)
@@ -40,7 +42,23 @@ QLang::Function* QLang::Builder::CreateFunction(const FnMode mode,
     const auto bkp = IRBuilder().GetInsertBlock();
     IRBuilder().SetInsertPoint(llvm::BasicBlock::Create(IRContext(), "entry", func->IR));
 
+    const auto unit = m_DIBuilder->createFile(m_CU->getFilename(), m_CU->getDirectory());
+    const auto sp = m_DIBuilder->createFunction(
+        unit,
+        name,
+        ir_name,
+        unit,
+        where.Row,
+        func->Type->GenDI(*this),
+        where.Row,
+        llvm::DINode::FlagPrototyped,
+        llvm::DISubprogram::SPFlagDefinition);
+    func->IR->setSubprogram(sp);
+
+    m_IRBuilder->SetCurrentDebugLocation({});
+
     StackPush(name.empty());
+    m_Frame.Scope = sp;
     GetResult() = result;
     ClearLocalDestructors();
 

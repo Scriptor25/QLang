@@ -131,6 +131,18 @@ llvm::Type* QLang::Type::GenIR(Builder& builder) const
     return nullptr;
 }
 
+llvm::DIType* QLang::Type::GenDI(Builder& builder) const
+{
+    switch (m_Id)
+    {
+    case TypeId_Int: return builder.DIBuilder().createBasicType(m_Name, m_Size, llvm::dwarf::DW_ATE_signed);
+    case TypeId_Float: return builder.DIBuilder().createBasicType(m_Name, m_Size, llvm::dwarf::DW_ATE_float);
+    default: break;
+    }
+
+    return nullptr;
+}
+
 QLang::Type::Type(Context& ctx, std::string name, const TypeId id, const size_t size)
     : m_Ctx(ctx), m_Name(std::move(name)), m_Id(id), m_Size(size)
 {

@@ -27,4 +27,9 @@ llvm::Type* QLang::ReferenceType::GenIR(Builder& builder) const
     return builder.IRBuilder().getPtrTy();
 }
 
+llvm::DIType* QLang::ReferenceType::GenDI(Builder& builder) const
+{
+    return builder.DIBuilder().createReferenceType(llvm::dwarf::DW_TAG_reference_type, m_Base->GenDI(builder), 64);
+}
+
 QLang::TypePtr QLang::ReferenceType::GetBase() const { return m_Base; }

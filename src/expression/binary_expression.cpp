@@ -37,6 +37,8 @@ std::ostream& QLang::BinaryExpression::Print(std::ostream& stream) const
 
 QLang::ValuePtr QLang::BinaryExpression::GenIR(Builder& builder) const
 {
+    builder.SetLoc(Where);
+
     const auto bkp = builder.IsCallee();
     builder.ClearCallee();
 

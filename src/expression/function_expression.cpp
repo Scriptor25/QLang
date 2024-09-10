@@ -33,7 +33,9 @@ std::ostream& QLang::FunctionExpression::Print(std::ostream& stream) const
 
 QLang::ValuePtr QLang::FunctionExpression::GenIR(Builder& builder) const
 {
-    if (const auto func = builder.CreateFunction(FnMode_Func, Result, {}, {}, {}, Params, VarArg, Body.get()))
+    builder.SetLoc(Where);
+
+    if (const auto func = builder.CreateFunction(Where, FnMode_Func, Result, {}, {}, {}, Params, VarArg, Body.get()))
     {
         auto value = func->AsValue(builder);
         delete func;

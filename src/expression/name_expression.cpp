@@ -19,6 +19,8 @@ std::ostream& QLang::NameExpression::Print(std::ostream& stream) const
 
 QLang::ValuePtr QLang::NameExpression::GenIR(Builder& builder) const
 {
+    builder.SetLoc(Where);
+
     if (builder.IsCallee())
     {
         builder.ClearCallee();

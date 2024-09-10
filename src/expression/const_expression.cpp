@@ -46,8 +46,8 @@ std::ostream& QLang::ConstCharExpression::Print(std::ostream& stream) const
 
 QLang::ValuePtr QLang::ConstCharExpression::GenIR(Builder& builder) const
 {
-    return RValue::Create(
-        builder, builder.GetInt8Ty(), builder.IRBuilder().getInt8(Value));
+    builder.SetLoc(Where);
+    return RValue::Create(builder, builder.GetInt8Ty(), builder.IRBuilder().getInt8(Value));
 }
 
 QLang::ExpressionPtr QLang::ConstCharExpression::Collapse() { return {}; }
@@ -67,8 +67,8 @@ std::ostream& QLang::ConstFloatExpression::Print(std::ostream& stream) const
 
 QLang::ValuePtr QLang::ConstFloatExpression::GenIR(Builder& builder) const
 {
-    const auto value
-        = llvm::ConstantFP::get(builder.IRBuilder().getDoubleTy(), Value);
+    builder.SetLoc(Where);
+    const auto value = llvm::ConstantFP::get(builder.IRBuilder().getDoubleTy(), Value);
     return RValue::Create(builder, builder.GetFloat64Ty(), value);
 }
 
@@ -89,8 +89,8 @@ std::ostream& QLang::ConstIntExpression::Print(std::ostream& stream) const
 
 QLang::ValuePtr QLang::ConstIntExpression::GenIR(Builder& builder) const
 {
-    return RValue::Create(
-        builder, builder.GetInt64Ty(), builder.IRBuilder().getInt64(Value));
+    builder.SetLoc(Where);
+    return RValue::Create(builder, builder.GetInt64Ty(), builder.IRBuilder().getInt64(Value));
 }
 
 QLang::ExpressionPtr QLang::ConstIntExpression::Collapse() { return {}; }
@@ -110,9 +110,8 @@ std::ostream& QLang::ConstStringExpression::Print(std::ostream& stream) const
 
 QLang::ValuePtr QLang::ConstStringExpression::GenIR(Builder& builder) const
 {
-    return RValue::Create(
-        builder, builder.GetInt8PtrTy(),
-        builder.IRBuilder().CreateGlobalStringPtr(Value));
+    builder.SetLoc(Where);
+    return RValue::Create(builder, builder.GetInt8PtrTy(), builder.IRBuilder().CreateGlobalStringPtr(Value));
 }
 
 QLang::ExpressionPtr QLang::ConstStringExpression::Collapse() { return {}; }
