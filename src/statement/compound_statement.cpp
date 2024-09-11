@@ -26,9 +26,13 @@ std::ostream& QLang::CompoundStatement::Print(std::ostream& stream) const
 
 void QLang::CompoundStatement::GenIRVoid(Builder& builder) const
 {
-    builder.SetLoc(Where);
-
     builder.StackPush();
+    const auto scope = builder.DIBuilder().createLexicalBlock(
+        builder.Scope(),
+        builder.Scope()->getFile(),
+        Where.Row,
+        Where.Column);
+    builder.Scope() = scope;
     for (const auto& ptr : List) ptr->GenIRVoid(builder);
     builder.StackPop();
 }

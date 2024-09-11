@@ -61,13 +61,16 @@ QLang::StructType::StructType(Context& ctx,
 {
 }
 
-llvm::StructType* QLang::StructType::GenIR(Builder& builder) const
+llvm::StructType* QLang::StructType::GenIR(Builder& builder)
 {
+    if (m_IR)
+        return m_IR;
+
     auto type = llvm::StructType::getTypeByName(builder.IRContext(), m_StructName);
     if (!type)
         type = llvm::StructType::create(builder.IRContext(), m_StructName);
 
-    if (m_Elements.empty()) return type;
+    if (m_Elements.empty()) return m_IR = type;
 
     if (type->isEmptyTy())
     {
@@ -78,12 +81,12 @@ llvm::StructType* QLang::StructType::GenIR(Builder& builder) const
         type->setBody(elements);
     }
 
-    return type;
+    return m_IR = type;
 }
 
-llvm::DIType* QLang::StructType::GenDI(Builder& builder) const
+llvm::DIType* QLang::StructType::GenDI(Builder& builder)
 {
-    return {};
+    return m_DI;
 }
 
 size_t QLang::StructType::GetElementCount() const { return m_Elements.size(); }

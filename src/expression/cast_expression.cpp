@@ -23,15 +23,9 @@ std::ostream& QLang::CastExpression::Print(std::ostream& stream) const
 
 QLang::ValuePtr QLang::CastExpression::GenIR(Builder& builder) const
 {
-    builder.SetLoc(Where);
-
     const auto src = Src->GenIR(builder);
-    if (!src)
-    {
-        std::cerr << "    at " << Where << std::endl;
-        return {};
-    }
-    return GenCast(builder, src, Dst);
+    if (!src) return {};
+    return GenCast(Where, builder, src, Dst);
 }
 
 QLang::ExpressionPtr QLang::CastExpression::Collapse()

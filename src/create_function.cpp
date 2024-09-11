@@ -5,15 +5,16 @@
 #include <QLang/Type.hpp>
 #include <QLang/Value.hpp>
 
-QLang::Function* QLang::Builder::CreateFunction(const SourceLocation& where,
-                                                const FnMode mode,
-                                                const TypePtr& result,
-                                                const TypePtr& self,
-                                                const std::string& name,
-                                                const std::string& ir_name,
-                                                const std::vector<Param>& params,
-                                                const bool vararg,
-                                                const Statement* body)
+QLang::Function* QLang::Builder::CreateFunction(
+    const SourceLocation& where,
+    const FnMode mode,
+    const TypePtr& result,
+    const TypePtr& self,
+    const std::string& name,
+    const std::string& ir_name,
+    const std::vector<Param>& params,
+    const bool vararg,
+    const Statement* body)
 {
     std::vector<TypePtr> param_types(params.size());
     for (size_t i = 0; i < params.size(); ++i)
@@ -35,19 +36,18 @@ QLang::Function* QLang::Builder::CreateFunction(const SourceLocation& where,
 
     if (!func->IR->empty())
     {
-        std::cerr << "cannot redefine function" << std::endl;
+        std::cerr << "at " << where << ": cannot redefine function" << std::endl;
         return {};
     }
 
     const auto bkp = IRBuilder().GetInsertBlock();
     IRBuilder().SetInsertPoint(llvm::BasicBlock::Create(IRContext(), "entry", func->IR));
 
-    const auto unit = m_DIBuilder->createFile(m_CU->getFilename(), m_CU->getDirectory());
     const auto sp = m_DIBuilder->createFunction(
-        unit,
-        name,
+        m_CU,
         ir_name,
-        unit,
+        name,
+        m_CU->getFile(),
         where.Row,
         func->Type->GenDI(*this),
         where.Row,
@@ -67,22 +67,54 @@ QLang::Function* QLang::Builder::CreateFunction(const SourceLocation& where,
     {
         const auto arg = func->IR->getArg(0);
         arg->setName("self");
-        (*this)["self"] = LValue::Create(*this, self, arg);
+        const auto s = LValue::Create(*this, self, arg);
+        (*this)["self"] = s;
+
+        const auto d = m_DIBuilder->createParameterVariable(
+            sp,
+            "self",
+            1,
+            m_CU->getFile(),
+            where.Row,
+            self->GenDI(*this),
+            true);
+        m_DIBuilder->insertDeclare(
+            s->GetPtr(),
+            d,
+            m_DIBuilder->createExpression(),
+            where.GenDI(*this),
+            m_IRBuilder->GetInsertBlock());
     }
 
     for (size_t i = 0; i < params.size(); ++i)
     {
-        auto& [_type, _name] = params[i];
-        if (_name.empty()) continue;
+        auto& [type_, name_] = params[i];
+        if (name_.empty()) continue;
 
         const auto arg = func->IR->getArg(i + off);
-        arg->setName(_name);
+        arg->setName(name_);
 
-        if (const auto aty = ReferenceType::From(_type))
-        {
-            (*this)[_name] = LValue::Create(*this, aty->GetBase(), arg);
-        }
-        else { (*this)[_name] = LValue::Alloca(*this, _type, arg, _name); }
+        LValuePtr val;
+        if (const auto aty = ReferenceType::From(type_))
+            val = LValue::Create(*this, aty->GetBase(), arg);
+        else
+            val = LValue::Alloca(*this, type_, arg, name_);
+        (*this)[name_] = val;
+
+        const auto d = m_DIBuilder->createParameterVariable(
+            sp,
+            name_,
+            i + off + 1,
+            m_CU->getFile(),
+            where.Row,
+            type_->GenDI(*this),
+            true);
+        m_DIBuilder->insertDeclare(
+            val->GetPtr(),
+            d,
+            m_DIBuilder->createExpression(),
+            where.GenDI(*this),
+            m_IRBuilder->GetInsertBlock());
     }
 
     body->GenIRVoid(*this);
@@ -101,7 +133,7 @@ QLang::Function* QLang::Builder::CreateFunction(const SourceLocation& where,
         if (!terminator || !llvm::dyn_cast<llvm::ReturnInst>(terminator)) continue;
 
         IRBuilder().SetInsertPoint(terminator);
-        GenLocalDestructors();
+        GenLocalDestructors(where);
     }
 
     StackPop();
@@ -111,6 +143,7 @@ QLang::Function* QLang::Builder::CreateFunction(const SourceLocation& where,
     {
         func->IR->print(llvm::errs());
         func->IR->erase(func->IR->begin(), func->IR->end());
+        std::cerr << "at " << where << ": failed to verify function" << std::endl;
         return {};
     }
 

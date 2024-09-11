@@ -29,8 +29,8 @@ namespace QLang
         static TypePtr HigherOrder(const TypePtr&, const TypePtr&);
 
         virtual ~Type();
-        virtual llvm::Type* GenIR(Builder&) const;
-        virtual llvm::DIType* GenDI(Builder&) const;
+        virtual llvm::Type* GenIR(Builder&);
+        virtual llvm::DIType* GenDI(Builder&);
 
         Type(Context&, std::string name, TypeId id, size_t size);
 
@@ -55,6 +55,9 @@ namespace QLang
         std::string m_Name;
         TypeId m_Id;
         size_t m_Size;
+
+        llvm::Type* m_IR = nullptr;
+        llvm::DIType* m_DI = nullptr;
     };
 
     class PointerType : public Type
@@ -65,13 +68,16 @@ namespace QLang
 
         PointerType(Context&, const std::string& name, TypePtr base);
 
-        llvm::PointerType* GenIR(Builder&) const override;
-        llvm::DIType* GenDI(Builder&) const override;
+        llvm::PointerType* GenIR(Builder&) override;
+        llvm::DIType* GenDI(Builder&) override;
 
         [[nodiscard]] TypePtr GetBase() const;
 
     private:
         TypePtr m_Base;
+
+        llvm::PointerType* m_IR = nullptr;
+        llvm::DIType* m_DI = nullptr;
     };
 
     class ReferenceType : public Type
@@ -82,13 +88,16 @@ namespace QLang
 
         ReferenceType(Context&, const std::string& name, TypePtr base);
 
-        llvm::Type* GenIR(Builder&) const override;
-        llvm::DIType* GenDI(Builder&) const override;
+        llvm::Type* GenIR(Builder&) override;
+        llvm::DIType* GenDI(Builder&) override;
 
         [[nodiscard]] TypePtr GetBase() const;
 
     private:
         TypePtr m_Base;
+
+        llvm::Type* m_IR = nullptr;
+        llvm::DIType* m_DI = nullptr;
     };
 
     class ArrayType : public Type
@@ -99,8 +108,8 @@ namespace QLang
 
         ArrayType(Context&, const std::string& name, const TypePtr& base, uint64_t length);
 
-        llvm::ArrayType* GenIR(Builder&) const override;
-        llvm::DIType* GenDI(Builder&) const override;
+        llvm::ArrayType* GenIR(Builder&) override;
+        llvm::DIType* GenDI(Builder&) override;
 
         [[nodiscard]] TypePtr GetBase() const;
         [[nodiscard]] uint64_t GetLength() const;
@@ -108,6 +117,9 @@ namespace QLang
     private:
         TypePtr m_Base;
         uint64_t m_Length;
+
+        llvm::ArrayType* m_IR = nullptr;
+        llvm::DIType* m_DI = nullptr;
     };
 
     struct StructElement
@@ -124,14 +136,15 @@ namespace QLang
         static StructTypePtr Get(Context&, const std::string& name);
         static StructTypePtr Get(const std::string& name, std::vector<StructElement>& elements);
 
-        StructType(Context&,
-                   const std::string& name,
-                   std::string struct_name,
-                   size_t size,
-                   std::vector<StructElement>& elements);
+        StructType(
+            Context&,
+            const std::string& name,
+            std::string struct_name,
+            size_t size,
+            std::vector<StructElement>& elements);
 
-        llvm::StructType* GenIR(Builder&) const override;
-        llvm::DIType* GenDI(Builder&) const override;
+        llvm::StructType* GenIR(Builder&) override;
+        llvm::DIType* GenDI(Builder&) override;
 
         [[nodiscard]] size_t GetElementCount() const;
         [[nodiscard]] const StructElement& GetElement(size_t index) const;
@@ -139,6 +152,9 @@ namespace QLang
     private:
         std::string m_StructName;
         std::vector<StructElement> m_Elements;
+
+        llvm::StructType* m_IR = nullptr;
+        llvm::DIType* m_DI = nullptr;
     };
 
     class FunctionType : public Type
@@ -146,21 +162,23 @@ namespace QLang
     public:
         static FunctionTypePtr From(const TypePtr&);
         static FunctionTypePtr FromPtr(const TypePtr&);
-        static FunctionTypePtr Get(FnMode mode,
-                                   const TypePtr& result,
-                                   const TypePtr& self,
-                                   const std::vector<TypePtr>& params, bool vararg);
+        static FunctionTypePtr Get(
+            FnMode mode,
+            const TypePtr& result,
+            const TypePtr& self,
+            const std::vector<TypePtr>& params, bool vararg);
 
-        FunctionType(Context&,
-                     const std::string& name,
-                     FnMode mode,
-                     TypePtr result,
-                     TypePtr self,
-                     const std::vector<TypePtr>& params,
-                     bool vararg);
+        FunctionType(
+            Context&,
+            const std::string& name,
+            FnMode mode,
+            TypePtr result,
+            TypePtr self,
+            const std::vector<TypePtr>& params,
+            bool vararg);
 
-        llvm::FunctionType* GenIR(Builder&) const override;
-        llvm::DISubroutineType* GenDI(Builder&) const override;
+        llvm::FunctionType* GenIR(Builder&) override;
+        llvm::DISubroutineType* GenDI(Builder&) override;
 
         [[nodiscard]] FnMode GetMode() const;
         [[nodiscard]] TypePtr GetResult() const;
@@ -175,5 +193,8 @@ namespace QLang
         TypePtr m_Self;
         std::vector<TypePtr> m_Params;
         bool m_VarArg;
+
+        llvm::FunctionType* m_IR = nullptr;
+        llvm::DISubroutineType* m_DI = nullptr;
     };
 }

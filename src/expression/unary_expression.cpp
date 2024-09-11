@@ -6,89 +6,80 @@
 #include <utility>
 
 QLang::UnaryExpression::UnaryExpression(
-    const SourceLocation& where, const std::string& operator_,
-    StatementPtr operand, const bool post)
+    const SourceLocation& where,
+    const std::string& operator_,
+    StatementPtr operand,
+    const bool post)
     : UnaryExpression(where, operator_, dyn_cast<Expression>(operand), post)
 {
 }
 
 QLang::UnaryExpression::UnaryExpression(
-    const SourceLocation& where, std::string operator_, ExpressionPtr operand,
+    const SourceLocation& where,
+    std::string operator_,
+    ExpressionPtr operand,
     const bool post)
-    : Expression(where), Operator(std::move(operator_)),
-      Operand(std::move(operand)), Post(post)
+    : Expression(where),
+      Operator(std::move(operator_)),
+      Operand(std::move(operand)),
+      Post(post)
 {
 }
 
 bool QLang::UnaryExpression::IsConstant() const
 {
-    return (Operator == "!" || Operator == "-" || Operator == "~")
-        && Operand->IsConstant();
+    return (Operator == "!" || Operator == "-" || Operator == "~") && Operand->IsConstant();
 }
 
 std::ostream& QLang::UnaryExpression::Print(std::ostream& stream) const
 {
-    return stream << '(' << (Post ? "" : Operator) << Operand
-        << (Post ? Operator : "") << ')';
+    return stream << '(' << (Post ? "" : Operator) << Operand << (Post ? Operator : "") << ')';
 }
 
 QLang::ValuePtr QLang::UnaryExpression::GenIR(Builder& builder) const
 {
-    builder.SetLoc(Where);
-
     auto operand = Operand->GenIR(builder);
-    if (!operand)
-    {
-        std::cerr << "    at " << Where << std::endl;
-        return {};
-    }
+    if (!operand) return {};
 
     auto self = LValue::From(operand);
     const auto func_name = "operator" + Operator + (Post ? "^" : "");
 
     if (self)
-        if (const auto func
-            = builder.FindFunction(func_name, self->GetType(), {}))
-        {
-            if (auto result
-                = GenCall(builder, func->AsValue(builder), self, {}))
-                return result;
-            std::cerr << "    at " << Where << std::endl;
-            return {};
-        }
+        if (const auto func = builder.FindFunction(func_name, self->GetType(), {}))
+            return GenCall(Where, builder, func->AsValue(builder), self, {});
 
-    if (const auto func
-        = builder.FindFunction(func_name, {}, {operand->GetType()}))
-    {
-        if (auto result
-            = GenCall(builder, func->AsValue(builder), {}, {operand}))
-            return result;
-        std::cerr << "    at " << Where << std::endl;
-        return {};
-    }
+    if (const auto func = builder.FindFunction(func_name, {}, {operand->GetType()}))
+        return GenCall(Where, builder, func->AsValue(builder), {}, {operand});
 
     ValuePtr result;
     bool assign = false;
 
     if (Operator == "++")
     {
-        result = GenInc(builder, operand);
+        result = GenInc(Where, builder, operand);
         assign = true;
     }
     else if (Operator == "--")
     {
-        result = GenDec(builder, operand);
+        result = GenDec(Where, builder, operand);
         assign = true;
     }
-    else if (Operator == "!") { result = GenLNot(builder, operand); }
-    else if (Operator == "~") { result = GenNot(builder, operand); }
-    else if (Operator == "-") { result = GenNeg(builder, operand); }
-    else if (Operator == "&") { result = GenRef(builder, operand); }
-    else if (Operator == "*") { result = GenDeref(builder, operand); }
+    else if (Operator == "!") result = GenLNot(Where, builder, operand);
+    else if (Operator == "~") result = GenNot(Where, builder, operand);
+    else if (Operator == "-") result = GenNeg(Where, builder, operand);
+    else if (Operator == "&") result = GenRef(builder, operand);
+    else if (Operator == "*") result = GenDeref(builder, operand);
 
     if (!result)
     {
-        std::cerr << "at " << Where << ": TODO" << std::endl;
+        std::cerr
+            << "at "
+            << Where
+            << ": no such unary operator '"
+            << Operator
+            << operand->GetType()
+            << "'"
+            << std::endl;
         return {};
     }
 
@@ -96,8 +87,7 @@ QLang::ValuePtr QLang::UnaryExpression::GenIR(Builder& builder) const
     {
         if (!self)
         {
-            std::cerr << "at " << Where << ": operand must be a lvalue here"
-                << std::endl;
+            std::cerr << "at " << Where << ": operand must be a lvalue here" << std::endl;
             return {};
         }
 

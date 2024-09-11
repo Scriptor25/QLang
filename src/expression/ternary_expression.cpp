@@ -7,19 +7,26 @@
 #include <iostream>
 
 QLang::TernaryExpression::TernaryExpression(
-    const SourceLocation& where, StatementPtr if_, StatementPtr then,
+    const SourceLocation& where,
+    StatementPtr if_,
+    StatementPtr then,
     StatementPtr else_)
     : TernaryExpression(
-        where, dyn_cast<Expression>(std::move(if_)),
+        where,
+        dyn_cast<Expression>(std::move(if_)),
         dyn_cast<Expression>(std::move(then)),
         dyn_cast<Expression>(std::move(else_)))
 {
 }
 
 QLang::TernaryExpression::TernaryExpression(
-    const SourceLocation& where, ExpressionPtr if_, ExpressionPtr then,
+    const SourceLocation& where,
+    ExpressionPtr if_,
+    ExpressionPtr then,
     ExpressionPtr else_)
-    : Expression(where), If(std::move(if_)), Then(std::move(then)),
+    : Expression(where),
+      If(std::move(if_)),
+      Then(std::move(then)),
       Else(std::move(else_))
 {
 }
@@ -37,8 +44,6 @@ std::ostream& QLang::TernaryExpression::Print(std::ostream& stream) const
 
 QLang::ValuePtr QLang::TernaryExpression::GenIR(Builder& builder) const
 {
-    builder.SetLoc(Where);
-
     const auto bkp = builder.IRBuilder().GetInsertBlock();
     const auto parent = bkp->getParent();
     auto then = llvm::BasicBlock::Create(builder.IRContext(), "then", parent);
@@ -48,7 +53,6 @@ QLang::ValuePtr QLang::TernaryExpression::GenIR(Builder& builder) const
     const auto if_ = If->GenIR(builder);
     if (!if_)
     {
-        std::cerr << "    at " << Where << std::endl;
         builder.IRBuilder().SetInsertPoint(bkp);
         then->eraseFromParent();
         else_->eraseFromParent();
@@ -63,7 +67,6 @@ QLang::ValuePtr QLang::TernaryExpression::GenIR(Builder& builder) const
     auto then_value = Then->GenIR(builder);
     if (!then_value)
     {
-        std::cerr << "    at " << Where << std::endl;
         builder.IRBuilder().SetInsertPoint(bkp);
         br->eraseFromParent();
         then->eraseFromParent();
@@ -77,7 +80,6 @@ QLang::ValuePtr QLang::TernaryExpression::GenIR(Builder& builder) const
     auto else_value = Else->GenIR(builder);
     if (!else_value)
     {
-        std::cerr << "    at " << Where << std::endl;
         builder.IRBuilder().SetInsertPoint(bkp);
         br->eraseFromParent();
         then->eraseFromParent();
@@ -102,10 +104,9 @@ QLang::ValuePtr QLang::TernaryExpression::GenIR(Builder& builder) const
     builder.IRBuilder().SetInsertPoint(then);
     if (then_value->GetType() != type)
     {
-        then_value = GenCast(builder, then_value, type);
+        then_value = GenCast(Where, builder, then_value, type);
         if (!then_value)
         {
-            std::cerr << "    at " << Where << std::endl;
             builder.IRBuilder().SetInsertPoint(bkp);
             br->eraseFromParent();
             then->eraseFromParent();
@@ -120,10 +121,9 @@ QLang::ValuePtr QLang::TernaryExpression::GenIR(Builder& builder) const
     builder.IRBuilder().SetInsertPoint(else_);
     if (else_value->GetType() != type)
     {
-        else_value = GenCast(builder, else_value, type);
+        else_value = GenCast(Where, builder, else_value, type);
         if (!else_value)
         {
-            std::cerr << "    at " << Where << std::endl;
             builder.IRBuilder().SetInsertPoint(bkp);
             br->eraseFromParent();
             then->eraseFromParent();
@@ -137,6 +137,7 @@ QLang::ValuePtr QLang::TernaryExpression::GenIR(Builder& builder) const
 
     builder.IRBuilder().SetInsertPoint(end);
     const auto ir_type = type->GenIR(builder);
+    builder.SetLoc(Where);
     const auto phi = builder.IRBuilder().CreatePHI(ir_type, 2);
     phi->addIncoming(then_value->Get(), then);
     phi->addIncoming(else_value->Get(), else_);

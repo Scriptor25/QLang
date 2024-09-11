@@ -27,14 +27,20 @@ QLang::ArrayType::ArrayType(Context& ctx,
 {
 }
 
-llvm::ArrayType* QLang::ArrayType::GenIR(Builder& builder) const
+llvm::ArrayType* QLang::ArrayType::GenIR(Builder& builder)
 {
-    return llvm::ArrayType::get(m_Base->GenIR(builder), m_Length);
+    if (m_IR)
+        return m_IR;
+
+    return m_IR = llvm::ArrayType::get(m_Base->GenIR(builder), m_Length);
 }
 
-llvm::DIType* QLang::ArrayType::GenDI(Builder& builder) const
+llvm::DIType* QLang::ArrayType::GenDI(Builder& builder)
 {
-    return builder.DIBuilder().createArrayType(m_Length, 0, m_Base->GenDI(builder), {});
+    if (m_DI)
+        return m_DI;
+
+    return m_DI = builder.DIBuilder().createArrayType(m_Length, 0, m_Base->GenDI(builder), {});
 }
 
 QLang::TypePtr QLang::ArrayType::GetBase() const { return m_Base; }

@@ -37,60 +37,31 @@ std::ostream& QLang::BinaryExpression::Print(std::ostream& stream) const
 
 QLang::ValuePtr QLang::BinaryExpression::GenIR(Builder& builder) const
 {
-    builder.SetLoc(Where);
-
     const auto bkp = builder.IsCallee();
     builder.ClearCallee();
 
     auto lhs = LHS->GenIR(builder);
-    if (!lhs)
-    {
-        std::cerr << "    at " << Where << std::endl;
-        return {};
-    }
+    if (!lhs) return {};
 
     if (bkp) builder.SetCallee();
 
-    if (Operator == ".")
+    if (Operator == "." || Operator == "!")
     {
-        if (auto result = GenMember(builder, lhs, false, dynamic_cast<const NameExpression*>(RHS.get())->Name))
-            return result;
-        std::cerr << "    at " << Where << std::endl;
-        return {};
-    }
-    if (Operator == "!")
-    {
-        if (auto result = GenMember(builder, lhs, true, dynamic_cast<const NameExpression*>(RHS.get())->Name))
-            return result;
-        std::cerr << "    at " << Where << std::endl;
-        return {};
+        const auto deref = Operator == "!";
+        const auto member = dynamic_cast<const NameExpression*>(RHS.get());
+        return GenMember(Where, builder, lhs, deref, member->Name);
     }
 
     auto rhs = RHS->GenIR(builder);
-    if (!rhs)
-    {
-        std::cerr << "    at " << Where << std::endl;
-        return {};
-    }
+    if (!rhs) return {};
 
     auto self = LValue::From(lhs);
-
     if (self)
         if (const auto func = builder.FindFunction("operator" + Operator, lhs->GetType(), {rhs->GetType()}))
-        {
-            if (auto result = GenCall(builder, func->AsValue(builder), self, {rhs}))
-                return result;
-            std::cerr << "    at " << Where << std::endl;
-            return {};
-        }
+            return GenCall(Where, builder, func->AsValue(builder), self, {rhs});
 
     if (const auto func = builder.FindFunction("operator" + Operator, {}, {lhs->GetType(), rhs->GetType()}))
-    {
-        if (auto result = GenCall(builder, func->AsValue(builder), {}, {lhs, rhs}))
-            return result;
-        std::cerr << "    at " << Where << std::endl;
-        return {};
-    }
+        return GenCall(Where, builder, func->AsValue(builder), {}, {lhs, rhs});
 
     if (Operator == "=")
     {
@@ -100,23 +71,15 @@ QLang::ValuePtr QLang::BinaryExpression::GenIR(Builder& builder) const
             return {};
         }
 
-        rhs = GenCast(builder, rhs, self->GetType());
-        if (!rhs)
-        {
-            std::cerr << "    at " << Where << std::endl;
-            return {};
-        }
+        rhs = GenCast(Where, builder, rhs, self->GetType());
+        if (!rhs) return {};
 
         self->Set(rhs->Get());
         return self;
     }
 
     if (Operator == "[]")
-    {
-        if (auto result = GenSubscript(builder, lhs, rhs)) return result;
-        std::cerr << "    at " << Where << std::endl;
-        return {};
-    }
+        return GenSubscript(Where, builder, lhs, rhs);
 
     std::string op = Operator;
     bool assign = false;
@@ -135,44 +98,46 @@ QLang::ValuePtr QLang::BinaryExpression::GenIR(Builder& builder) const
         return {};
     }
 
-    lhs = GenCast(builder, lhs, higher);
-    if (!lhs)
-    {
-        std::cerr << "    at " << Where << std::endl;
-        return {};
-    }
+    lhs = GenCast(Where, builder, lhs, higher);
+    if (!lhs) return {};
 
-    rhs = GenCast(builder, rhs, higher);
-    if (!rhs)
-    {
-        std::cerr << "    at " << Where << std::endl;
-        return {};
-    }
+    rhs = GenCast(Where, builder, rhs, higher);
+    if (!rhs) return {};
 
-    if (op == "+") { result = GenAdd(builder, lhs, rhs); }
-    else if (op == "-") { result = GenSub(builder, lhs, rhs); }
-    else if (op == "*") { result = GenMul(builder, lhs, rhs); }
-    else if (op == "/") { result = GenDiv(builder, lhs, rhs); }
-    else if (op == "%") { result = GenRem(builder, lhs, rhs); }
-    else if (op == "&") { result = GenAnd(builder, lhs, rhs); }
-    else if (op == "|") { result = GenOr(builder, lhs, rhs); }
-    else if (op == "^") { result = GenXor(builder, lhs, rhs); }
-    else if (op == "==") { result = GenEQ(builder, lhs, rhs); }
-    else if (op == "!=") { result = GenNE(builder, lhs, rhs); }
-    else if (op == "<=") { result = GenLE(builder, lhs, rhs); }
-    else if (op == ">=") { result = GenGE(builder, lhs, rhs); }
-    else if (op == "<") { result = GenLT(builder, lhs, rhs); }
-    else if (op == ">") { result = GenGT(builder, lhs, rhs); }
-    else if (op == "&&") { result = GenLAnd(builder, lhs, rhs); }
-    else if (op == "||") { result = GenLOr(builder, lhs, rhs); }
-    else if (op == "^^") { result = GenLXor(builder, lhs, rhs); }
-    else if (op == "<<") { result = GenShl(builder, lhs, rhs); }
-    else if (op == ">>") { result = GenLShr(builder, lhs, rhs); }
-    else if (op == ">>>") { result = GenAShr(builder, lhs, rhs); }
+    if (op == "+") result = GenAdd(Where, builder, lhs, rhs);
+    else if (op == "-") result = GenSub(Where, builder, lhs, rhs);
+    else if (op == "*") result = GenMul(Where, builder, lhs, rhs);
+    else if (op == "/") result = GenDiv(Where, builder, lhs, rhs);
+    else if (op == "%") result = GenRem(Where, builder, lhs, rhs);
+    else if (op == "&") result = GenAnd(Where, builder, lhs, rhs);
+    else if (op == "|") result = GenOr(Where, builder, lhs, rhs);
+    else if (op == "^") result = GenXor(Where, builder, lhs, rhs);
+    else if (op == "==") result = GenEQ(Where, builder, lhs, rhs);
+    else if (op == "!=") result = GenNE(Where, builder, lhs, rhs);
+    else if (op == "<=") result = GenLE(Where, builder, lhs, rhs);
+    else if (op == ">=") result = GenGE(Where, builder, lhs, rhs);
+    else if (op == "<") result = GenLT(Where, builder, lhs, rhs);
+    else if (op == ">") result = GenGT(Where, builder, lhs, rhs);
+    else if (op == "&&") result = GenLAnd(Where, builder, lhs, rhs);
+    else if (op == "||") result = GenLOr(Where, builder, lhs, rhs);
+    else if (op == "^^") result = GenLXor(Where, builder, lhs, rhs);
+    else if (op == "<<") result = GenShl(Where, builder, lhs, rhs);
+    else if (op == ">>") result = GenLShr(Where, builder, lhs, rhs);
+    else if (op == ">>>") result = GenAShr(Where, builder, lhs, rhs);
 
     if (!result)
     {
-        std::cerr << "at " << Where << ": TODO" << std::endl;
+        std::cerr
+            << "at "
+            << Where
+            << ": no such binary operator '"
+            << lhs->GetType()
+            << ' '
+            << Operator
+            << ' '
+            << rhs->GetType()
+            << "'"
+            << std::endl;
         return {};
     }
 
@@ -184,12 +149,8 @@ QLang::ValuePtr QLang::BinaryExpression::GenIR(Builder& builder) const
             return {};
         }
 
-        result = GenCast(builder, result, self->GetType());
-        if (!result)
-        {
-            std::cerr << "    at " << Where << std::endl;
-            return {};
-        }
+        result = GenCast(Where, builder, result, self->GetType());
+        if (!result) return {};
 
         self->Set(result->Get());
         return self;

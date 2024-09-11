@@ -23,8 +23,6 @@ std::ostream& QLang::ReturnStatement::Print(std::ostream& stream) const
 
 void QLang::ReturnStatement::GenIRVoid(Builder& builder) const
 {
-    builder.SetLoc(Where);
-
     if (!Value)
     {
         builder.IRBuilder().CreateRetVoid();
@@ -32,11 +30,7 @@ void QLang::ReturnStatement::GenIRVoid(Builder& builder) const
     }
 
     auto value = Value->GenIR(builder);
-    if (!value)
-    {
-        std::cerr << "    at " << Where << std::endl;
-        return;
-    }
+    if (!value) return;
 
     if (builder.GetResult()->IsReference())
     {
@@ -50,12 +44,8 @@ void QLang::ReturnStatement::GenIRVoid(Builder& builder) const
         return;
     }
 
-    value = GenCast(builder, value, builder.GetResult());
-    if (!value)
-    {
-        std::cerr << "    at " << Where << std::endl;
-        return;
-    }
+    value = GenCast(Where, builder, value, builder.GetResult());
+    if (!value) return;
 
     builder.RemoveLocalDtor(value);
     builder.IRBuilder().CreateRet(value->Get());

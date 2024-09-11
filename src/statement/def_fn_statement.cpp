@@ -7,15 +7,16 @@
 #include <QLang/Statement.hpp>
 #include <QLang/Type.hpp>
 
-QLang::DefFnStatement::DefFnStatement(const SourceLocation& where,
-                                      const bool is_extern,
-                                      const FnMode mode,
-                                      TypePtr result,
-                                      TypePtr self,
-                                      std::string name,
-                                      const std::vector<Param>& params,
-                                      const bool vararg,
-                                      StatementPtr body)
+QLang::DefFnStatement::DefFnStatement(
+    const SourceLocation& where,
+    const bool is_extern,
+    const FnMode mode,
+    TypePtr result,
+    TypePtr self,
+    std::string name,
+    const std::vector<Param>& params,
+    const bool vararg,
+    StatementPtr body)
     : Statement(where),
       IsExtern(is_extern),
       Mode(mode),
@@ -58,10 +59,7 @@ std::ostream& QLang::DefFnStatement::Print(std::ostream& stream) const
 
 void QLang::DefFnStatement::GenIRVoid(Builder& builder) const
 {
-    if (builder.CreateFunction(Where, Mode, Result, Self, Name, GenName(), Params, VarArg, Body.get()))
-        return;
-
-    std::cerr << "    at " << Where << std::endl;
+    builder.CreateFunction(Where, Mode, Result, Self, Name, GenName(), Params, VarArg, Body.get());
 }
 
 std::string QLang::DefFnStatement::GenName() const

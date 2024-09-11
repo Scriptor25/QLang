@@ -7,7 +7,7 @@ std::ostream& QLang::operator<<(std::ostream& stream, const SourceLocation& wher
     return stream << where.Filename << ":(" << where.Row << ',' << where.Column << ')';
 }
 
-llvm::DILocation* QLang::SourceLocation::GenDI(const Builder& builder) const
+llvm::DILocation* QLang::SourceLocation::GenDI(Builder& builder) const
 {
     return llvm::DILocation::get(builder.IRContext(), Row, Column, builder.Scope());
 }

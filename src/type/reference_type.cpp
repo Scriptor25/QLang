@@ -22,14 +22,20 @@ QLang::ReferenceType::ReferenceType(Context& ctx, const std::string& name, TypeP
 {
 }
 
-llvm::Type* QLang::ReferenceType::GenIR(Builder& builder) const
+llvm::Type* QLang::ReferenceType::GenIR(Builder& builder)
 {
-    return builder.IRBuilder().getPtrTy();
+    if (m_IR)
+        return m_IR;
+
+    return m_IR = builder.IRBuilder().getPtrTy();
 }
 
-llvm::DIType* QLang::ReferenceType::GenDI(Builder& builder) const
+llvm::DIType* QLang::ReferenceType::GenDI(Builder& builder)
 {
-    return builder.DIBuilder().createReferenceType(llvm::dwarf::DW_TAG_reference_type, m_Base->GenDI(builder), 64);
+    if (m_DI)
+        return m_DI;
+
+    return m_DI = builder.DIBuilder().createReferenceType(llvm::dwarf::DW_TAG_reference_type, m_Base->GenDI(builder));
 }
 
 QLang::TypePtr QLang::ReferenceType::GetBase() const { return m_Base; }

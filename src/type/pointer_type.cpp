@@ -23,14 +23,20 @@ QLang::PointerType::PointerType(Context& ctx, const std::string& name, TypePtr b
 {
 }
 
-llvm::PointerType* QLang::PointerType::GenIR(Builder& builder) const
+llvm::PointerType* QLang::PointerType::GenIR(Builder& builder)
 {
-    return builder.IRBuilder().getPtrTy();
+    if (m_IR)
+        return m_IR;
+
+    return m_IR = builder.IRBuilder().getPtrTy();
 }
 
-llvm::DIType* QLang::PointerType::GenDI(Builder& builder) const
+llvm::DIType* QLang::PointerType::GenDI(Builder& builder)
 {
-    return builder.DIBuilder().createPointerType(m_Base->GenDI(builder), 64);
+    if (m_DI)
+        return m_DI;
+
+    return m_DI = builder.DIBuilder().createPointerType(m_Base->GenDI(builder), 64);
 }
 
 QLang::TypePtr QLang::PointerType::GetBase() const { return m_Base; }

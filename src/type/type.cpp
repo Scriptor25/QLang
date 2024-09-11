@@ -111,36 +111,60 @@ QLang::TypePtr QLang::Type::HigherOrder(const TypePtr& a, const TypePtr& b)
 
 QLang::Type::~Type() = default;
 
-llvm::Type* QLang::Type::GenIR(Builder& builder) const
+llvm::Type* QLang::Type::GenIR(Builder& builder)
 {
+    if (m_IR)
+        return m_IR;
+
     switch (m_Id)
     {
-    case TypeId_Void: return builder.IRBuilder().getVoidTy();
-    case TypeId_Int: return builder.IRBuilder().getIntNTy(m_Size);
+    case TypeId_Void:
+        m_IR = builder.IRBuilder().getVoidTy();
+        break;
+    case TypeId_Int:
+        m_IR = builder.IRBuilder().getIntNTy(m_Size);
+        break;
     case TypeId_Float:
         switch (m_Size)
         {
-        case 16: return builder.IRBuilder().getHalfTy();
-        case 32: return builder.IRBuilder().getFloatTy();
-        case 64: return builder.IRBuilder().getDoubleTy();
+        case 16:
+            m_IR = builder.IRBuilder().getHalfTy();
+            break;
+        case 32:
+            m_IR = builder.IRBuilder().getFloatTy();
+            break;
+        case 64:
+            m_IR = builder.IRBuilder().getDoubleTy();
+            break;
         default: break;
         }
         break;
     default: break;
     }
-    return nullptr;
+
+    return m_IR;
 }
 
-llvm::DIType* QLang::Type::GenDI(Builder& builder) const
+llvm::DIType* QLang::Type::GenDI(Builder& builder)
 {
+    if (m_DI)
+        return m_DI;
+
     switch (m_Id)
     {
-    case TypeId_Int: return builder.DIBuilder().createBasicType(m_Name, m_Size, llvm::dwarf::DW_ATE_signed);
-    case TypeId_Float: return builder.DIBuilder().createBasicType(m_Name, m_Size, llvm::dwarf::DW_ATE_float);
+    case TypeId_Void:
+        m_DI = builder.DIBuilder().createBasicType(m_Name, m_Size, 0);
+        break;
+    case TypeId_Int:
+        m_DI = builder.DIBuilder().createBasicType(m_Name, m_Size, llvm::dwarf::DW_ATE_signed);
+        break;
+    case TypeId_Float:
+        m_DI = builder.DIBuilder().createBasicType(m_Name, m_Size, llvm::dwarf::DW_ATE_float);
+        break;
     default: break;
     }
 
-    return nullptr;
+    return m_DI;
 }
 
 QLang::Type::Type(Context& ctx, std::string name, const TypeId id, const size_t size)

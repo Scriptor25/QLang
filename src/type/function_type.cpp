@@ -69,16 +69,22 @@ QLang::FunctionType::FunctionType(Context& ctx,
 {
 }
 
-llvm::FunctionType* QLang::FunctionType::GenIR(Builder& builder) const
+llvm::FunctionType* QLang::FunctionType::GenIR(Builder& builder)
 {
+    if (m_IR)
+        return m_IR;
+
     std::vector<llvm::Type*> params;
     if (m_Self) params.push_back(builder.IRBuilder().getPtrTy());
     for (const auto& param : m_Params) params.push_back(param->GenIR(builder));
-    return llvm::FunctionType::get(m_Result->GenIR(builder), params, m_VarArg);
+    return m_IR = llvm::FunctionType::get(m_Result->GenIR(builder), params, m_VarArg);
 }
 
-llvm::DISubroutineType* QLang::FunctionType::GenDI(Builder& builder) const
+llvm::DISubroutineType* QLang::FunctionType::GenDI(Builder& builder)
 {
+    if (m_DI)
+        return m_DI;
+
     std::vector<llvm::Metadata*> metadata;
     metadata.push_back(m_Result->GenDI(builder));
     if (m_Self)
@@ -86,7 +92,7 @@ llvm::DISubroutineType* QLang::FunctionType::GenDI(Builder& builder) const
     for (const auto& param : m_Params)
         metadata.push_back(param->GenDI(builder));
 
-    return builder.DIBuilder().createSubroutineType(builder.DIBuilder().getOrCreateTypeArray(metadata));
+    return m_DI = builder.DIBuilder().createSubroutineType(builder.DIBuilder().getOrCreateTypeArray(metadata));
 }
 
 QLang::FnMode QLang::FunctionType::GetMode() const { return m_Mode; }

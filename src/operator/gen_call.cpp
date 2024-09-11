@@ -1,13 +1,16 @@
+#include <iostream>
 #include <QLang/Builder.hpp>
 #include <QLang/Operator.hpp>
 #include <QLang/Type.hpp>
 #include <QLang/Value.hpp>
 #include <vector>
 
-QLang::ValuePtr QLang::GenCall(Builder& builder,
-                               const ValuePtr& callee,
-                               const LValuePtr& self,
-                               const std::vector<ValuePtr>& args)
+QLang::ValuePtr QLang::GenCall(
+    const SourceLocation& where,
+    Builder& builder,
+    const ValuePtr& callee,
+    const LValuePtr& self,
+    const std::vector<ValuePtr>& args)
 {
     const auto func_type = FunctionType::FromPtr(callee->GetType());
     const auto fn_ty = func_type->GenIR(builder);
@@ -24,7 +27,7 @@ QLang::ValuePtr QLang::GenCall(Builder& builder,
                 continue;
             }
 
-            arg = GenCast(builder, arg, func_type->GetParam(i));
+            arg = GenCast(where, builder, arg, func_type->GetParam(i));
             if (!arg) return {};
 
             vargs.push_back(arg->Get());
@@ -36,14 +39,16 @@ QLang::ValuePtr QLang::GenCall(Builder& builder,
 
     if (func_type->GetMode() == FnMode_Ctor)
     {
-        auto inst = self ? self : builder.CreateInstance(func_type->GetSelf());
+        auto inst = self ? self : builder.CreateInstance(where, func_type->GetSelf());
         vargs.insert(vargs.begin(), inst->GetPtr());
+        builder.SetLoc(where);
         builder.IRBuilder().CreateCall(fn_ty, callee->Get(), vargs);
         return inst;
     }
 
     if (func_type->GetSelf()) vargs.insert(vargs.begin(), self->GetPtr());
 
+    builder.SetLoc(where);
     const auto result = builder.IRBuilder().CreateCall(fn_ty, callee->Get(), vargs);
 
     if (const auto ref_type = ReferenceType::From(func_type->GetResult()))

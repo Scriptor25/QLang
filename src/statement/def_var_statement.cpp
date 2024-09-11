@@ -74,8 +74,6 @@ std::ostream& QLang::DefVarStatement::Print(std::ostream& stream) const
 
 void QLang::DefVarStatement::GenIRVoid(Builder& builder) const
 {
-    builder.SetLoc(Where);
-
     if (!builder.IRBuilder().GetInsertBlock())
     {
         if (!Init)
@@ -124,21 +122,13 @@ void QLang::DefVarStatement::GenIRVoid(Builder& builder) const
     }
     else
     {
-        instance = builder.CreateInstance(Type, Name);
-        if (!instance)
-        {
-            std::cerr << "    at " << Where << std::endl;
-            return;
-        }
+        instance = builder.CreateInstance(Where, Type, Name);
+        if (!instance) return;
 
         if (init)
         {
-            init = GenCast(builder, init, Type);
-            if (!init)
-            {
-                std::cerr << "    at " << Where << std::endl;
-                return;
-            }
+            init = GenCast(Where, builder, init, Type);
+            if (!init) return;
 
             instance->Set(init->Get());
         }
@@ -155,12 +145,8 @@ void QLang::DefVarStatement::GenIRVoid(Builder& builder) const
 
             if (const auto func = builder.FindConstructor(Type, arg_types))
             {
-                init = GenCall(builder, func->AsValue(builder), instance, args);
-                if (!init)
-                {
-                    std::cerr << "    at " << Where << std::endl;
-                    return;
-                }
+                init = GenCall(Where, builder, func->AsValue(builder), instance, args);
+                if (!init) return;
             }
         }
     }

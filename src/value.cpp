@@ -31,7 +31,10 @@ QLang::RValue::RValue(Builder& builder, const TypePtr& type, llvm::Value* value)
 {
 }
 
-llvm::Value* QLang::RValue::Get() const { return m_Value; }
+llvm::Value* QLang::RValue::Get() const
+{
+    return m_Value;
+}
 
 QLang::LValuePtr QLang::LValue::From(const ValuePtr& value)
 {

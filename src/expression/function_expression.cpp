@@ -4,11 +4,12 @@
 #include <QLang/Expression.hpp>
 #include <QLang/Value.hpp>
 
-QLang::FunctionExpression::FunctionExpression(const SourceLocation& where,
-                                              const std::vector<Param>& params,
-                                              const bool vararg,
-                                              TypePtr result,
-                                              StatementPtr body)
+QLang::FunctionExpression::FunctionExpression(
+    const SourceLocation& where,
+    const std::vector<Param>& params,
+    const bool vararg,
+    TypePtr result,
+    StatementPtr body)
     : Expression(where), Params(params), VarArg(vararg), Result(std::move(result)), Body(std::move(body))
 {
 }
@@ -33,8 +34,6 @@ std::ostream& QLang::FunctionExpression::Print(std::ostream& stream) const
 
 QLang::ValuePtr QLang::FunctionExpression::GenIR(Builder& builder) const
 {
-    builder.SetLoc(Where);
-
     if (const auto func = builder.CreateFunction(Where, FnMode_Func, Result, {}, {}, {}, Params, VarArg, Body.get()))
     {
         auto value = func->AsValue(builder);
@@ -42,7 +41,6 @@ QLang::ValuePtr QLang::FunctionExpression::GenIR(Builder& builder) const
         return value;
     }
 
-    std::cerr << "    at " << Where << std::endl;
     return {};
 }
 

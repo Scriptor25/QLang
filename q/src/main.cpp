@@ -67,16 +67,17 @@ int main(int argc, const char** argv)
         for (const auto& dir : include_dirs)
             context.AddIncludeDir(dir);
 
-        QLang::Builder builder(context, linker.IRContext(), module_name, input_filename, directory);
-        QLang::Parser parser(builder,
-                             stream,
-                             {.Filename = input_filename},
-                             [&](const QLang::StatementPtr& ptr)
-                             {
-                                 if (emit_ast)
-                                     std::cerr << ptr << std::endl;
-                                 ptr->GenIRVoid(builder);
-                             });
+        QLang::Builder builder(context, linker.IRContext(), module_name, filename, directory);
+        QLang::Parser parser(
+            builder,
+            stream,
+            {.Filename = input_filename},
+            [&](const QLang::StatementPtr& ptr)
+            {
+                if (emit_ast)
+                    std::cerr << ptr << std::endl;
+                ptr->GenIRVoid(builder);
+            });
 
         parser.Parse();
         stream.close();

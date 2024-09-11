@@ -31,8 +31,6 @@ std::ostream& QLang::CallExpression::Print(std::ostream& stream) const
 
 QLang::ValuePtr QLang::CallExpression::GenIR(Builder& builder) const
 {
-    builder.SetLoc(Where);
-
     const auto bkp = builder.GetArgs();
 
     builder.GetArgs().resize(Args.size());
@@ -84,7 +82,7 @@ QLang::ValuePtr QLang::CallExpression::GenIR(Builder& builder) const
         }
     }
 
-    auto result = GenCall(builder, callee, self, args);
+    auto result = GenCall(Where, builder, callee, self, args);
     if (!result)
     {
         std::cerr << "    at " << Where << std::endl;

@@ -35,11 +35,12 @@ namespace QLang
     class Builder
     {
     public:
-        Builder(Context&,
-                llvm::LLVMContext&,
-                const std::string& module_name,
-                const std::string& filename,
-                const std::string& directory);
+        Builder(
+            Context&,
+            llvm::LLVMContext&,
+            const std::string& module_name,
+            const std::string& filename,
+            const std::string& directory);
 
         [[nodiscard]] Context& GetContext() const;
 
@@ -48,24 +49,26 @@ namespace QLang
         [[nodiscard]] llvm::IRBuilder<>& IRBuilder() const;
         [[nodiscard]] llvm::DIBuilder& DIBuilder() const;
 
-        [[nodiscard]] llvm::DIScope* Scope() const;
+        [[nodiscard]] llvm::DIScope*& Scope();
+        [[nodiscard]] llvm::DIFile* File() const;
 
         std::unique_ptr<llvm::Module>& IRModulePtr();
 
-        void SetLoc(const SourceLocation&) const;
+        void SetLoc(const SourceLocation&);
 
         void Finalize() const;
         void Print() const;
 
-        Function* CreateFunction(const SourceLocation& where,
-                                 FnMode mode,
-                                 const TypePtr& result,
-                                 const TypePtr& self,
-                                 const std::string& name,
-                                 const std::string& ir_name,
-                                 const std::vector<Param>& params,
-                                 bool vararg,
-                                 const Statement* body);
+        Function* CreateFunction(
+            const SourceLocation& where,
+            FnMode mode,
+            const TypePtr& result,
+            const TypePtr& self,
+            const std::string& name,
+            const std::string& ir_name,
+            const std::vector<Param>& params,
+            bool vararg,
+            const Statement* body);
 
         // Value Stack Utility
         void StackPush(bool globalize = false);
@@ -73,13 +76,13 @@ namespace QLang
         ValuePtr& operator[](const std::string& name);
 
         // Value Utility
-        LValuePtr CreateInstance(const TypePtr& type, const std::string& name = "");
+        LValuePtr CreateInstance(const SourceLocation&, const TypePtr& type, const std::string& name = "");
 
         // Local destructors
         void ClearLocalDestructors();
-        void CreateLocalDestructors(const LValuePtr& value);
+        void CreateLocalDestructors(const SourceLocation&, const LValuePtr& value);
         void RemoveLocalDtor(const ValuePtr& value);
-        void GenLocalDestructors();
+        void GenLocalDestructors(const SourceLocation&);
 
         // Function Utility
         Function* GetFunction(const std::string& name, const FunctionTypePtr& type);

@@ -3,18 +3,23 @@
 #include <QLang/Type.hpp>
 #include <QLang/Value.hpp>
 
-QLang::ValuePtr QLang::GenDiv(Builder& builder, const ValuePtr& lhs, const ValuePtr& rhs)
+QLang::ValuePtr QLang::GenDiv(const SourceLocation& where, Builder& builder, const ValuePtr& lhs, const ValuePtr& rhs)
 {
     const auto type = lhs->GetType();
+
+    const auto lhs_ir = lhs->Get();
+    const auto rhs_ir = rhs->Get();
+
+    builder.SetLoc(where);
 
     llvm::Value* value;
     switch (type->GetId())
     {
     case TypeId_Int:
-        value = builder.IRBuilder().CreateSDiv(lhs->Get(), rhs->Get());
+        value = builder.IRBuilder().CreateSDiv(lhs_ir, rhs_ir);
         break;
     case TypeId_Float:
-        value = builder.IRBuilder().CreateFDiv(lhs->Get(), rhs->Get());
+        value = builder.IRBuilder().CreateFDiv(lhs_ir, rhs_ir);
         break;
 
     default: return {};

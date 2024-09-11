@@ -21,8 +21,6 @@ std::ostream& QLang::WhileStatement::Print(std::ostream& stream) const
 
 void QLang::WhileStatement::GenIRVoid(Builder& builder) const
 {
-    builder.SetLoc(Where);
-
     const auto bkp = builder.IRBuilder().GetInsertBlock();
     const auto parent = bkp->getParent();
     const auto head = llvm::BasicBlock::Create(builder.IRContext(), "head", parent);
@@ -35,8 +33,6 @@ void QLang::WhileStatement::GenIRVoid(Builder& builder) const
     const auto while_ = While->GenIR(builder);
     if (!while_)
     {
-        std::cerr << "    at " << Where << std::endl;
-
         builder.IRBuilder().SetInsertPoint(bkp);
         br->eraseFromParent();
         head->eraseFromParent();

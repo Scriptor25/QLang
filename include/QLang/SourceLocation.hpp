@@ -8,7 +8,7 @@ namespace QLang
 {
     struct SourceLocation
     {
-        [[nodiscard]] llvm::DILocation* GenDI(const Builder&) const;
+        [[nodiscard]] llvm::DILocation* GenDI(Builder&) const;
 
         std::string Filename;
         size_t Row = 1, Column = 0;

@@ -1,13 +1,12 @@
+#include <iostream>
+#include <utility>
 #include <QLang/Builder.hpp>
 #include <QLang/Context.hpp>
 #include <QLang/Expression.hpp>
 #include <QLang/Type.hpp>
 #include <QLang/Value.hpp>
-#include <iostream>
-#include <utility>
 
-QLang::NameExpression::NameExpression(
-    const SourceLocation& where, std::string name)
+QLang::NameExpression::NameExpression(const SourceLocation& where, std::string name)
     : Expression(where), Name(std::move(name))
 {
 }
@@ -19,8 +18,6 @@ std::ostream& QLang::NameExpression::Print(std::ostream& stream) const
 
 QLang::ValuePtr QLang::NameExpression::GenIR(Builder& builder) const
 {
-    builder.SetLoc(Where);
-
     if (builder.IsCallee())
     {
         builder.ClearCallee();
@@ -28,13 +25,11 @@ QLang::ValuePtr QLang::NameExpression::GenIR(Builder& builder) const
         if (Name == "self")
         {
             const auto self = builder["self"]->GetType();
-            if (const auto func
-                = builder.FindConstructor(self, builder.GetArgs()))
+            if (const auto func = builder.FindConstructor(self, builder.GetArgs()))
                 return func->AsValue(builder);
 
-            std::cerr << "at " << Where << ": no constructor for type " << self
-                << " with args";
-            for (const auto& arg : builder.GetArgs()) std::cerr << " " << arg;
+            std::cerr << "at " << Where << ": no constructor for type " << self << " with args";
+            for (const auto& arg : builder.GetArgs()) std::cerr << ' ' << arg;
             std::cerr << std::endl;
 
             return {};
@@ -65,9 +60,8 @@ QLang::ValuePtr QLang::NameExpression::GenIR(Builder& builder) const
         if (const auto func = builder.FindFunction(Name, {}, builder.GetArgs()))
             return func->AsValue(builder);
 
-        std::cerr << "at " << Where << ": no function with name '" << Name
-            << "' and args";
-        for (const auto& arg : builder.GetArgs()) std::cerr << " " << arg;
+        std::cerr << "at " << Where << ": no function with name '" << Name << "' and args";
+        for (const auto& arg : builder.GetArgs()) std::cerr << ' ' << arg;
         std::cerr << std::endl;
 
         return {};
@@ -76,8 +70,7 @@ QLang::ValuePtr QLang::NameExpression::GenIR(Builder& builder) const
     if (auto& sym = builder[Name]) return sym;
     if (const auto func = builder.FindFunction(Name)) return func->AsValue(builder);
 
-    std::cerr << "at " << Where << ": no symbol with name '" << Name << "'"
-        << std::endl;
+    std::cerr << "at " << Where << ": no symbol with name '" << Name << "'" << std::endl;
     return {};
 }
 

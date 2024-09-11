@@ -14,23 +14,25 @@
 #include <QLang/Type.hpp>
 #include <QLang/Value.hpp>
 
-QLang::Builder::Builder(Context& context,
-                        llvm::LLVMContext& ir_context,
-                        const std::string& module_name,
-                        const std::string& filename,
-                        const std::string& directory)
+QLang::Builder::Builder(
+    Context& context,
+    llvm::LLVMContext& ir_context,
+    const std::string& module_name,
+    const std::string& filename,
+    const std::string& directory)
     : m_Context(context), m_IRContext(ir_context)
 {
     m_IRModule = std::make_unique<llvm::Module>(module_name, m_IRContext);
     m_IRBuilder = std::make_unique<llvm::IRBuilder<>>(m_IRContext);
     m_DIBuilder = std::make_unique<llvm::DIBuilder>(*m_IRModule);
 
-    m_CU = m_DIBuilder->createCompileUnit(llvm::dwarf::DW_LANG_C,
-                                          m_DIBuilder->createFile(filename, directory),
-                                          "QLang",
-                                          true,
-                                          "",
-                                          0);
+    m_CU = m_DIBuilder->createCompileUnit(
+        llvm::dwarf::DW_LANG_C,
+        m_DIBuilder->createFile(filename, directory),
+        "QLang",
+        true,
+        "",
+        0);
     m_Frame.Scope = m_CU;
 
     m_FPM = std::make_unique<llvm::FunctionPassManager>();
@@ -67,9 +69,14 @@ llvm::DIBuilder& QLang::Builder::DIBuilder() const
     return *m_DIBuilder;
 }
 
-llvm::DIScope* QLang::Builder::Scope() const
+llvm::DIScope*& QLang::Builder::Scope()
 {
     return m_Frame.Scope;
+}
+
+llvm::DIFile* QLang::Builder::File() const
+{
+    return m_CU->getFile();
 }
 
 llvm::Module& QLang::Builder::IRModule() const { return *m_IRModule; }
@@ -79,7 +86,7 @@ std::unique_ptr<llvm::Module>& QLang::Builder::IRModulePtr()
     return m_IRModule;
 }
 
-void QLang::Builder::SetLoc(const SourceLocation& where) const
+void QLang::Builder::SetLoc(const SourceLocation& where)
 {
     IRBuilder().SetCurrentDebugLocation(where.GenDI(*this));
 }
@@ -109,9 +116,20 @@ QLang::ValuePtr& QLang::Builder::operator[](const std::string& name)
     return m_Frame.Values[name];
 }
 
-QLang::LValuePtr QLang::Builder::CreateInstance(const TypePtr& type, const std::string& name)
+QLang::LValuePtr QLang::Builder::CreateInstance(
+    const SourceLocation& where,
+    const TypePtr& type,
+    const std::string& name)
 {
     auto instance = LValue::Alloca(*this, type, nullptr, name);
+
+    const auto d = m_DIBuilder->createAutoVariable(Scope(), name, File(), where.Row, type->GenDI(*this), true);
+    m_DIBuilder->insertDeclare(
+        instance->GetPtr(),
+        d,
+        m_DIBuilder->createExpression(),
+        where.GenDI(*this),
+        m_IRBuilder->GetInsertBlock());
 
     const auto ir_type = type->GenIR(*this);
     const auto null_value = llvm::Constant::getNullValue(ir_type);
@@ -121,26 +139,26 @@ QLang::LValuePtr QLang::Builder::CreateInstance(const TypePtr& type, const std::
     {
         for (size_t i = 0; i < struct_type->GetElementCount(); ++i)
         {
-            const auto& [_type, _name, _init] = struct_type->GetElement(i);
-            if (!_init) continue;
+            const auto& [type_, name_, init_] = struct_type->GetElement(i);
+            if (!init_) continue;
 
-            auto init = _init->GenIR(*this);
+            auto init = init_->GenIR(*this);
             if (!init) return {};
-            init = GenCast(*this, init, _type);
+            init = GenCast(where, *this, init, type_);
             if (!init) return {};
 
-            const auto gep = m_IRBuilder->CreateStructGEP(ir_type, instance->GetPtr(), i, _name);
+            const auto gep = m_IRBuilder->CreateStructGEP(ir_type, instance->GetPtr(), i, name_);
             m_IRBuilder->CreateStore(init->Get(), gep);
         }
     }
 
-    CreateLocalDestructors(instance);
+    CreateLocalDestructors(where, instance);
     return instance;
 }
 
 void QLang::Builder::ClearLocalDestructors() { m_Frame.LocalDestructors.clear(); }
 
-void QLang::Builder::CreateLocalDestructors(const LValuePtr& value)
+void QLang::Builder::CreateLocalDestructors(const SourceLocation& where, const LValuePtr& value)
 {
     if (const auto func = FindDestructor(value->GetType()))
     {
@@ -151,8 +169,8 @@ void QLang::Builder::CreateLocalDestructors(const LValuePtr& value)
     if (const auto str_ty = StructType::From(value->GetType()))
         for (size_t i = 0; i < str_ty->GetElementCount(); ++i)
         {
-            auto member = GenMember(*this, value, i);
-            CreateLocalDestructors(member);
+            auto member = GenMember(where, *this, value, i);
+            CreateLocalDestructors(where, member);
         }
 }
 
@@ -166,10 +184,10 @@ void QLang::Builder::RemoveLocalDtor(const ValuePtr& value)
         }
 }
 
-void QLang::Builder::GenLocalDestructors()
+void QLang::Builder::GenLocalDestructors(const SourceLocation& where)
 {
-    for (auto& [_callee, _self] : m_Frame.LocalDestructors)
-        GenCall(*this, _callee->AsValue(*this), _self, {});
+    for (auto& [callee_, self_] : m_Frame.LocalDestructors)
+        GenCall(where, *this, callee_->AsValue(*this), self_, {});
     ClearLocalDestructors();
 }
 
@@ -178,23 +196,24 @@ QLang::Function* QLang::Builder::GetFunction(const std::string& name, const Func
     return &m_Functions[name][type];
 }
 
-QLang::Function* QLang::Builder::FindFunction(const std::string& name,
-                                              const TypePtr& self,
-                                              const std::vector<TypePtr>& args)
+QLang::Function* QLang::Builder::FindFunction(
+    const std::string& name,
+    const TypePtr& self,
+    const std::vector<TypePtr>& args)
 {
     size_t low_error = -1;
-    Function* result = nullptr;
+    Function* func = nullptr;
 
-    for (auto& [fn_type, fn] : m_Functions[name])
+    for (auto& [type_, func_] : m_Functions[name])
     {
-        if (fn_type->GetSelf() != self) continue;
-        if ((!fn_type->IsVarArg() && fn_type->GetParamCount() != args.size()) || fn_type->GetParamCount() > args.size())
+        if (type_->GetSelf() != self) continue;
+        if ((!type_->IsVarArg() && type_->GetParamCount() != args.size()) || type_->GetParamCount() > args.size())
             continue;
 
         size_t error = 0;
-        for (size_t i = 0; i < fn_type->GetParamCount(); ++i)
+        for (size_t i = 0; i < type_->GetParamCount(); ++i)
         {
-            const auto diff = Type::TypeDiff(*this, fn_type->GetParam(i), args[i]);
+            const auto diff = Type::TypeDiff(*this, type_->GetParam(i), args[i]);
             if (diff == static_cast<size_t>(-1))
             {
                 error = -1;
@@ -206,11 +225,11 @@ QLang::Function* QLang::Builder::FindFunction(const std::string& name,
         if (error < low_error)
         {
             low_error = error;
-            result = &fn;
+            func = &func_;
         }
     }
 
-    return result;
+    return func;
 }
 
 QLang::Function* QLang::Builder::FindFunction(const std::string& name)
@@ -223,26 +242,26 @@ QLang::Function* QLang::Builder::FindFunction(const std::string& name)
 QLang::Function* QLang::Builder::FindConstructor(const TypePtr& self, const std::vector<TypePtr>& args)
 {
     size_t low_error = -1;
-    Function* result = nullptr;
+    Function* func = nullptr;
 
-    for (auto& [fn_type, fn] : m_Functions[self->GetName()])
+    for (auto& [type_, func_] : m_Functions[self->GetName()])
     {
-        if (fn_type->GetMode() != FnMode_Ctor) continue;
-        if ((!fn_type->IsVarArg() && fn_type->GetParamCount() != args.size()) || fn_type->GetParamCount() > args.size())
+        if (type_->GetMode() != FnMode_Ctor) continue;
+        if ((!type_->IsVarArg() && type_->GetParamCount() != args.size()) || type_->GetParamCount() > args.size())
             continue;
 
         size_t error = 0;
-        for (size_t i = 0; i < fn_type->GetParamCount(); ++i)
-            error += Type::TypeDiff(*this, fn_type->GetParam(i), args[i]);
+        for (size_t i = 0; i < type_->GetParamCount(); ++i)
+            error += Type::TypeDiff(*this, type_->GetParam(i), args[i]);
 
         if (error < low_error)
         {
             low_error = error;
-            result = &fn;
+            func = &func_;
         }
     }
 
-    return result;
+    return func;
 }
 
 QLang::Function* QLang::Builder::FindDestructor(const TypePtr& self)
