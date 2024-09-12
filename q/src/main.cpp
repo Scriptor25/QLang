@@ -70,10 +70,10 @@ int main(int argc, const char** argv)
         for (const auto& dir : include_dirs)
             context.AddIncludeDir(dir);
 
-#ifdef _WIN32
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32)
         auto& [where_, name_, params_, is_callee_, value_] = context.GetMacro("SYSTEM_WINDOWS");
         name_ = "SYSTEM_WINDOWS";
-#elifdef linux
+#elif defined(linux) || defined(_linux) || defined(__linux)
         auto& [where_, name_, params_, is_callee_, value_] = context.GetMacro("SYSTEM_LINUX");
         name_ = "SYSTEM_LINUX";
 #endif
