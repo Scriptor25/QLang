@@ -4,19 +4,9 @@
 
 QLang::StatementPtr QLang::Parser::ParseStatement()
 {
-    if (At("use"))
+    if (At("#"))
     {
-        ParseUse();
-        return {};
-    }
-    if (At("include"))
-    {
-        ParseInclude();
-        return {};
-    }
-    if (At("macro"))
-    {
-        ParseMacro();
+        ParseCompileDirective();
         return {};
     }
 

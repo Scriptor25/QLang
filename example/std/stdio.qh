@@ -1,11 +1,11 @@
 ; Macros ;
-macro EOF -1
-macro NULL = ($(void*) 0)
+#macro EOF -1
+#macro NULL ($(void*) 0)
 
 ; Types ;
-use FILE as struct FILE
-use fpos_t as struct fpos_t
-use va_list as struct va_list
+#use FILE as struct FILE
+#use fpos_t as struct fpos_t
+#use va_list as struct va_list
 
 ; Constants ;
 def ext FILE* stdout

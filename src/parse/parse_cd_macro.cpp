@@ -3,14 +3,18 @@
 #include <QLang/Context.hpp>
 #include <QLang/Parser.hpp>
 
-void QLang::Parser::ParseMacro()
+void QLang::Parser::ParseCDMacro()
 {
     Expect("macro");
+    UseWhitespace();
+
     const auto name = Expect(TokenType_Name).Value;
+    const bool is_callee = !At(TokenType_Whitespace) && NextIfAt("(");
+
+    IgnoreWhitespace();
+    NextIfAt(TokenType_Whitespace);
 
     std::vector<std::string> params;
-    const bool is_callee = !NextIfAt("=") && NextIfAt("(");
-
     if (is_callee)
         while (!NextIfAt(")"))
         {

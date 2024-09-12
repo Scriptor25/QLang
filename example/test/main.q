@@ -7,7 +7,7 @@ def ext i8* strcat(i8*, i8*)
 def ext i32 printf(i8*, ?)
 def ext i32 puts(i8*)
 
-use string as struct string {
+#use string as struct string {
     i64 length = 0,
     i64 reserved = 8,
     i8* data = 0

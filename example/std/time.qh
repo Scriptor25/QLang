@@ -1,9 +1,14 @@
 ; Macros ;
-macro CLOCKS_PER_SEC 1000000
-macro NULL = ($(void*) 0)
+#if SYSTEM_WINDOWS
+#macro CLOCKS_PER_SEC 1000
+#endif
+#if SYSTEM_LINUX
+#macro CLOCKS_PER_SEC 1000000
+#endif
+#macro NULL ($(void*) 0)
 
 ; Types ;
-use tm as struct tm {
+#use tm as struct tm {
     i32 tm_sec,
     i32 tm_min,
     i32 tm_hour,

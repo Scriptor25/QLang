@@ -5,7 +5,7 @@
 #include <QLang/Parser.hpp>
 #include <QLang/Token.hpp>
 
-void QLang::Parser::ParseInclude()
+void QLang::Parser::ParseCDInclude()
 {
     Expect("include");
     auto filename = Expect(TokenType_String).Value;

@@ -1,3 +1,4 @@
+#include <iostream>
 #include <memory>
 #include <llvm/IR/LegacyPassManager.h>
 #include <llvm/IR/LLVMContext.h>
@@ -31,7 +32,11 @@ void QLang::Linker::Link(Builder& builder)
     builder.Finalize();
 
     auto& module = builder.IRModulePtr();
-    if (verifyModule(*module, &llvm::errs())) return;
+    if (verifyModule(*module, &llvm::errs()))
+    {
+        std::cerr << "failed to verify module" << std::endl;
+        return;
+    }
 
     if (!m_IRModule)
     {
@@ -46,6 +51,12 @@ void QLang::Linker::Link(Builder& builder)
 
 void QLang::Linker::EmitObject(const std::string& filename) const
 {
+    if (!m_IRModule)
+    {
+        std::cerr << "nothing to emit" << std::endl;
+        return;
+    }
+
     llvm::InitializeAllTargetInfos();
     llvm::InitializeAllTargets();
     llvm::InitializeAllTargetMCs();

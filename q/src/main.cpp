@@ -57,7 +57,10 @@ int main(int argc, const char** argv)
     {
         std::ifstream stream(input_filename);
         if (!stream)
+        {
+            std::cerr << "failed to open file " << input_filename << std::endl;
             continue;
+        }
 
         std::string directory = std::filesystem::path(input_filename).parent_path().string();
         std::string filename = std::filesystem::path(input_filename).filename().string();
@@ -66,6 +69,16 @@ int main(int argc, const char** argv)
         QLang::Context context;
         for (const auto& dir : include_dirs)
             context.AddIncludeDir(dir);
+
+#ifdef _WIN32
+        auto& [where_, name_, params_, is_callee_, value_] = context.GetMacro("SYSTEM_WINDOWS");
+        name_ = "SYSTEM_WINDOWS";
+#elifdef linux
+        auto& [where_, name_, params_, is_callee_, value_] = context.GetMacro("SYSTEM_LINUX");
+        name_ = "SYSTEM_LINUX";
+#endif
+        is_callee_ = false;
+        value_ = "1";
 
         QLang::Builder builder(context, linker.IRContext(), module_name, filename, directory);
         QLang::Parser parser(

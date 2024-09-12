@@ -1,20 +1,22 @@
-include "stdio.qh"
-include "string.qh"
-include "time.qh"
+#include "stdio.qh"
+#include "string.qh"
+#include "time.qh"
 
-macro theta_spacing 0.07
-macro phi_spacing   0.02
-macro R1 1.0
-macro R2 2.0
-macro K1 = (screen_width * K2 * 3.0 / (8.0 * (R1 + R2)))
-macro K2 5.0
-macro pi 3.141596
-macro screen_width  40
-macro screen_height 20
+#macro theta_spacing 0.07
+#macro phi_spacing   0.02
+#macro R1 1.0
+#macro R2 2.0
+#macro K1 (screen_width * K2 * 3.0 / (8.0 * (R1 + R2)))
+#macro K2 5.0
+#macro pi 3.141596
+#macro screen_width  40
+#macro screen_height 20
 
-macro min(a, b) ((#a#) < (#b#) ? (#a#) : (#b#))
-macro max(a, b) ((#a#) > (#b#) ? (#a#) : (#b#))
-macro clamp(x, min, max) min(#max#, max(#min#, #x#))
+#macro min(a, b) ((#a#) < (#b#) ? (#a#) : (#b#))
+#macro max(a, b) ((#a#) > (#b#) ? (#a#) : (#b#))
+#macro clamp(x, min, max) min(#max#, max(#min#, #x#))
+
+#macro frame_time (CLOCKS_PER_SEC * 0.02)
 
 def ext f64 cos(f64)
 def ext f64 sin(f64)
@@ -80,13 +82,15 @@ def void render_frame(f64 A, f64 B) {
 }
 
 def ext i32 main() {
+
     def f64 a = 0
     def f64 b = 0
+
     while 1 {
         def i64 t = clock()
         render_frame(a += 0.04, b += 0.02)
-        while (clock() - t) < (CLOCKS_PER_SEC * 0.02) {
-        }
+        while (clock() - t) < frame_time {}
     }
+
     return 0
 }

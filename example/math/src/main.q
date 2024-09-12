@@ -1,4 +1,4 @@
-include "vec3.qh"
+#include "vec3.qh"
 
 def ext i32 printf(i8*, ?)
 

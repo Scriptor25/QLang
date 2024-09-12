@@ -116,6 +116,7 @@ QLang::Token QLang::Parser::NextToken()
         State_Char,
         State_String,
         State_Operator,
+        State_Whitespace,
     };
 
     if (m_C < 0) m_C = Get();
@@ -165,7 +166,16 @@ QLang::Token QLang::Parser::NextToken()
                 break;
 
             default:
-                if (m_C <= 0x20) break;
+                if (m_C <= 0x20)
+                {
+                    if (!m_Whitespace)
+                        break;
+
+                    where = m_Where;
+                    state = State_Whitespace;
+                    value += static_cast<char>(m_C);
+                    break;
+                }
 
                 if (is_operator(m_C))
                 {
@@ -207,6 +217,16 @@ QLang::Token QLang::Parser::NextToken()
                 return {where, TokenType_Other, value};
             }
             break;
+
+        case State_Whitespace:
+            if (m_C <= 0x20)
+            {
+                value += static_cast<char>(m_C);
+                if (m_C == '\n')
+                    NewLine();
+                break;
+            }
+            return {where, TokenType_Whitespace, value};
 
         case State_Comment:
             state = m_C == ';' ? State_SLComment : State_MLComment;
@@ -334,4 +354,14 @@ QLang::Token QLang::Parser::NextToken()
     }
 
     return {m_Where, TokenType_Eof, ""};
+}
+
+void QLang::Parser::UseWhitespace()
+{
+    m_Whitespace = true;
+}
+
+void QLang::Parser::IgnoreWhitespace()
+{
+    m_Whitespace = false;
 }

@@ -1,7 +1,7 @@
 #include <QLang/Context.hpp>
 #include <QLang/Parser.hpp>
 
-void QLang::Parser::ParseUse()
+void QLang::Parser::ParseCDUse()
 {
     Expect("use");
     const auto name = Expect(TokenType_Name).Value;

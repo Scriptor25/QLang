@@ -1,17 +1,17 @@
 ; Macros ;
-macro NULL = ($(void*) 0)
-macro RAND_MAX 32767
+#macro NULL ($(void*) 0)
+#macro RAND_MAX 32767
 
 ; Types ;
-use div_t as struct div_t {
+#use div_t as struct div_t {
     i32 quot,
     i32 rem
 }
-use ldiv_t as struct ldiv_t {
+#use ldiv_t as struct ldiv_t {
     i64 quot,
     i64 rem
 }
-use lldiv_t as struct lldiv_t {
+#use lldiv_t as struct lldiv_t {
     i64 quot,
     i64 rem
 }

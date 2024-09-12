@@ -1,4 +1,4 @@
-use vec3 as struct vec3 { f64[3] e }
+#use vec3 as struct vec3 { f64[3] e }
 
 def +vec3(f64 t)
 def +vec3(f64 x, f64 y, f64 z)

@@ -26,6 +26,9 @@ namespace QLang
         void Escape();
         Token NextToken();
 
+        void UseWhitespace();
+        void IgnoreWhitespace();
+
         Token& Next();
         [[nodiscard]] bool AtEof() const;
         [[nodiscard]] bool At(TokenType) const;
@@ -39,9 +42,11 @@ namespace QLang
         TypePtr ParseBaseType();
         TypePtr ParseType();
 
-        void ParseUse();
-        void ParseInclude();
-        void ParseMacro();
+        void ParseCompileDirective();
+        void ParseCDIf();
+        void ParseCDInclude();
+        void ParseCDMacro();
+        void ParseCDUse();
 
         StatementPtr ParseCompound();
         StatementPtr ParseDef();
@@ -67,5 +72,7 @@ namespace QLang
         SourceLocation m_Where;
         int m_C = -1;
         Token m_Token;
+
+        bool m_Whitespace = false;
     };
 }
