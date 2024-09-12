@@ -5,7 +5,7 @@ project(QLang)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(LLVM 18 REQUIRED CONFIG)
+find_package(LLVM 18.1 REQUIRED CONFIG)
 
 message(STATUS "LLVM version ${LLVM_PACKAGE_VERSION}")
 message(STATUS "LLVM config ${LLVM_DIR}")
