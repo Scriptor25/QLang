@@ -95,6 +95,6 @@ std::string QLang::DefFnStatement::GenName() const
     const auto hash = std::hash<std::string>()(name);
 
     char buf[256];
-    sprintf(buf, "__%s__%016llX", Name.c_str(), hash);
+    sprintf(buf, "__%s__%016zX", Name.c_str(), hash);
     return buf;
 }
