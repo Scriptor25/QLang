@@ -112,15 +112,6 @@ QLang::Function* QLang::Builder::CreateFunction(
             m_IRBuilder->CreateRetVoid();
         }
 
-    for (auto& block : *func->IR)
-    {
-        const auto terminator = block.getTerminator();
-        if (!terminator || !llvm::dyn_cast<llvm::ReturnInst>(terminator)) continue;
-
-        m_IRBuilder->SetInsertPoint(terminator);
-        GenLocalDestructors(where);
-    }
-
     StackPop();
     m_IRBuilder->SetInsertPoint(bkp);
 
