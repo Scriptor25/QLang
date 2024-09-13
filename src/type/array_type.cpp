@@ -40,7 +40,14 @@ llvm::DIType* QLang::ArrayType::GenDI(Builder& builder)
     if (m_DI)
         return m_DI;
 
-    return m_DI = builder.DIBuilder().createArrayType(m_Length, 0, m_Base->GenDI(builder), {});
+    const auto base = m_Base->GenDI(builder);
+    auto subrange = builder.DIBuilder().getOrCreateSubrange(0, static_cast<int64_t>(m_Length));
+
+    return m_DI = builder.DIBuilder().createArrayType(
+        GetSize(),
+        m_Base->GetSize(),
+        base,
+        builder.DIBuilder().getOrCreateArray({subrange}));
 }
 
 QLang::TypePtr QLang::ArrayType::GetBase() const { return m_Base; }

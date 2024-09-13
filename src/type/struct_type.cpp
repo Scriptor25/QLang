@@ -86,7 +86,42 @@ llvm::StructType* QLang::StructType::GenIR(Builder& builder)
 
 llvm::DIType* QLang::StructType::GenDI(Builder& builder)
 {
-    return m_DI;
+    if (m_DI)
+        return m_DI;
+
+    const auto file = builder.Scope()->getFile();
+
+    std::vector<llvm::Metadata*> elements;
+    size_t max_size = 0;
+    size_t offset = 0;
+    for (size_t i = 0; i < m_Elements.size(); ++i)
+    {
+        auto& [type_, name_, init_] = m_Elements[i];
+        if (type_->GetSize() > max_size) max_size = type_->GetSize();
+        const auto element = builder.DIBuilder().createMemberType(
+            {},
+            name_,
+            file,
+            i + 1,
+            type_->GetSize(),
+            0,
+            offset,
+            llvm::DINode::FlagZero,
+            type_->GenDI(builder));
+        offset += type_->GetSize();
+        elements.push_back(element);
+    }
+
+    return m_DI = builder.DIBuilder().createStructType(
+        {},
+        m_StructName,
+        file,
+        1,
+        GetSize(),
+        max_size,
+        llvm::DINode::FlagZero,
+        {},
+        builder.DIBuilder().getOrCreateArray(elements));
 }
 
 size_t QLang::StructType::GetElementCount() const { return m_Elements.size(); }
