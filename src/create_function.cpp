@@ -132,7 +132,9 @@ QLang::Function* QLang::Builder::CreateFunction(
         return {};
     }
 
-    m_FPM->run(*func->IR, *m_FAM);
+    if (m_Optimize)
+        m_FPM->run(*func->IR, *m_FAM);
+
     return func;
 }
 

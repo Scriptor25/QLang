@@ -43,7 +43,8 @@ namespace QLang
             llvm::LLVMContext&,
             const std::string& module_name,
             const std::string& filename,
-            const std::string& directory);
+            const std::string& directory,
+            bool optimize);
 
         [[nodiscard]] Context& GetContext() const;
 
@@ -157,5 +158,7 @@ namespace QLang
 
         bool m_IsCallee = false;
         std::vector<TypePtr> m_Args;
+
+        const bool m_Optimize;
     };
 }

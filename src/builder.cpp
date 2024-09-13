@@ -19,18 +19,19 @@ QLang::Builder::Builder(
     llvm::LLVMContext& ir_context,
     const std::string& module_name,
     const std::string& filename,
-    const std::string& directory)
-    : m_Context(context), m_IRContext(ir_context)
+    const std::string& directory,
+    const bool optimize)
+    : m_Context(context), m_IRContext(ir_context), m_Optimize(optimize)
 {
     m_IRModule = std::make_unique<llvm::Module>(module_name, m_IRContext);
     m_IRBuilder = std::make_unique<llvm::IRBuilder<>>(m_IRContext);
     m_DIBuilder = std::make_unique<llvm::DIBuilder>(*m_IRModule);
 
     m_CU = m_DIBuilder->createCompileUnit(
-        llvm::dwarf::DW_LANG_C,
+        llvm::dwarf::DW_LANG_C_plus_plus,
         m_DIBuilder->createFile(filename, directory),
         "QLang",
-        true,
+        optimize,
         "",
         0);
 

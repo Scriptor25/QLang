@@ -16,29 +16,55 @@ int main(int argc, const char** argv)
     std::string output_filename = "a.out";
     bool emit_ast = false;
     bool emit_ir = false;
+    bool optimize = false;
 
     for (size_t i = 1; i < argc; ++i)
     {
         std::string arg(argv[i]);
 
-        if (arg == "-o")
+        if (arg == "--help" || arg == "-h")
+        {
+            std::cout << "QLang [v1.0.0]" << std::endl;
+            std::cout << "USAGE" << std::endl;
+            std::cout << '\t' << "qlang [OPTIONS] <filename>..." << std::endl;
+            std::cout << "OPTIONS" << std::endl;
+            std::cout << '\t' << "--help,     -h" << '\t' << " show help info" << std::endl;
+            std::cout << '\t' << "--version,  -v" << '\t' << " show version info" << std::endl;
+            std::cout << '\t' << "--output,   -o" << '\t' << " specify the output filename" << std::endl;
+            std::cout << '\t' << "--include,  -I" << '\t' << " add a path to the include directories" << std::endl;
+            std::cout << '\t' << "--emit-ir,  -R" << '\t' << " set the emit ir flag" << std::endl;
+            std::cout << '\t' << "--emit-ast, -A" << '\t' << " set the emit ast flag" << std::endl;
+            std::cout << '\t' << "--optimize, -O" << '\t' << " set the optimize flag" << std::endl;
+            return 0;
+        }
+        if (arg == "--version" || arg == "-v")
+        {
+            std::cout << "QLang [v1.0.0]" << std::endl;
+            continue;
+        }
+        if (arg == "--output" || arg == "-o")
         {
             output_filename = argv[++i];
             continue;
         }
-        if (arg == "-I")
+        if (arg == "--include" || arg == "-I")
         {
             include_dirs.emplace_back(argv[++i]);
             continue;
         }
-        if (arg == "-ea")
+        if (arg == "--emit-ir" || arg == "-R")
         {
             emit_ast = true;
             continue;
         }
-        if (arg == "-ei")
+        if (arg == "--emit-ast" || arg == "-A")
         {
             emit_ir = true;
+            continue;
+        }
+        if (arg == "--optimize" || arg == "-O")
+        {
+            optimize = true;
             continue;
         }
 
@@ -47,7 +73,7 @@ int main(int argc, const char** argv)
 
     if (input_filenames.empty())
     {
-        std::cerr << "no input files provided" << std::endl;
+        std::cerr << "no input files provided; use '--help' for more information" << std::endl;
         return 1;
     }
 
@@ -80,7 +106,13 @@ int main(int argc, const char** argv)
         is_callee_ = false;
         value_ = "1";
 
-        QLang::Builder builder(context, linker.IRContext(), module_name, filename, directory);
+        QLang::Builder builder(
+            context,
+            linker.IRContext(),
+            module_name,
+            filename,
+            directory,
+            optimize);
         QLang::Parser parser(
             builder,
             stream,
