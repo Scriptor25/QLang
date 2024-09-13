@@ -1,7 +1,6 @@
 #include <iostream>
 #include <string>
 #include <utility>
-#include <llvm/IR/BasicBlock.h>
 #include <QLang/Builder.hpp>
 #include <QLang/Operator.hpp>
 #include <QLang/Statement.hpp>
@@ -96,6 +95,6 @@ std::string QLang::DefFnStatement::GenName() const
     const auto hash = std::hash<std::string>()(name);
 
     char buf[256];
-    sprintf(buf, "%s__%016lX", Name.c_str(), hash);
+    sprintf(buf, "__%s__%016llX", Name.c_str(), hash);
     return buf;
 }
