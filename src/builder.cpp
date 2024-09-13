@@ -33,6 +33,8 @@ QLang::Builder::Builder(
         true,
         "",
         0);
+
+    m_Frame.Name = "GLOBAL";
     m_Frame.Scope = m_CU;
 
     m_FPM = std::make_unique<llvm::FunctionPassManager>();

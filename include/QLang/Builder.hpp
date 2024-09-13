@@ -23,6 +23,9 @@ namespace QLang
 
     struct StackFrame
     {
+        std::string Name;
+        size_t SubCount = 0;
+
         std::map<std::string, ValuePtr> Values;
         std::vector<DtorCall> LocalDestructors;
 
@@ -69,6 +72,13 @@ namespace QLang
             const std::vector<Param>& params,
             bool vararg,
             const Statement* body);
+
+        void DIDeclareParam(
+            const SourceLocation& where,
+            size_t index,
+            const TypePtr& type,
+            const std::string& name,
+            const LValuePtr& value);
 
         // Value Stack Utility
         void StackPush(bool globalize = false);

@@ -21,14 +21,22 @@ QLang::Function* QLang::Builder::CreateFunction(
         param_types[i] = params[i].Type;
 
     const auto type = FunctionType::Get(mode, result, self, param_types, vararg);
-    const auto func = name.empty() ? new Function() : GetFunction(name, type);
+
+    Function* func;
+    if (name.empty())
+    {
+        func = new Function();
+        func->Name = m_Frame.Name + "$" + std::to_string(m_Frame.SubCount++);
+    }
+    else
+        func = GetFunction(name, type);
 
     if (!func->IR)
     {
-        func->Name = name;
+        if (!name.empty()) func->Name = name;
         func->Type = type;
         func->IRType = type->GenIR(*this);
-        func->IR = llvm::Function::Create(func->IRType, llvm::GlobalValue::ExternalLinkage, ir_name, IRModule());
+        func->IR = llvm::Function::Create(func->IRType, llvm::GlobalValue::ExternalLinkage, ir_name, *m_IRModule);
     }
 
     if (!body)
@@ -40,14 +48,14 @@ QLang::Function* QLang::Builder::CreateFunction(
         return {};
     }
 
-    const auto bkp = IRBuilder().GetInsertBlock();
-    IRBuilder().SetInsertPoint(llvm::BasicBlock::Create(IRContext(), "entry", func->IR));
+    const auto bkp = m_IRBuilder->GetInsertBlock();
+    m_IRBuilder->SetInsertPoint(llvm::BasicBlock::Create(m_IRContext, "entry", func->IR));
 
     const auto sp = m_DIBuilder->createFunction(
-        m_CU,
-        ir_name,
-        name,
-        m_CU->getFile(),
+        m_Frame.Scope,
+        func->IR->getName(),
+        func->Name,
+        m_Frame.Scope->getFile(),
         where.Row,
         func->Type->GenDI(*this),
         where.Row,
@@ -57,33 +65,24 @@ QLang::Function* QLang::Builder::CreateFunction(
 
     m_IRBuilder->SetCurrentDebugLocation({});
 
-    StackPush(name.empty());
+    StackPush(true);
+    m_Frame.Name = func->Name;
+    m_Frame.SubCount = 0;
+    m_Frame.Values.clear();
+    m_Frame.LocalDestructors.clear();
+    m_Frame.Self = {};
+    m_Frame.Result = result;
     m_Frame.Scope = sp;
-    GetResult() = result;
-    ClearLocalDestructors();
 
     const unsigned off = self ? 1 : 0;
-    if (off)
+    if (self)
     {
         const auto arg = func->IR->getArg(0);
         arg->setName("self");
-        const auto s = LValue::Create(*this, self, arg);
-        (*this)["self"] = s;
+        const auto value = LValue::Create(*this, self, arg);
+        m_Frame.Values["self"] = value;
 
-        const auto d = m_DIBuilder->createParameterVariable(
-            sp,
-            "self",
-            1,
-            m_CU->getFile(),
-            where.Row,
-            self->GenDI(*this),
-            true);
-        m_DIBuilder->insertDeclare(
-            s->GetPtr(),
-            d,
-            m_DIBuilder->createExpression(),
-            where.GenDI(*this),
-            m_IRBuilder->GetInsertBlock());
+        DIDeclareParam(where, 1, self, "self", value);
     }
 
     for (size_t i = 0; i < params.size(); ++i)
@@ -94,27 +93,14 @@ QLang::Function* QLang::Builder::CreateFunction(
         const auto arg = func->IR->getArg(i + off);
         arg->setName(name_);
 
-        LValuePtr val;
+        LValuePtr value;
         if (const auto aty = ReferenceType::From(type_))
-            val = LValue::Create(*this, aty->GetBase(), arg);
+            value = LValue::Create(*this, aty->GetBase(), arg);
         else
-            val = LValue::Alloca(*this, type_, arg, name_);
-        (*this)[name_] = val;
+            value = LValue::Alloca(*this, type_, arg, name_);
+        m_Frame.Values[name_] = value;
 
-        const auto d = m_DIBuilder->createParameterVariable(
-            sp,
-            name_,
-            i + off + 1,
-            m_CU->getFile(),
-            where.Row,
-            type_->GenDI(*this),
-            true);
-        m_DIBuilder->insertDeclare(
-            val->GetPtr(),
-            d,
-            m_DIBuilder->createExpression(),
-            where.GenDI(*this),
-            m_IRBuilder->GetInsertBlock());
+        DIDeclareParam(where, i + off + 1, type_, name_, value);
     }
 
     body->GenIRVoid(*this);
@@ -123,8 +109,8 @@ QLang::Function* QLang::Builder::CreateFunction(
         for (auto& block : *func->IR)
         {
             if (block.getTerminator()) continue;
-            IRBuilder().SetInsertPoint(&block);
-            IRBuilder().CreateRetVoid();
+            m_IRBuilder->SetInsertPoint(&block);
+            m_IRBuilder->CreateRetVoid();
         }
 
     for (auto& block : *func->IR)
@@ -132,12 +118,12 @@ QLang::Function* QLang::Builder::CreateFunction(
         const auto terminator = block.getTerminator();
         if (!terminator || !llvm::dyn_cast<llvm::ReturnInst>(terminator)) continue;
 
-        IRBuilder().SetInsertPoint(terminator);
+        m_IRBuilder->SetInsertPoint(terminator);
         GenLocalDestructors(where);
     }
 
     StackPop();
-    IRBuilder().SetInsertPoint(bkp);
+    m_IRBuilder->SetInsertPoint(bkp);
 
     if (verifyFunction(*func->IR, &llvm::errs()))
     {
@@ -149,4 +135,27 @@ QLang::Function* QLang::Builder::CreateFunction(
 
     m_FPM->run(*func->IR, *m_FAM);
     return func;
+}
+
+void QLang::Builder::DIDeclareParam(
+    const SourceLocation& where,
+    const size_t index,
+    const TypePtr& type,
+    const std::string& name,
+    const LValuePtr& value)
+{
+    const auto param = m_DIBuilder->createParameterVariable(
+        m_Frame.Scope,
+        name,
+        index,
+        m_Frame.Scope->getFile(),
+        where.Row,
+        type->GenDI(*this),
+        true);
+    m_DIBuilder->insertDeclare(
+        value->GetPtr(),
+        param,
+        m_DIBuilder->createExpression(),
+        where.GenDI(*this),
+        m_IRBuilder->GetInsertBlock());
 }
