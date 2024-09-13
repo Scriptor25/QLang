@@ -68,7 +68,6 @@ QLang::Function* QLang::Builder::CreateFunction(
     StackPush(true);
     m_Frame.Name = func->Name;
     m_Frame.SubCount = 0;
-    m_Frame.Values.clear();
     m_Frame.LocalDestructors.clear();
     m_Frame.Self = {};
     m_Frame.Result = result;
