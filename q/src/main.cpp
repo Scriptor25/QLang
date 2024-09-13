@@ -54,12 +54,12 @@ int main(int argc, const char** argv)
         }
         if (arg == "--emit-ir" || arg == "-R")
         {
-            emit_ast = true;
+            emit_ir = true;
             continue;
         }
         if (arg == "--emit-ast" || arg == "-A")
         {
-            emit_ir = true;
+            emit_ast = true;
             continue;
         }
         if (arg == "--optimize" || arg == "-O")
