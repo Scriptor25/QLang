@@ -82,14 +82,15 @@ void QLang::DefVarStatement::GenIRVoid(Builder& builder) const
             llvm::Constant* init = nullptr;
             if (!IsExtern) init = llvm::Constant::getNullValue(ir_type);
 
-            const auto ptr = new llvm::GlobalVariable(builder.IRModule(),
-                                                      ir_type,
-                                                      false,
-                                                      IsExtern
-                                                          ? llvm::GlobalValue::ExternalLinkage
-                                                          : llvm::GlobalValue::InternalLinkage,
-                                                      init,
-                                                      Name);
+            const auto ptr = new llvm::GlobalVariable(
+                builder.IRModule(),
+                ir_type,
+                false,
+                IsExtern
+                    ? llvm::GlobalValue::ExternalLinkage
+                    : llvm::GlobalValue::InternalLinkage,
+                init,
+                Name);
             builder[Name] = LValue::Create(builder, Type, ptr);
             return;
         }

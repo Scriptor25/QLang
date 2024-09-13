@@ -123,19 +123,12 @@ QLang::LValuePtr QLang::Builder::CreateInstance(
     const TypePtr& type,
     const std::string& name)
 {
-    auto instance = LValue::Alloca(*this, type, nullptr, name);
-
-    const auto d = m_DIBuilder->createAutoVariable(Scope(), name, File(), where.Row, type->GenDI(*this), true);
-    m_DIBuilder->insertDeclare(
-        instance->GetPtr(),
-        d,
-        m_DIBuilder->createExpression(),
-        where.GenDI(*this),
-        m_IRBuilder->GetInsertBlock());
+    auto value = LValue::Alloca(*this, type, nullptr, name);
+    DIDeclareVariable(where, type, name, value);
 
     const auto ir_type = type->GenIR(*this);
     const auto null_value = llvm::Constant::getNullValue(ir_type);
-    instance->Set(null_value);
+    value->Set(null_value);
 
     if (const auto struct_type = StructType::From(type))
     {
@@ -149,18 +142,18 @@ QLang::LValuePtr QLang::Builder::CreateInstance(
             init = GenCast(where, *this, init, type_);
             if (!init) return {};
 
-            const auto gep = m_IRBuilder->CreateStructGEP(ir_type, instance->GetPtr(), i, name_);
+            const auto gep = m_IRBuilder->CreateStructGEP(ir_type, value->GetPtr(), i, name_);
             m_IRBuilder->CreateStore(init->Get(), gep);
         }
     }
 
-    CreateLocalDestructors(where, instance);
-    return instance;
+    AddLocalDestructor(where, value);
+    return value;
 }
 
 void QLang::Builder::ClearLocalDestructors() { m_Frame.LocalDestructors.clear(); }
 
-void QLang::Builder::CreateLocalDestructors(const SourceLocation& where, const LValuePtr& value)
+void QLang::Builder::AddLocalDestructor(const SourceLocation& where, const LValuePtr& value)
 {
     if (const auto func = FindDestructor(value->GetType()))
     {
@@ -172,7 +165,7 @@ void QLang::Builder::CreateLocalDestructors(const SourceLocation& where, const L
         for (size_t i = 0; i < str_ty->GetElementCount(); ++i)
         {
             auto member = GenMember(where, *this, value, i);
-            CreateLocalDestructors(where, member);
+            AddLocalDestructor(where, member);
         }
 }
 

@@ -80,6 +80,12 @@ namespace QLang
             const std::string& name,
             const LValuePtr& value);
 
+        void DIDeclareVariable(
+            const SourceLocation& where,
+            const TypePtr& type,
+            const std::string& name,
+            const LValuePtr& value);
+
         // Value Stack Utility
         void StackPush(bool globalize = false);
         void StackPop();
@@ -90,7 +96,7 @@ namespace QLang
 
         // Local destructors
         void ClearLocalDestructors();
-        void CreateLocalDestructors(const SourceLocation&, const LValuePtr& value);
+        void AddLocalDestructor(const SourceLocation&, const LValuePtr& value);
         void RemoveLocalDtor(const ValuePtr& value);
         void GenLocalDestructors(const SourceLocation&);
 

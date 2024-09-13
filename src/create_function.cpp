@@ -81,7 +81,7 @@ QLang::Function* QLang::Builder::CreateFunction(
         const auto value = LValue::Create(*this, self, arg);
         m_Frame.Values["self"] = value;
 
-        DIDeclareParam(where, 1, self, "self", value);
+        DIDeclareVariable(where, self, "self", value);
     }
 
     for (size_t i = 0; i < params.size(); ++i)
@@ -154,6 +154,27 @@ void QLang::Builder::DIDeclareParam(
     m_DIBuilder->insertDeclare(
         value->GetPtr(),
         param,
+        m_DIBuilder->createExpression(),
+        where.GenDI(*this),
+        m_IRBuilder->GetInsertBlock());
+}
+
+void QLang::Builder::DIDeclareVariable(
+    const SourceLocation& where,
+    const TypePtr& type,
+    const std::string& name,
+    const LValuePtr& value)
+{
+    const auto var = m_DIBuilder->createAutoVariable(
+        m_Frame.Scope,
+        name,
+        m_Frame.Scope->getFile(),
+        where.Row,
+        type->GenDI(*this),
+        true);
+    m_DIBuilder->insertDeclare(
+        value->GetPtr(),
+        var,
         m_DIBuilder->createExpression(),
         where.GenDI(*this),
         m_IRBuilder->GetInsertBlock());
