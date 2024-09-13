@@ -44,7 +44,8 @@ namespace QLang
             const std::string& module_name,
             const std::string& filename,
             const std::string& directory,
-            bool optimize);
+            bool debug,
+            unsigned optimization);
 
         [[nodiscard]] Context& GetContext() const;
 
@@ -54,10 +55,10 @@ namespace QLang
         [[nodiscard]] llvm::DIBuilder& DIBuilder() const;
 
         [[nodiscard]] llvm::DIScope*& Scope();
-        [[nodiscard]] llvm::DIFile* File() const;
 
         std::unique_ptr<llvm::Module>& IRModulePtr();
 
+        [[nodiscard]] bool Debug() const;
         void SetLoc(const SourceLocation&);
 
         void Finalize() const;
@@ -159,6 +160,7 @@ namespace QLang
         bool m_IsCallee = false;
         std::vector<TypePtr> m_Args;
 
-        const bool m_Optimize;
+        const bool m_Debug;
+        const unsigned m_Optimization;
     };
 }

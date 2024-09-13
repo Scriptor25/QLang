@@ -27,18 +27,23 @@ std::ostream& QLang::CompoundStatement::Print(std::ostream& stream) const
 void QLang::CompoundStatement::GenIRVoid(Builder& builder) const
 {
     builder.StackPush();
-    const auto scope = builder.DIBuilder().createLexicalBlock(
-        builder.Scope(),
-        builder.Scope()->getFile(),
-        Where.Row,
-        Where.Column);
-    builder.Scope() = scope;
     builder.ClearLocalDestructors();
+
+    if (builder.Debug())
+    {
+        const auto scope = builder.DIBuilder().createLexicalBlock(
+            builder.Scope(),
+            builder.Scope()->getFile(),
+            Where.Row,
+            Where.Column);
+        builder.Scope() = scope;
+    }
 
     for (const auto& ptr : List) ptr->GenIRVoid(builder);
 
     if (const auto terminator = builder.IRBuilder().GetInsertBlock()->getTerminator())
         builder.IRBuilder().SetInsertPoint(terminator);
     builder.GenLocalDestructors(Where);
+
     builder.StackPop();
 }

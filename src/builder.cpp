@@ -4,10 +4,20 @@
 #include <llvm/Support/raw_ostream.h>
 #include <llvm/Transforms/AggressiveInstCombine/AggressiveInstCombine.h>
 #include <llvm/Transforms/InstCombine/InstCombine.h>
+#include <llvm/Transforms/Scalar/DCE.h>
+#include <llvm/Transforms/Scalar/DeadStoreElimination.h>
+#include <llvm/Transforms/Scalar/EarlyCSE.h>
 #include <llvm/Transforms/Scalar/GVN.h>
+#include <llvm/Transforms/Scalar/JumpThreading.h>
+#include <llvm/Transforms/Scalar/LoopUnrollPass.h>
 #include <llvm/Transforms/Scalar/Reassociate.h>
+#include <llvm/Transforms/Scalar/SCCP.h>
 #include <llvm/Transforms/Scalar/SimplifyCFG.h>
 #include <llvm/Transforms/Utils/Mem2Reg.h>
+#include <llvm/Transforms/Vectorize/LoadStoreVectorizer.h>
+#include <llvm/Transforms/Vectorize/LoopVectorize.h>
+#include <llvm/Transforms/Vectorize/SLPVectorizer.h>
+#include <llvm/Transforms/Vectorize/VectorCombine.h>
 #include <QLang/Builder.hpp>
 #include <QLang/Expression.hpp>
 #include <QLang/Operator.hpp>
@@ -20,23 +30,27 @@ QLang::Builder::Builder(
     const std::string& module_name,
     const std::string& filename,
     const std::string& directory,
-    const bool optimize)
-    : m_Context(context), m_IRContext(ir_context), m_Optimize(optimize)
+    const bool debug,
+    const unsigned optimization)
+    : m_Context(context), m_IRContext(ir_context), m_Debug(debug), m_Optimization(optimization)
 {
     m_IRModule = std::make_unique<llvm::Module>(module_name, m_IRContext);
     m_IRBuilder = std::make_unique<llvm::IRBuilder<>>(m_IRContext);
     m_DIBuilder = std::make_unique<llvm::DIBuilder>(*m_IRModule);
 
-    m_CU = m_DIBuilder->createCompileUnit(
-        llvm::dwarf::DW_LANG_C_plus_plus,
-        m_DIBuilder->createFile(filename, directory),
-        "QLang",
-        optimize,
-        "",
-        0);
-
     m_Frame.Name = "GLOBAL";
-    m_Frame.Scope = m_CU;
+
+    if (debug)
+    {
+        m_CU = m_DIBuilder->createCompileUnit(
+            llvm::dwarf::DW_LANG_C_plus_plus,
+            m_DIBuilder->createFile(filename, directory),
+            "QLang",
+            optimization,
+            "",
+            0);
+        m_Frame.Scope = m_CU;
+    }
 
     m_FPM = std::make_unique<llvm::FunctionPassManager>();
     m_LAM = std::make_unique<llvm::LoopAnalysisManager>();
@@ -48,12 +62,28 @@ QLang::Builder::Builder(
 
     m_SI->registerCallbacks(*m_PIC, m_MAM.get());
 
-    m_FPM->addPass(llvm::AggressiveInstCombinePass());
-    m_FPM->addPass(llvm::InstCombinePass());
-    m_FPM->addPass(llvm::ReassociatePass());
-    m_FPM->addPass(llvm::GVNPass());
-    m_FPM->addPass(llvm::SimplifyCFGPass());
-    m_FPM->addPass(llvm::PromotePass());
+    if (optimization >= 1)
+    {
+        m_FPM->addPass(llvm::DCEPass());
+        m_FPM->addPass(llvm::DSEPass());
+        m_FPM->addPass(llvm::JumpThreadingPass());
+        m_FPM->addPass(llvm::EarlyCSEPass());
+        m_FPM->addPass(llvm::SCCPPass());
+        m_FPM->addPass(llvm::PromotePass());
+        m_FPM->addPass(llvm::InstCombinePass());
+        m_FPM->addPass(llvm::ReassociatePass());
+        m_FPM->addPass(llvm::GVNPass());
+        m_FPM->addPass(llvm::SimplifyCFGPass());
+    }
+    if (optimization >= 2)
+    {
+        m_FPM->addPass(llvm::LoopUnrollPass());
+        m_FPM->addPass(llvm::LoadStoreVectorizerPass());
+        m_FPM->addPass(llvm::LoopVectorizePass());
+        m_FPM->addPass(llvm::SLPVectorizerPass());
+        m_FPM->addPass(llvm::VectorCombinePass());
+        m_FPM->addPass(llvm::AggressiveInstCombinePass());
+    }
 
     llvm::PassBuilder pb;
     pb.registerModuleAnalyses(*m_MAM);
@@ -77,11 +107,6 @@ llvm::DIScope*& QLang::Builder::Scope()
     return m_Frame.Scope;
 }
 
-llvm::DIFile* QLang::Builder::File() const
-{
-    return m_CU->getFile();
-}
-
 llvm::Module& QLang::Builder::IRModule() const { return *m_IRModule; }
 
 std::unique_ptr<llvm::Module>& QLang::Builder::IRModulePtr()
@@ -89,14 +114,21 @@ std::unique_ptr<llvm::Module>& QLang::Builder::IRModulePtr()
     return m_IRModule;
 }
 
+bool QLang::Builder::Debug() const
+{
+    return m_Debug;
+}
+
 void QLang::Builder::SetLoc(const SourceLocation& where)
 {
-    IRBuilder().SetCurrentDebugLocation(where.GenDI(*this));
+    if (m_Debug)
+        IRBuilder().SetCurrentDebugLocation(where.GenDI(*this));
 }
 
 void QLang::Builder::Finalize() const
 {
-    m_DIBuilder->finalize();
+    if (m_Debug)
+        m_DIBuilder->finalize();
 }
 
 void QLang::Builder::Print() const { m_IRModule->print(llvm::errs(), nullptr); }
@@ -125,7 +157,9 @@ QLang::LValuePtr QLang::Builder::CreateInstance(
     const std::string& name)
 {
     auto value = LValue::Alloca(*this, type, nullptr, name);
-    DIDeclareVariable(where, type, name, value);
+
+    if (m_Debug)
+        DIDeclareVariable(where, type, name, value);
 
     const auto ir_type = type->GenIR(*this);
     const auto null_value = llvm::Constant::getNullValue(ir_type);
@@ -333,7 +367,7 @@ QLang::ValuePtr& QLang::Builder::Self() { return m_Frame.Self; }
 
 size_t QLang::Builder::GetArgCount() const { return m_Args.size(); }
 
-QLang::TypePtr& QLang::Builder::GetArg(size_t i) { return m_Args[i]; }
+QLang::TypePtr& QLang::Builder::GetArg(const size_t i) { return m_Args[i]; }
 
 std::vector<QLang::TypePtr>& QLang::Builder::GetArgs() { return m_Args; }
 

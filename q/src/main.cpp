@@ -14,9 +14,10 @@ int main(int argc, const char** argv)
     std::vector<std::string> input_filenames;
     std::vector<std::string> include_dirs;
     std::string output_filename = "a.out";
-    bool emit_ast = false;
     bool emit_ir = false;
-    bool optimize = false;
+    bool emit_ast = false;
+    bool debug = false;
+    unsigned optimization = 0;
 
     for (size_t i = 1; i < argc; ++i)
     {
@@ -28,13 +29,14 @@ int main(int argc, const char** argv)
             std::cout << "USAGE" << std::endl;
             std::cout << '\t' << "qlang [OPTIONS] <filename>..." << std::endl;
             std::cout << "OPTIONS" << std::endl;
-            std::cout << '\t' << "--help,     -h" << '\t' << " show help info" << std::endl;
-            std::cout << '\t' << "--version,  -v" << '\t' << " show version info" << std::endl;
-            std::cout << '\t' << "--output,   -o" << '\t' << " specify the output filename" << std::endl;
-            std::cout << '\t' << "--include,  -I" << '\t' << " add a path to the include directories" << std::endl;
-            std::cout << '\t' << "--emit-ir,  -R" << '\t' << " set the emit ir flag" << std::endl;
-            std::cout << '\t' << "--emit-ast, -A" << '\t' << " set the emit ast flag" << std::endl;
-            std::cout << '\t' << "--optimize, -O" << '\t' << " set the optimize flag" << std::endl;
+            std::cout << '\t' << "--help,              -h" << '\t' << " show help" << std::endl;
+            std::cout << '\t' << "--version,           -v" << '\t' << " show version" << std::endl;
+            std::cout << '\t' << "--output <filename>, -o" << '\t' << " specify output filename" << std::endl;
+            std::cout << '\t' << "--include <path>,    -I" << '\t' << " add include path" << std::endl;
+            std::cout << '\t' << "--emit-ir,           -R" << '\t' << " emit ir" << std::endl;
+            std::cout << '\t' << "--emit-ast,          -A" << '\t' << " emit ast" << std::endl;
+            std::cout << '\t' << "--debug,             -g" << '\t' << " generate debug information" << std::endl;
+            std::cout << '\t' << "-O0, -O1, -O2          " << '\t' << " optimization level" << std::endl;
             return 0;
         }
         if (arg == "--version" || arg == "-v")
@@ -62,9 +64,24 @@ int main(int argc, const char** argv)
             emit_ast = true;
             continue;
         }
-        if (arg == "--optimize" || arg == "-O")
+        if (arg == "--debug" || arg == "-g")
         {
-            optimize = true;
+            debug = true;
+            continue;
+        }
+        if (arg == "-O0")
+        {
+            optimization = 0;
+            continue;
+        }
+        if (arg == "-O1")
+        {
+            optimization = 1;
+            continue;
+        }
+        if (arg == "-O2")
+        {
+            optimization = 2;
             continue;
         }
 
@@ -112,7 +129,8 @@ int main(int argc, const char** argv)
             module_name,
             filename,
             directory,
-            optimize);
+            debug,
+            optimization);
         QLang::Parser parser(
             builder,
             stream,

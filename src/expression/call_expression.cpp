@@ -83,11 +83,7 @@ QLang::ValuePtr QLang::CallExpression::GenIR(Builder& builder) const
     }
 
     auto result = GenCall(Where, builder, callee, self, args);
-    if (!result)
-    {
-        std::cerr << "    at " << Where << std::endl;
-        return {};
-    }
+    if (!result) return {};
 
     if (const auto p = dynamic_cast<NameExpression*>(Callee.get()); p && p->Name == "self")
     {
