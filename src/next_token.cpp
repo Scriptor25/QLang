@@ -370,9 +370,12 @@ QLang::Token QLang::Parser::NextToken()
         m_State.C = Get();
         if (m_State.C < 0)
         {
-            Restore();
-            if (m_State.C < 0)
-                break;
+            if (m_HasBackup)
+            {
+                Restore();
+                return m_State.Tok;
+            }
+            break;
         }
     }
 
