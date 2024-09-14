@@ -10,10 +10,7 @@
 QLang::StatementPtr QLang::Parser::ParsePrimary()
 {
     if (AtEof())
-    {
-        std::cerr << "reached eof" << std::endl;
-        return {};
-    }
+        throw std::runtime_error("EOF");
 
     if (NextIfAt("("))
     {

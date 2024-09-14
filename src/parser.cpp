@@ -47,11 +47,9 @@ void QLang::Parser::Backup()
 void QLang::Parser::Use(const std::shared_ptr<std::istream>& stream, const SourceLocation& where)
 {
     m_State.Stream = stream;
-    m_State.C = -1;
+    m_State.C = stream->get();
     m_State.Where = where;
-    m_State.Tok = {};
-    m_State.C = Get();
-    Next();
+    m_State.Tok = NextToken();
 }
 
 void QLang::Parser::Restore()

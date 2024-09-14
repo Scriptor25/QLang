@@ -126,7 +126,13 @@ QLang::Token QLang::Parser::NextToken()
     SourceLocation where;
 
     if (m_State.C < 0)
-        Restore();
+    {
+        if (m_HasBackup)
+        {
+            Restore();
+            return m_State.Tok;
+        }
+    }
 
     while (m_State.C >= 0 || state != State_Normal)
     {
@@ -368,15 +374,12 @@ QLang::Token QLang::Parser::NextToken()
         }
 
         m_State.C = Get();
-        if (m_State.C < 0)
-        {
-            if (m_HasBackup)
-            {
-                Restore();
-                return m_State.Tok;
-            }
-            break;
-        }
+    }
+
+    if (m_HasBackup)
+    {
+        Restore();
+        return m_State.Tok;
     }
 
     return {m_State.Where, TokenType_Eof, ""};

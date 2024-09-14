@@ -5,7 +5,9 @@ void QLang::Parser::ParseCDIf()
 {
     Expect("#if");
 
-    if (const auto if_ = dyn_cast<ConstIntExpression>(Collapse(ParseBinary())); if_ && if_->Value)
+    auto if_bin = ParseBinary();
+
+    if (const auto if_ = dyn_cast<ConstIntExpression>(Collapse(std::move(if_bin))); if_ && if_->Value)
         while (!NextIfAt("#endif"))
             ParseStatement();
     else
