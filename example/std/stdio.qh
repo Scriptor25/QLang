@@ -1,6 +1,6 @@
 ; Macros ;
-#macro EOF -1
-#macro NULL ($(void*) 0)
+#macro EOF  -1           #endmarco
+#macro NULL ($(void*) 0) #endmacro
 
 ; Types ;
 #use FILE as struct FILE

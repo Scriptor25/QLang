@@ -1,11 +1,11 @@
 ; Macros ;
 #if SYSTEM_WINDOWS
-#macro CLOCKS_PER_SEC 1000
+#macro CLOCKS_PER_SEC 1000 #endmacro
 #endif
 #if SYSTEM_LINUX
-#macro CLOCKS_PER_SEC 1000000
+#macro CLOCKS_PER_SEC 1000000 #endmacro
 #endif
-#macro NULL ($(void*) 0)
+#macro NULL ($(void*) 0) #endmacro
 
 ; Types ;
 #use tm as struct tm {

@@ -4,7 +4,7 @@
 
 QLang::StatementPtr QLang::Parser::ParseStatement()
 {
-    if (At("#"))
+    if (At(TokenType_CompileDirective))
     {
         ParseCompileDirective();
         return {};

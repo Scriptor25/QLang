@@ -1,6 +1,6 @@
 ; Macros ;
-#macro NULL ($(void*) 0)
-#macro RAND_MAX 32767
+#macro NULL     ($(void*) 0) #endmacro
+#macro RAND_MAX 32767        #endmacro
 
 ; Types ;
 #use div_t as struct div_t {

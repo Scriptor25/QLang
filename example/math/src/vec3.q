@@ -1,6 +1,6 @@
 #include "vec3.qh"
 
-#macro min(a, b) ((#a#) < (#b#) ? (#a#) : (#b#))
+#macro min(a, b) ((#a#) < (#b#) ? (#a#) : (#b#)) #endmacro
 
 def ext f64 abs(f64)
 def ext f64 sqrt(f64)

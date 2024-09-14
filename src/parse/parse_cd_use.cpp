@@ -3,7 +3,7 @@
 
 void QLang::Parser::ParseCDUse()
 {
-    Expect("use");
+    Expect("#use");
     const auto name = Expect(TokenType_Name).Value;
     Expect("as");
     const auto type = ParseType();

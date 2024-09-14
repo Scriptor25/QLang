@@ -117,6 +117,7 @@ QLang::Token QLang::Parser::NextToken()
         State_String,
         State_Operator,
         State_Whitespace,
+        State_CompileDirective,
     };
 
     if (m_C < 0) m_C = Get();
@@ -163,6 +164,12 @@ QLang::Token QLang::Parser::NextToken()
 
             case '\n':
                 NewLine();
+                break;
+
+            case '#':
+                where = m_Where;
+                value += static_cast<char>(m_C);
+                state = State_CompileDirective;
                 break;
 
             default:
@@ -348,6 +355,14 @@ QLang::Token QLang::Parser::NextToken()
                 break;
             }
             return {where, TokenType_Operator, value};
+
+        case State_CompileDirective:
+            if (isalnum(m_C) || m_C == '_')
+            {
+                value += static_cast<char>(m_C);
+                break;
+            }
+            return {where, TokenType_CompileDirective, value};
         }
 
         m_C = Get();

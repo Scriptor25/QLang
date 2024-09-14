@@ -19,6 +19,7 @@ namespace QLang
         TokenType_String,
         TokenType_Other,
         TokenType_Whitespace,
+        TokenType_CompileDirective,
     };
 
     struct Token

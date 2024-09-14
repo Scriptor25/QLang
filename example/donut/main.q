@@ -2,21 +2,21 @@
 #include "string.qh"
 #include "time.qh"
 
-#macro theta_spacing 0.07
-#macro phi_spacing   0.02
-#macro R1 1.0
-#macro R2 2.0
-#macro K1 (screen_width * K2 * 3.0 / (8.0 * (R1 + R2)))
-#macro K2 5.0
-#macro pi 3.141596
-#macro screen_width  40
-#macro screen_height 20
+#macro theta_spacing 0.07                                          #endmacro
+#macro phi_spacing   0.02                                          #endmacro
+#macro R1            1.0                                           #endmacro
+#macro R2            2.0                                           #endmacro
+#macro K1            (screen_width * K2 * 3.0 / (8.0 * (R1 + R2))) #endmacro
+#macro K2            5.0                                           #endmacro
+#macro pi            3.141596                                      #endmacro
+#macro screen_width  40                                            #endmacro
+#macro screen_height 20                                            #endmacro
 
-#macro min(a, b) ((#a#) < (#b#) ? (#a#) : (#b#))
-#macro max(a, b) ((#a#) > (#b#) ? (#a#) : (#b#))
-#macro clamp(x, min, max) min(#max#, max(#min#, #x#))
+#macro min(a, b)          ((#a#) < (#b#) ? (#a#) : (#b#)) #endmacro
+#macro max(a, b)          ((#a#) > (#b#) ? (#a#) : (#b#)) #endmacro
+#macro clamp(x, min, max) min(#max#, max(#min#, #x#))     #endmacro
 
-#macro frame_time (CLOCKS_PER_SEC * 0.02)
+#macro frame_time (CLOCKS_PER_SEC * 0.02) #endmacro
 
 def ext f64 cos(f64)
 def ext f64 sin(f64)

@@ -7,7 +7,7 @@
 
 void QLang::Parser::ParseCDInclude()
 {
-    Expect("include");
+    Expect("#include");
     auto filename = Expect(TokenType_String).Value;
 
     std::filesystem::path filepath;
