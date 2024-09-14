@@ -14,7 +14,7 @@
 
 #macro min(a, b)          ((#a#) < (#b#) ? (#a#) : (#b#)) #endmacro
 #macro max(a, b)          ((#a#) > (#b#) ? (#a#) : (#b#)) #endmacro
-#macro clamp(x, min, max) min(#max#, max(#min#, #x#))     #endmacro
+#macro clamp(x, min, max) min(max(#x#, #min#), #max#)     #endmacro
 
 #macro frame_time (CLOCKS_PER_SEC * 0.02) #endmacro
 
