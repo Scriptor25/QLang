@@ -28,9 +28,8 @@ namespace QLang
         void Parse();
         StatementPtr ParseStatement();
 
-        void Backup();
-        void Use(const std::shared_ptr<std::istream>& stream, const SourceLocation& where);
-        void Restore();
+        void Push(const std::shared_ptr<std::istream>& stream, const SourceLocation& where);
+        void Pop();
 
     private:
         int Get();
@@ -81,8 +80,7 @@ namespace QLang
         Callback m_Callback;
 
         ParserState m_State;
-        ParserState m_Backup;
-        bool m_HasBackup = false;
+        std::vector<ParserState> m_StateStack;
 
         bool m_Whitespace = false;
     };

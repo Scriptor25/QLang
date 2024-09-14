@@ -35,33 +35,21 @@ void QLang::Parser::Parse()
     }
 }
 
-void QLang::Parser::Backup()
+void QLang::Parser::Push(const std::shared_ptr<std::istream>& stream, const SourceLocation& where)
 {
-    m_Backup.Stream = m_State.Stream;
-    m_Backup.C = m_State.C;
-    m_Backup.Where = m_State.Where;
-    m_Backup.Tok = m_State.Tok;
-    m_HasBackup = true;
-}
-
-void QLang::Parser::Use(const std::shared_ptr<std::istream>& stream, const SourceLocation& where)
-{
+    m_StateStack.push_back(m_State);
     m_State.Stream = stream;
     m_State.C = stream->get();
     m_State.Where = where;
     m_State.Tok = NextToken();
 }
 
-void QLang::Parser::Restore()
+void QLang::Parser::Pop()
 {
-    if (!m_HasBackup)
+    if (m_StateStack.empty())
         return;
-
-    m_State.Stream = m_Backup.Stream;
-    m_State.C = m_Backup.C;
-    m_State.Where = m_Backup.Where;
-    m_State.Tok = m_Backup.Tok;
-    m_HasBackup = false;
+    m_State = m_StateStack.back();
+    m_StateStack.pop_back();
 }
 
 QLang::Token& QLang::Parser::Next() { return m_State.Tok = NextToken(); }

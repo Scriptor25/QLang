@@ -127,9 +127,9 @@ QLang::Token QLang::Parser::NextToken()
 
     if (m_State.C < 0)
     {
-        if (m_HasBackup)
+        if (!m_StateStack.empty())
         {
-            Restore();
+            Pop();
             return m_State.Tok;
         }
     }
@@ -376,9 +376,9 @@ QLang::Token QLang::Parser::NextToken()
         m_State.C = Get();
     }
 
-    if (m_HasBackup)
+    if (!m_StateStack.empty())
     {
-        Restore();
+        Pop();
         return m_State.Tok;
     }
 

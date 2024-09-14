@@ -6,8 +6,7 @@
 
 void QLang::Macro::Expand(Parser& parser) const
 {
-    parser.Backup();
-    parser.Use(std::make_shared<std::stringstream>(Value), Where);
+    parser.Push(std::make_shared<std::stringstream>(Value), Where);
 }
 
 void QLang::Macro::Expand(Parser& parser, std::vector<ExpressionPtr>& args) const
@@ -55,6 +54,5 @@ void QLang::Macro::Expand(Parser& parser, std::vector<StatementPtr>& args) const
         }
     }
 
-    parser.Backup();
-    parser.Use(std::make_shared<std::stringstream>(value), Where);
+    parser.Push(std::make_shared<std::stringstream>(value), Where);
 }
