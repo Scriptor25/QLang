@@ -9,16 +9,28 @@ namespace QLang
 {
     typedef std::function<void(const StatementPtr&)> Callback;
 
+    struct ParserState
+    {
+        std::shared_ptr<std::istream> Stream;
+        int C = -1;
+        SourceLocation Where;
+        Token Tok;
+    };
+
     class Parser
     {
     public:
-        Parser(Builder&, std::istream&, SourceLocation where, Callback callback);
+        Parser(Builder&, const std::shared_ptr<std::istream>& stream, const std::string& filename, Callback callback);
 
         [[nodiscard]] Builder& GetBuilder() const;
         Callback GetCallback();
 
         void Parse();
         StatementPtr ParseStatement();
+
+        void Backup();
+        void Use(const std::shared_ptr<std::istream>& stream, const SourceLocation& where);
+        void Restore();
 
     private:
         int Get();
@@ -68,10 +80,9 @@ namespace QLang
         Context& m_Context;
         Callback m_Callback;
 
-        std::istream& m_Stream;
-        SourceLocation m_Where;
-        int m_C = -1;
-        Token m_Token;
+        ParserState m_State;
+        ParserState m_Backup;
+        bool m_HasBackup = false;
 
         bool m_Whitespace = false;
     };

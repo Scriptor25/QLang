@@ -7,19 +7,17 @@
 
 namespace QLang
 {
-	struct Macro
-	{
-		StatementPtr Expand(Parser &parser) const;
-		StatementPtr Expand(
-			Parser &parser, std::vector<ExpressionPtr> &args) const;
-		StatementPtr Expand(
-			Parser &parser, std::vector<StatementPtr> &args) const;
+    struct Macro
+    {
+        void Expand(Parser& parser) const;
+        void Expand(Parser& parser, std::vector<ExpressionPtr>& args) const;
+        void Expand(Parser& parser, std::vector<StatementPtr>& args) const;
 
-		SourceLocation Where;
-		std::string Name;
-		std::vector<std::string> Params;
-		bool IsCallee;
+        SourceLocation Where;
+        std::string Name;
+        std::vector<std::string> Params;
+        bool IsCallee;
 
-		std::string Value;
-	};
+        std::string Value;
+    };
 }

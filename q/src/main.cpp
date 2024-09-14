@@ -96,10 +96,11 @@ int main(int argc, const char** argv)
 
     QLang::Linker linker;
 
+
     for (const auto& input_filename : input_filenames)
     {
-        std::ifstream stream(input_filename);
-        if (!stream)
+        const auto stream = std::make_shared<std::ifstream>(input_filename);
+        if (!*stream)
         {
             std::cerr << "failed to open file " << input_filename << std::endl;
             continue;
@@ -134,7 +135,7 @@ int main(int argc, const char** argv)
         QLang::Parser parser(
             builder,
             stream,
-            {.Filename = input_filename},
+            input_filename,
             [&](const QLang::StatementPtr& ptr)
             {
                 if (emit_ast)
@@ -143,11 +144,10 @@ int main(int argc, const char** argv)
             });
 
         parser.Parse();
-        stream.close();
+        stream->close();
 
         linker.Link(builder);
     }
-
     if (emit_ir) linker.Print();
     linker.EmitObject(output_filename);
 }

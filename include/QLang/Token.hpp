@@ -27,7 +27,7 @@ namespace QLang
         bool operator!() const;
 
         SourceLocation Where;
-        TokenType Type;
+        TokenType Type = TokenType_Eof;
         std::string Value;
     };
 }
