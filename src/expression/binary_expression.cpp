@@ -30,8 +30,8 @@ bool QLang::BinaryExpression::IsConstant() const
 
 std::ostream& QLang::BinaryExpression::Print(std::ostream& stream) const
 {
-    if (Operator == "[]") return stream << LHS << '[' << RHS << ']';
-    if (Operator == "." || Operator == "!") return stream << LHS << Operator << RHS;
+    if (Operator == "[]") return stream << '(' << LHS << '[' << RHS << ']' << ')';
+    if (Operator == "." || Operator == "!") return stream << '(' << LHS << Operator << RHS << ')';
     return stream << '(' << LHS << ' ' << Operator << ' ' << RHS << ')';
 }
 
