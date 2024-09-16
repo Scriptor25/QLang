@@ -9,26 +9,32 @@
 
 namespace QLang
 {
-	class Context
-	{
-	public:
-		Context();
+    class Context
+    {
+    public:
+        Context();
 
-		TypePtr &GetType(const std::string &);
+        TypePtr& GetType(const std::string&);
 
-		void AddIncludeDir(const std::filesystem::path &);
-		bool FindInIncludeDirs(
-			std::filesystem::path &dest, const std::string &filename);
-		bool AddParsed(const std::filesystem::path &);
+        void AddIncludeDir(const std::filesystem::path&);
+        bool FindInIncludeDirs(std::filesystem::path& dest, const std::string& filename);
+        bool AddParsed(const std::filesystem::path&);
 
-		Macro &GetMacro(const std::string &name);
-		[[nodiscard]] bool HasMacro(const std::string &name) const;
+        Macro& GetMacro(const std::string& name);
+        [[nodiscard]] bool HasMacro(const std::string& name) const;
 
-	private:
-		std::map<std::string, TypePtr> m_Types;
-		std::map<std::string, Macro> m_Macros;
+        void SetTemplateParams(const std::vector<std::string>& params);
+        void ClearTemplateParams();
+        [[nodiscard]] bool HasTemplateParams() const;
+        TypePtr GetTemplateParam(const std::string& name);
 
-		std::vector<std::filesystem::path> m_IncludeDirs;
-		std::vector<std::filesystem::path> m_Parsed;
-	};
+    private:
+        std::map<std::string, TypePtr> m_Types;
+        std::map<std::string, Macro> m_Macros;
+
+        std::vector<std::filesystem::path> m_IncludeDirs;
+        std::vector<std::filesystem::path> m_Parsed;
+
+        std::map<std::string, TypePtr> m_Params;
+    };
 }

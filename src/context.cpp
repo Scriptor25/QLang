@@ -57,3 +57,25 @@ bool QLang::Context::HasMacro(const std::string& name) const
 {
     return m_Macros.count(name);
 }
+
+void QLang::Context::SetTemplateParams(const std::vector<std::string>& params)
+{
+    m_Params.clear();
+    for (const auto& param : params)
+        m_Params[param] = std::make_shared<Type>(*this, param, TypeId_Void, 0);
+}
+
+void QLang::Context::ClearTemplateParams()
+{
+    m_Params.clear();
+}
+
+bool QLang::Context::HasTemplateParams() const
+{
+    return !m_Params.empty();
+}
+
+QLang::TypePtr QLang::Context::GetTemplateParam(const std::string& name)
+{
+    return m_Params[name];
+}

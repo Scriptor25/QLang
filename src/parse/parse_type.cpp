@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <QLang/Context.hpp>
 #include <QLang/Expression.hpp>
 #include <QLang/Parser.hpp>
 #include <QLang/QLang.hpp>
@@ -38,12 +39,15 @@ QLang::TypePtr QLang::Parser::ParseBaseType()
 
     if (At(TokenType_Name))
     {
-        auto [Where, Type, Value] = Skip();
+        auto [where_, type_, value_] = Skip();
 
-        if (auto base = Type::Get(m_Context, Value))
+        if (auto base = Type::Get(m_Context, value_))
             return base;
 
-        std::cerr << "    at " << Where << std::endl;
+        if (m_Context.HasTemplateParams())
+            return m_Context.GetTemplateParam(value_);
+
+        std::cerr << "    at " << where_ << std::endl;
         return {};
     }
 

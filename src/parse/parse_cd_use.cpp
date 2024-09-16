@@ -6,8 +6,8 @@ void QLang::Parser::ParseCDUse()
     Expect("#use");
 
     const auto name = Expect(TokenType_Name).Value;
-    std::vector<std::string> params;
 
+    std::vector<std::string> params;
     if (NextIfAt("<"))
     {
         while (!NextIfAt(">"))
@@ -20,5 +20,7 @@ void QLang::Parser::ParseCDUse()
 
     Expect("as");
 
+    m_Context.SetTemplateParams(params);
     m_Context.GetType(name) = ParseType();
+    m_Context.ClearTemplateParams();
 }

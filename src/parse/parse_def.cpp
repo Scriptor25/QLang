@@ -11,6 +11,9 @@
 QLang::StatementPtr QLang::Parser::ParseDef()
 {
     auto where = Expect("def").Where;
+
+
+
     bool is_extern = NextIfAt("ext");
 
     FnMode mode;
