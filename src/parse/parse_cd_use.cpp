@@ -4,9 +4,21 @@
 void QLang::Parser::ParseCDUse()
 {
     Expect("#use");
-    const auto name = Expect(TokenType_Name).Value;
-    Expect("as");
-    const auto type = ParseType();
 
-    m_Context.GetType(name) = type;
+    const auto name = Expect(TokenType_Name).Value;
+    std::vector<std::string> params;
+
+    if (NextIfAt("<"))
+    {
+        while (!NextIfAt(">"))
+        {
+            params.push_back(Expect(TokenType_Name).Value);
+            if (!At(">"))
+                Expect(",");
+        }
+    }
+
+    Expect("as");
+
+    m_Context.GetType(name) = ParseType();
 }
