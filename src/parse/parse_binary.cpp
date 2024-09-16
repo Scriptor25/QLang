@@ -13,8 +13,19 @@ QLang::StatementPtr QLang::Parser::ParseBinary()
 static int get_precedence(const std::string& op)
 {
     static std::map<std::string, int> precedences{
-        {"?", 0}, {"=", 0}, {"<<=", 0}, {">>=", 0}, {">>>=", 0}, {"+=", 0}, {"-=", 0}, {"*=", 0}, {"/=", 0}, {"%=", 0},
-        {"&=", 0}, {"|=", 0}, {"^=", 0},
+        {"?", 0},
+        {"=", 0},
+        {"+=", 0},
+        {"-=", 0},
+        {"*=", 0},
+        {"/=", 0},
+        {"%=", 0},
+        {"<<=", 0},
+        {">>=", 0},
+        {">>>=", 0},
+        {"&=", 0},
+        {"^=", 0},
+        {"|=", 0},
 
         {"||", 1},
 
@@ -35,6 +46,8 @@ static int get_precedence(const std::string& op)
         {"+", 9}, {"-", 9},
 
         {"*", 10}, {"/", 10}, {"%", 10},
+
+        {".", 11}, {"!", 11},
     };
 
     if (precedences.count(op)) return precedences[op];

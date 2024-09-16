@@ -19,12 +19,6 @@ QLang::StatementPtr QLang::Parser::ParseOperand()
             continue;
         }
 
-        if (At(".") || At("!"))
-        {
-            ptr = ParseMember(std::move(ptr));
-            continue;
-        }
-
         if (At("++") || At("--"))
         {
             ptr = ParseUnary(std::move(ptr));
