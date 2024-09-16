@@ -123,7 +123,7 @@ void QLang::DefVarStatement::GenIRVoid(Builder& builder) const
     }
     else
     {
-        instance = builder.CreateInstance(Where, Type, Name);
+        instance = builder.CreateInstance(Where, Type, !init, Name);
         if (!instance) return;
 
         if (init)

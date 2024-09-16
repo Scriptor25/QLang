@@ -95,7 +95,7 @@ def string operator+(string lhs, string rhs) {
     return result
 }
 
-use person as struct person {
+#use person as struct person {
     string name,
     i32 age
 }

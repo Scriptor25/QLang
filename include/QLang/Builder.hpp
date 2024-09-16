@@ -94,7 +94,7 @@ namespace QLang
         ValuePtr& operator[](const std::string& name);
 
         // Value Utility
-        LValuePtr CreateInstance(const SourceLocation&, const TypePtr& type, const std::string& name = "");
+        LValuePtr CreateInstance(const SourceLocation&, const TypePtr& type, bool init_null, const std::string& name = "");
 
         // Local destructors
         void ClearLocalDestructors();

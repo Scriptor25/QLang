@@ -154,6 +154,7 @@ QLang::ValuePtr& QLang::Builder::operator[](const std::string& name)
 QLang::LValuePtr QLang::Builder::CreateInstance(
     const SourceLocation& where,
     const TypePtr& type,
+    const bool init_null,
     const std::string& name)
 {
     auto value = LValue::Alloca(*this, type, nullptr, name);
@@ -162,8 +163,12 @@ QLang::LValuePtr QLang::Builder::CreateInstance(
         DIDeclareVariable(where, type, name, value);
 
     const auto ir_type = type->GenIR(*this);
-    const auto null_value = llvm::Constant::getNullValue(ir_type);
-    value->Set(null_value);
+
+    if (init_null)
+    {
+        const auto null_value = llvm::Constant::getNullValue(ir_type);
+        value->Set(null_value);
+    }
 
     if (const auto struct_type = StructType::From(type))
     {

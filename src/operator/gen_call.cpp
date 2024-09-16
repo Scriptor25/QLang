@@ -1,4 +1,3 @@
-#include <iostream>
 #include <QLang/Builder.hpp>
 #include <QLang/Operator.hpp>
 #include <QLang/Type.hpp>
@@ -39,7 +38,7 @@ QLang::ValuePtr QLang::GenCall(
 
     if (func_type->GetMode() == FnMode_Ctor)
     {
-        auto inst = self ? self : builder.CreateInstance(where, func_type->GetSelf());
+        auto inst = self ? self : builder.CreateInstance(where, func_type->GetSelf(), false);
         vargs.insert(vargs.begin(), inst->GetPtr());
         builder.SetLoc(where);
         builder.IRBuilder().CreateCall(fn_ty, callee->Get(), vargs);
