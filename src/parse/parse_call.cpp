@@ -23,7 +23,7 @@ QLang::StatementPtr QLang::Parser::ParseCall(StatementPtr callee)
                 _is_callee)
             {
                 m_Context.GetMacro(name->Name).Expand(*this, args);
-                return ParseStatement();
+                return ParseOperand();
             }
         }
 

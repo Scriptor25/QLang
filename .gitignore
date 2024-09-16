@@ -7,3 +7,7 @@
 # ide
 /.idea/
 /.vscode/
+
+# build files
+/a.out
+/a

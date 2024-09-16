@@ -73,7 +73,7 @@ QLang::StatementPtr QLang::Parser::ParsePrimary()
         if (m_Context.HasMacro(Value) && !m_Context.GetMacro(Value).IsCallee)
         {
             m_Context.GetMacro(Value).Expand(*this);
-            return ParseStatement();
+            return ParsePrimary();
         }
         return std::make_unique<NameExpression>(Where, Value);
     }

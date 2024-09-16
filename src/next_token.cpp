@@ -19,8 +19,7 @@ static int is_operator(const int c)
         || c == '>'
         || c == '!'
         || c == '~'
-        || c == '?'
-        || c == '.';
+        || c == '?';
 }
 
 static int is_compound_operator(const int c)
