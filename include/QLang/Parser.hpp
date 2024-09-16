@@ -71,8 +71,6 @@ namespace QLang
         StatementPtr ParseOperand();
         StatementPtr ParsePrimary();
         StatementPtr ParseCall(StatementPtr);
-        StatementPtr ParseIndex(StatementPtr);
-        StatementPtr ParseUnary(StatementPtr);
 
         Builder& m_Builder;
         Context& m_Context;

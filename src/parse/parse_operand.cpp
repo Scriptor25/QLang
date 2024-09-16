@@ -15,13 +15,28 @@ QLang::StatementPtr QLang::Parser::ParseOperand()
 
         if (At("["))
         {
-            ptr = ParseIndex(std::move(ptr));
+            auto where = Skip().Where;
+            auto index = ParseBinary();
+            Expect("]");
+
+            ptr = std::make_unique<BinaryExpression>(where, "[]", std::move(ptr), std::move(index));
+            continue;
+        }
+
+        if (At(".") || At("!"))
+        {
+            auto [where_, type_, value_] = Skip();
+            auto member = ParsePrimary();
+
+            ptr = std::make_unique<BinaryExpression>(where_, value_, std::move(ptr), std::move(member));
             continue;
         }
 
         if (At("++") || At("--"))
         {
-            ptr = ParseUnary(std::move(ptr));
+            auto [Where, Type, Value] = Skip();
+
+            ptr = std::make_unique<UnaryExpression>(Where, Value, std::move(ptr), true);
             continue;
         }
 

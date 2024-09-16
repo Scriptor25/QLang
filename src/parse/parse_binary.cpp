@@ -46,8 +46,6 @@ static int get_precedence(const std::string& op)
         {"+", 9}, {"-", 9},
 
         {"*", 10}, {"/", 10}, {"%", 10},
-
-        {".", 11}, {"!", 11},
     };
 
     if (precedences.count(op)) return precedences[op];
