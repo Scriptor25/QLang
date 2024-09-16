@@ -61,7 +61,7 @@ QLang::StatementPtr QLang::Parser::ParseBinary(StatementPtr lhs, const size_t mi
 
         auto rhs = ParseOperand();
         if (!rhs) return {};
-        while (At(TokenType_Operator) && get_precedence(m_State.Tok.Value) >= pre)
+        while (At(TokenType_Operator) && get_precedence(m_State.Tok.Value) >= (pre ? pre + 1 : pre))
         {
             rhs = ParseBinary(std::move(rhs), pre ? pre + 1 : pre);
             if (!rhs) return {};
