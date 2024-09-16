@@ -56,27 +56,27 @@ QLang::StatementPtr QLang::Parser::ParseBinary(StatementPtr lhs, const size_t mi
 {
     while (At(TokenType_Operator) && get_precedence(m_State.Tok.Value) >= min_pre)
     {
-        auto [Where, Type, Value] = Skip();
-        const auto pre = get_precedence(Value);
+        auto [where_, type_, value_] = Skip();
+        const auto pre = get_precedence(value_);
 
         auto rhs = ParseOperand();
         if (!rhs) return {};
-        while (At(TokenType_Operator) && get_precedence(m_State.Tok.Value) > pre)
+        while (At(TokenType_Operator) && get_precedence(m_State.Tok.Value) >= pre)
         {
             const auto next_pre = get_precedence(m_State.Tok.Value);
             rhs = ParseBinary(std::move(rhs), pre + (next_pre > pre ? 1 : 0));
             if (!rhs) return {};
         }
 
-        if (Value == "?")
+        if (value_ == "?")
         {
             Expect(":");
             auto else_ = ParseBinary();
-            lhs = std::make_unique<TernaryExpression>(Where, std::move(lhs), std::move(rhs), std::move(else_));
+            lhs = std::make_unique<TernaryExpression>(where_, std::move(lhs), std::move(rhs), std::move(else_));
             continue;
         }
 
-        lhs = std::make_unique<BinaryExpression>(Where, Value, std::move(lhs), std::move(rhs));
+        lhs = std::make_unique<BinaryExpression>(where_, value_, std::move(lhs), std::move(rhs));
     }
 
     return lhs;
